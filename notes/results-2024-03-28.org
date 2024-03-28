@@ -64,15 +64,18 @@ ethtool --config-nfc enp7s0 rx-flow-hash tcp4 sdfn
 : lambda=27.288137575924967, s=0.005112812866432528, alpha=2.188312150213951
 
 * TODOs
-- microbenchmarks
+- parameters to measure:
+  - raw throughput (=trex=)
   - measure cache miss rate (=perf=)
   - measure working set size (=mrf-tool=)
-- macrobenchmarks
+- benchmarks
   - artificial traffic:
     - diff configs:
       - #nft rules: small / medium / large ruleset
   - realistic traffic:
     - classbench flows:
       - small / medium / large ruleset
-        - vary smoothness (1, 8, 16, 32, 64) to control rule dependencies
-    - add random udp packets?
+      - vary smoothness (1, 8, 16, 32, 64) to control rule dependencies
+    - add random udp packets to make sure some packets hit the default catch-all rule
+  - single-cpu scaling with multiple threads: difficult to measure, maybe we can get away with the
+    simulations
