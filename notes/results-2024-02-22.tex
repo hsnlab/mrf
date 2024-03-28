@@ -1,0 +1,65 @@
+% Created 2024-02-28 Wed 15:35
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage[margin=2.5cm,headheight=66pt]{geometry}
+\usepackage{enumitem}
+\usepackage{fancyvrb}
+\usepackage[magyar, american]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[TS1,T1]{fontenc}
+\hypersetup{hidelinks=true}
+\date{}
+\title{Parallel self-adjusting packet classification: Initial results}
+\hypersetup{
+ pdfauthor={retvari},
+ pdftitle={Parallel self-adjusting packet classification: Initial results},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 29.1 (Org mode 9.6.16)}, 
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+\setitemize{noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt}
+\selectlanguage{magyar}
+\frenchspacing
+
+\section*{Setup}
+\label{sec:org3e5ed48}
+\begin{itemize}
+\item UDP traffic:
+\begin{itemize}
+\item 108 bytes
+\item dst port varies
+\end{itemize}
+\item traffic gen: T-REX, 4mpps to overload SUT
+\item NIC hashes on UDP dst ports: \texttt{ethtool -{}-{}config-nfc enp7s0 rx-flow-hash udp4 n}
+\end{itemize}
+
+\section*{Results}
+\label{sec:org6f240f3}
+\subsection*{997 rules, 997 flows, multiple cpus}
+\label{sec:org5846b41}
+\begin{center}
+\includegraphics[width=.9\linewidth]{plot-997rules-997flows.png}
+\end{center}
+
+\subsection*{128 rules, multiple flows, 1 cpu}
+\label{sec:org82dd75f}
+\begin{center}
+\includegraphics[width=.9\linewidth]{plot-1core-numflows.png}
+\end{center}
+\end{document}

@@ -1,0 +1,14 @@
+#+LaTeX_HEADER:\usepackage[margin=2.5cm,headheight=66pt]{geometry}
+#+LaTeX_HEADER:\usepackage{enumitem}
+#+LaTeX_HEADER:\usepackage{fancyvrb}
+#+LaTeX_HEADER:\usepackage[magyar]{babel}
+#+LaTeX_HEADER:\usepackage[utf8]{inputenc}
+#+LaTeX_HEADER:\usepackage[TS1,T1]{fontenc}
+#+latex_header: \hypersetup{hidelinks=true}
+#+LATEX:\setitemize{noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt}
+#+LATEX:\selectlanguage{magyar}
+#+LATEX:\frenchspacing
+#+OPTIONS: toc:nil author:nil num:nil
+#+OPTIONS: |:nil
+
+#+TITLE: Parallel self-adjusting packet classification: Initial results

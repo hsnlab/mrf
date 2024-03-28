@@ -1,0 +1,203 @@
+#+INCLUDE: header.org
+
+* Setup
+- UDP traffic:
+  - 108 bytes
+  - dst port varies
+- traffic gen: T-REX, 4mpps to overload SUT
+- NIC hashes on UDP dst ports: ~ethtool --config-nfc enp7s0 rx-flow-hash udp4 n~
+
+* Fitting the modified Amdahl's law
+
+- we seek the scaling law in the following general form:
+  $$S(k) = \frac{\lambda}{s + \frac{1-s}{k^\alpha}}$$
+  where $\lambda$ is the performance with a single CPU/thread, $s$ defines the "sequential" portion of
+  the code, and $\alpha$ is the parameter indicating whether the scaling law is indeed superlinear
+  as follows:
+  - $\alpha=1$: "traditional" Amdahl's law
+  - $\alpha=2$: ideal case (achievable in practice in a "pure" MTF scenario)
+  - $1 < \alpha < 2$: "superlinear scaling"
+- we minimize the mean-square-error to fit measured data to the generalized law
+
+* Results
+
+** 997 rules, 997 flows, max 8 cpus, DEBUG off
+- fitted parameters: $s=0.00424$, $\alpha=1.458$, $\lambda=55.16$ [Mbps]
+
+#+TBLNAME:plot-997rules-997flows
+| core | rate mtf [mbps] | rate default [mbps] | lin | delta_mtf | delta_default |  prop_mtf | prop_default |
+|------+-----------------+---------------------+-----+-----------+---------------+-----------+--------------|
+|    8 |            1070 |                 378 | 320 |     1.088 |         1.005 | 28.918919 |         9.45 |
+|    7 |             860 |                 329 | 280 |      1.04 |         0.992 | 23.243243 |        8.225 |
+|    6 |             706 |                 284 | 240 |      1.06 |         1.002 | 19.081081 |          7.1 |
+|    5 |             555 |                 236 | 200 |      1.03 |         0.998 |        15 |          5.9 |
+|    4 |             430 |                 189 | 160 |       1.2 |         0.998 | 11.621622 |        4.725 |
+|    3 |             271 |                 142 | 120 |      1.26 |         0.996 | 7.3243243 |         3.55 |
+|    2 |             143 |                  95 |  80 |      1.93 |         0.989 | 3.8648649 |        2.375 |
+|    1 |              37 |                  48 |  40 |         1 |             1 |         1 |          1.2 |
+#+TBLFM: $7=$2/37::$8=$3/40
+
+#+begin_src gnuplot :var data=plot-997rules-997flows :exports results :file plot-997rules-997flows.png
+  reset
+  set size 1,1
+  set xrange [1:9]
+  set xlabel "cores"
+  set ylabel "rate [mbps]"
+  set title "997 rules and 997 flows"
+  amdahl(x) = 55.6 / (.004 + ((1-0.004)/(x**1.45)))
+  plot data u 1:2 w lp lw 2 title 'rate MRF', \
+       data u 1:3 w lp lw 2 title 'rate DEF', \
+       data u 1:4 w lp lw 2 title 'rate lin', \
+       amdahl(x) w line lw 2 title 'amdahl (fitted)'
+#+end_src
+
+#+RESULTS:
+[[file:plot-997rules-997flows.png]]
+
+#+begin_src python :var data=plot-997rules-997flows :results output
+  import numpy as np
+  import matplotlib.pyplot as plt
+  from scipy.optimize import curve_fit
+  import pandas as pd
+
+  def SuperLinearAmdahl(x, *params):
+    return params[2] / (params[0] + (1-params[0])/pow(x, params[1]))
+
+  D = pd.DataFrame(data)
+  parameters, covariance = curve_fit(SuperLinearAmdahl, D[0].to_numpy(), D[1].to_numpy(), [0.5,1,1])
+  print(parameters)
+  print(covariance)
+#+end_src
+
+#+RESULTS:
+: [4.24563454e-03 1.45799419e+00 5.51644893e+01]
+: [[ 7.02823503e-05  1.26375935e-03 -6.66332839e-02]
+:  [ 1.26375935e-03  2.51716367e-02 -1.43400321e+00]
+:  [-6.66332839e-02 -1.43400321e+00  8.62565073e+01]]
+
+** 1999 rules, 1999 flows, max 23 cpus, DEBUG off
+- fitted parameters: $s=0.0061$, $\alpha=2$, $\lambda=30.9$ [Mbps]
+#+TBLNAME:plot-1999rules-1999flows
+| core | rate mtf [mbps] | rate default [mbps] |
+|------+-----------------+---------------------|
+|   23 |            3942 |                 599 |
+|   20 |            3532 |                 559 |
+|   18 |            3276 |                 532 |
+|   16 |            3020 |                 510 |
+|   14 |            2764 |                 476 |
+|   12 |            2467 |                 447 |
+|   11 |            2201 |                     |
+|   10 |            1925 |                 373 |
+|    8 |            1413 |                 299 |
+|    6 |             878 |                     |
+|    4 |             453 |                 150 |
+|    2 |             119 |                  75 |
+|    1 |              27 |                  38 |
+#+begin_src gnuplot :var data=plot-1999rules-1999flows :exports results :file plot-1999rules-1999flows-2.png
+  reset
+  set size 1,1
+  set xrange [0:24]
+  set xlabel "cores"
+  set ylabel "rate [mbps]"
+  set title "1999 rules and 1999 flows"
+  amdahl(x) = 31 / (.006 + ((1-0.006)/(x**2)))
+  plot data u 1:2 w lp lw 2 title 'rate MRF', \
+       data u 1:3 w lp lw 2 title 'rate DEF', \
+       amdahl(x) w line lw 2 title 'amdahl (fitted)'
+#+end_src
+
+#+RESULTS:
+[[file:plot-1999rules-1999flows-2.png]]
+
+#+begin_src python :var data=plot-1999rules-1999flows :results output
+  import numpy as np
+  import matplotlib.pyplot as plt
+  from scipy.optimize import curve_fit
+  import pandas as pd
+
+  def SuperLinearAmdahl(x, *params):
+    return params[2] / (params[0] + (1-params[0])/pow(x, params[1]))
+
+  D = pd.DataFrame(data)
+  parameters, covariance = curve_fit(SuperLinearAmdahl, D[0].to_numpy(), D[1].to_numpy(), [0.5,1,1])
+  print(parameters)
+  print(covariance)
+#+end_src
+
+#+RESULTS:
+: [6.18410352e-03 2.00161162e+00 3.09864334e+01]
+: [[ 1.29872069e-06 -1.20939702e-04  7.84043945e-03]
+:  [-1.20939702e-04  1.20930850e-02 -7.56599775e-01]
+:  [ 7.84043945e-03 -7.56599775e-01  4.82219774e+01]]
+
+** 997 rules, 997 flows, max 23 cpus, DEBUG off
+- fitted parameters: $s=0.0088$, $\alpha=1.85$, $\lambda=66.08$ [Mbps]
+#+TBLNAME:plot-997rules-997flows-rhea
+| core | rate mtf [mbps] | rate default [mbps] |
+|------+-----------------+---------------------|
+|   23 |            5714 |                1146 |
+|   20 |            5191 |                1075 |
+|   18 |            4853 |                 998 |
+|   16 |            4311 |                1249 |
+|   14 |            4075 |                 894 |
+|   12 |            3645 |                     |
+|   10 |            2928 |                     |
+|    8 |            2232 |                 611 |
+|    4 |             709 |                 286 |
+|    2 |             199 |                 143 |
+|    1 |              50 |                  71 |
+#+begin_src gnuplot :var data=plot-997rules-997flows-rhea :exports results :file plot-997rules-997flows-rhea-2.png
+  reset
+  set size 1,1
+  set xrange [0:24]
+  set xlabel "cores"
+  set ylabel "rate [mbps]"
+  set title "997 rules and 997 flows"
+  amdahl(x) = 66 / (.009 + ((1-0.009)/(x**1.85)))
+  plot data u 1:2 w lp lw 2 title 'rate MRF', \
+       data u 1:3 w lp lw 2 title 'rate DEF', \
+       amdahl(x) w line lw 2 title 'amdahl (fitted)'
+#+end_src
+
+#+RESULTS:
+[[file:plot-997rules-997flows-rhea-2.png]]
+
+#+begin_src python :var data=plot-997rules-997flows-rhea :results output
+  import numpy as np
+  import matplotlib.pyplot as plt
+  from scipy.optimize import curve_fit
+  import pandas as pd
+
+  def SuperLinearAmdahl(x, *params):
+    return params[2] / (params[0] + (1-params[0])/pow(x, params[1]))
+
+  D = pd.DataFrame(data)
+  parameters, covariance = curve_fit(SuperLinearAmdahl, D[0].to_numpy(), D[1].to_numpy(), [0.5,1,1])
+  print(parameters)
+  print(covariance)
+#+end_src
+
+#+RESULTS:
+: [8.78878632e-03 1.85007584e+00 6.60816161e+01]
+: [[ 3.67083035e-06 -2.45617396e-04  3.39026833e-02]
+:  [-2.45617396e-04  1.80398604e-02 -2.37986453e+00]
+:  [ 3.39026833e-02 -2.37986453e+00  3.21134273e+02]]
+
+
+* TODOs
+paper todos:
+- setup TIPSY
+  - use classbench integration
+- load-balancer? (depends on classbench)
+- prepare two kernels:
+  - debug: lock tracing, SAL_DEBUG, etc.
+  - performance: current kernel
+- evaluation
+  - realistic traffic:
+    - classbench flows
+  - artificial traffic:
+    - diff configs:
+      - #nft rules,
+      - #flows,
+      - #controlled flows -> rule duplication
+    - 1 cpu multiple queues?
