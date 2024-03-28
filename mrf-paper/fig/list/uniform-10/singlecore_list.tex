@@ -1,0 +1,49 @@
+\begin{small}
+  \begin{tikzpicture}
+    \begin{axis}[
+      width=250pt,
+      height=170pt,
+      xlabel={\#thread},
+      ylabel={Goodput [million req/sec]},
+      xlabel near ticks,
+      ylabel near ticks,
+      xmin=1,
+      xmax=26,
+      ymin=0,
+      % ymax=10,
+      legend style = {
+        anchor = north west,
+        at = {(0.01, 1.01)},
+        font=\scriptsize,
+        % draw = none,
+      },
+      % no markers
+      ]
+      \addplot[black,mark=*] table[
+      x=thread,
+      y expr=\thisrowno{4}/1000000
+      ]{fig/list/uniform-10/singlecore_mtf_modulo_uniform.txt};
+      \addlegendentry{MTF w/ hash-based lb}
+      \addplot[black,mark=+] table[
+      x=thread,
+      y expr=\thisrowno{4}/1000000
+      ]{fig/list/uniform-10/singlecore_linkedlist_modulo_uniform.txt};
+      \addlegendentry{Static list w/ hash-based lb}
+      \addplot[black,mark=o] table[
+      x=thread,
+      y expr=\thisrowno{4}/1000000
+      ]{fig/list/uniform-10/singlecore_mtf_roundrobin_uniform.txt};
+      \addlegendentry{MTF w/ round robin lb}
+      \addplot[black,mark=square] table[
+      x=thread,
+      y expr=\thisrowno{4}/1000000
+      ]{fig/list/uniform-10/singlecore_linkedlist_roundrobin_uniform.txt};
+      \addlegendentry{Static list w/ round robin lb}
+    \end{axis}
+  \end{tikzpicture}
+\end{small}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../../../hotnets22"
+%%% End:

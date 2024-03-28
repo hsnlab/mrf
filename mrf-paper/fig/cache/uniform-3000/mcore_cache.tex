@@ -1,0 +1,75 @@
+\begin{small}
+  % \tikzmath
+  % {
+  %   function est(\x)
+  %   {
+  %     if (\x < 10) then
+  %     {
+  %       return 0.1+0.9*(0.1*\x +(1-0.1*\x)*10)/\x;
+  %     } else {
+  %       return 0.1 + 0.9//\x;
+  %     };
+  %   };
+  %   \a = est(4);
+  %   \b = est(14);
+  % }
+  \begin{tikzpicture}
+    \begin{axis}[
+      width=250pt,
+      height=170pt,
+      xlabel={\#thread},
+      ylabel={Speedup},
+      xlabel near ticks,
+      ylabel near ticks,
+      xmin=1,
+      xmax=21,
+      ymin=0,
+      xtick={1,5,10,15,20},
+      % ymax=10,
+      legend style = {
+        anchor = north west,
+        at = {(0.01, 1.01)},
+        font=\scriptsize,
+        % draw = none,
+      },
+      % no markers
+      ]
+       \addplot[black,mark=*] table[
+      x=thread,
+      y=rate,
+      y expr=\thisrowno{4}/50000
+      ]{fig/cache/uniform-3000/mcore_cache_modulo_uniform.txt};
+      \addlegendentry{Hash-based load balancer}
+      % \addplot[black,mark=*] table[x=thread,y=rate] {fig/cache/uniform-3000/multicore_cache_modulo_uniform.txt};
+      % \addlegendentry{Cache / modulo lb}
+      % \addplot[black,mark=+] table[x=thread,y=rate] {fig/cache/uniform-3000/multicore_scache_modulo_uniform.txt};
+      % \addlegendentry{staticcache / modulo lb}
+      \addplot[black,mark=o] table[
+      x=thread,
+      y=rate,
+      y expr=\thisrowno{4}/50000
+      ] {fig/cache/uniform-3000/mcore_cache_roundrobin_uniform.txt};
+      \addlegendentry{Round robin load balancer}
+      % \addplot[black,mark=*] table[x=thread,y=rate] {fig/cache/uniform-3000/multicore_cache_modulo_uniform.txt};
+      % \addlegendentry{Cache / modulo lb}
+      % \addplot[black,mark=+] table[x=thread,y=rate] {fig/cache/uniform-3000/multicore_scache_modulo_uniform.txt};
+      % \addlegendentry{staticcache / modulo lb}
+      \addplot[domain=1:25,black,dashed]{x};
+      \addlegendentry{Linear scaling}
+      \addplot[domain=1:25,black,densely dotted]{1/(0.05+0.95/x)};
+      \addlegendentry{Amdahl's law}
+      % \addplot[domain=0:25,black,densely dotted]{est(1.0)/est(x)};
+      % \node at (100,100) {\a\b};
+      % \addlegendentry{T}
+      % \addplot[black,mark=o] table[x=thread,y=rate] {fig/cache/uniform-3000/multicore_cache_roundrobin_uniform.txt};
+      % \addlegendentry{Round robin lb}
+      % \addplot[black,mark=square] table[x=thread,y=rate] {fig/cache/uniform-3000/multicore_scache_roundrobin_uniform.txt};
+      % \addlegendentry{staticcache / roundrobin}
+    \end{axis}
+  \end{tikzpicture}
+\end{small}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../../../hotnets22.tex"
+%%% End:

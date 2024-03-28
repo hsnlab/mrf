@@ -1,0 +1,35 @@
+\begin{small}
+  \begin{tikzpicture}
+    \begin{axis}[
+      width=250pt,
+      height=180pt,
+      xlabel={\#thread},
+      ylabel={Goodput},
+      xmin=1,
+      xmax=56,
+      ymin=0,
+      % ymax=10,
+      legend style = {
+        anchor = north west,
+        at = {(0.01, 1.01)},
+        % draw = none,
+      },
+      % no markers
+      ]
+      % use TeX as calculator:
+      % \addplot[black,mark=*] table[x=thread,y=rate] {fig/cache/uniform-3000/multicore_cache_modulo_uniform.txt};
+      % \addlegendentry{Cache / modulo lb}
+      % \addplot[black,mark=+] table[x=thread,y=rate] {fig/cache/uniform-3000/multicore_scache_modulo_uniform.txt};
+      % \addlegendentry{staticcache / modulo lb}
+      % \addplot[black,mark=o] table[x=thread,y=rate] {fig/cache/uniform-3000/multicore_cache_roundrobin_uniform.txt};
+      % \addlegendentry{Cache / roundrobin}
+      \addplot[black,mark=square] table[x=thread,y=rate] {fig/cache/uniform-3000/multicore_scache_roundrobin_uniform.txt};
+      \addlegendentry{staticcache / roundrobin}
+    \end{axis}
+  \end{tikzpicture}
+\end{small}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../../../hotnets22"
+%%% End:

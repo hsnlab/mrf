@@ -1,0 +1,63 @@
+\begin{small}
+  \tikzmath
+  {
+    function lookup(\x)
+    {
+      if (\x < 10) then
+      {
+        return 0.1+0.9*(0.1*\x +(1-0.1*\x)*10)/\x;
+      } else {
+        return 0.1 + 0.9/\x;
+      };
+    };
+    function dcache(\x)
+    {
+      return lookup(1.0)/lookup(\x);
+    };
+    function rrcache(\x)
+    {
+      return lookup(1.0)/(0.1+0.9*(0.1 +(1-0.1)*10)/\x);
+    };
+    function pcache(\x)
+    {
+      return lookup(1.0)/(0.1+0.9/\x);
+    };
+    \a = dcache(1);
+    \b = lookup(1.0);
+  }
+  \begin{tikzpicture}
+    \begin{axis}[
+      width=250pt,
+      height=170pt,
+      xlabel={\#thread},
+      ylabel={Speedup},
+      xlabel near ticks,
+      ylabel near ticks,
+      xmin=0,
+      xmax=20,
+      ymin=0,
+      ymax=67,
+      xtick={1,5,10,15,20},
+      legend style = {
+        anchor = north west,
+        at = {(0.01, 1.01)},
+        font=\scriptsize,
+        % draw = none,
+      },
+      % no markers
+      ]
+      \addplot[domain=0:25,black,solid]{dcache(x)};
+      \addlegendentry{Hash-based load balancing}
+      \addplot[domain=0:25,black,densely dotted]{rrcache(x)};
+      \addlegendentry{Round robin load balancing}
+      \addplot[domain=0:25,black,densely dashed]{pcache(x)};
+      \addlegendentry{All requests hit the cache}
+      % \node at (25,25) {\a, \b};
+    \end{axis}
+  \end{tikzpicture}
+\end{small}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../../hotnets22.tex"
+%%% End:

@@ -1,0 +1,35 @@
+\begin{small}
+  \begin{tikzpicture}
+    \begin{axis}[
+      width=250pt,
+      height=180pt,
+      xlabel={\#thread},
+      ylabel={Goodput},
+      xmin=0,
+      xmax=30,
+      ymin=0,
+      % ymax=10,
+      legend style = {
+        anchor = north west,
+        at = {(0.01, 1.01)},
+        % draw = none,
+      },
+      % no markers
+      ]
+      % use TeX as calculator:
+      \addplot[black,mark=*] table[x=thread,y=rate] {fig/list/uniform-100/multicore_mtf_modulo_uniform.txt};
+      \addlegendentry{Mtf / modulo lb}
+      \addplot[black,mark=+] table[x=thread,y=rate] {fig/list/uniform-100/multicore_linkedlist_modulo_uniform.txt};
+      \addlegendentry{Linked list / modulo lb}
+      \addplot[black,mark=o] table[x=thread,y=rate] {fig/list/uniform-100/multicore_mtf_roundrobin_uniform.txt};
+      \addlegendentry{Mtf / roundrobin}
+      \addplot[black,mark=square] table[x=thread,y=rate] {fig/list/uniform-100/multicore_linkedlist_roundrobin_uniform.txt};
+      \addlegendentry{Linked list / roundrobin}
+    \end{axis}
+  \end{tikzpicture}
+\end{small}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../hotnets22"
+%%% End:
