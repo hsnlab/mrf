@@ -74,7 +74,8 @@ ethtool --config-nfc enp7s0 rx-flow-hash tcp4 sdfn
       - #nft rules: small / medium / large ruleset
   - realistic traffic:
     - classbench flows:
-      - small / medium / large ruleset
+      - seed=acl1: small / medium / large ruleset
+      - play with the "fw1" seed and maybe some other one too, medium is enough
       - vary smoothness (1, 8, 16, 32, 64) to control rule dependencies
     - add random udp packets to make sure some packets hit the default catch-all rule
   - single-cpu scaling with multiple threads: difficult to measure, maybe we can get away with the
