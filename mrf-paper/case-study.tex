@@ -19,6 +19,11 @@ self-adjusting algs and applications:
 
 \subsection{Implementation}
 \label{sec:sa-nf-tables-impl}
+In our case study, we focus on the \textit{nf\_tables} firewall within the Linux Kernel. First, we replace the static list used to store the rules with the self-adjusting RMF list. 
+In order to achieve optimal scaling properties and avoid any lock contention, the ruleset is replicated for all CPUs. To distribute the network traffic across all cores, we use RSS hash filter options (\textit{rx-flow-hash}).
+This generates a hash using the header fields within the network packet, which then dictates to which receive queue the packet is delivered.
+We use Classbench \cite{4237157} to generate the rulesets and traffic traces with which we test our implementation using real-world resembling scenarios. 
+
 
 \subsection{Evaluation}
 \label{sec:sa-nf-tables-eval}
