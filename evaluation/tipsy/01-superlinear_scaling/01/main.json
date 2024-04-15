@@ -1,0 +1,43 @@
+{
+    "benchmark": [
+	{
+	    "scale": "joint",
+	    "sut": {
+		"type": "generic",
+		"environ": {
+		    "SUTUSER": "levai",
+		    "SUTHOST": "192.168.0.22",
+		    "SUTSSHPORT": "721",
+		    "SCRIPT": "/home/levai/test-runner.sh",
+		    "NFTRULESFILE": "/root/mrf-rules/udp_dst-997.nft",
+		    "TESTERMAC": "68:05:ca:30:45:d8",
+		    "PCAPFILE": [
+			"../../../../pcaps/udp_dst-997-uniform.pcap"
+		    ],
+		    "MRFENABLE": [0, 1],
+		    "CORES": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
+			      21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,
+			      41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63],
+		    "repeat": [1,2,3]
+		},
+		"script": "../../../../scripts/config-sut.sh"
+	    },
+	    "tester": {
+		"type": "moongen",
+		"uplink-port": "0",
+		"downlink-port": "0",
+		"test-time": 60,
+		"moongen-cmd": "/home/levai/MoonGen/build/MoonGen",
+		"setup-script": "../../../../scripts/copy-pcap.sh"
+	    }
+	}
+    ],
+    "default": {
+	"scale": "outer",
+	"pipeline": {"name": "none"},
+	"sut": {"type": "generic"},
+	"tester": {"type": "moongen"},
+	"traffic": {}
+    },
+    "visualize": []
+}
