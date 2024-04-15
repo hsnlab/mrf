@@ -1,0 +1,51 @@
+\begin{small}
+  \begin{tikzpicture}
+    \begin{axis}[
+      width=165pt,
+      height=192pt,
+      xlabel={number of threads},
+      x label style={at={(0.5,0.04)}},      
+      ylabel={Goodput [million req/sec]},
+      % xlabel near ticks,
+      % ylabel near ticks,
+      y label style={at={(0.1,0.5)}},      
+      xmin=1,
+      xmax=22,
+      ymin=0,
+      % ymax=10,
+      legend style = {
+        anchor = north west,
+        at = {(0.01, 1.01)},
+        font=\scriptsize,
+        % draw = none,
+      },
+      % no markers
+      ]
+      \addplot[black,mark=*] table[
+      x=thread,
+      y expr=\thisrowno{4}/1000000
+      ]{fig/list/uniform-10/singlecore_mtf_modulo_uniform.txt};
+      \addlegendentry{Move-to-front/Local LB}
+      \addplot[black,mark=+] table[
+      x=thread,
+      y expr=\thisrowno{4}/1000000
+      ]{fig/list/uniform-10/singlecore_linkedlist_modulo_uniform.txt};
+      \addlegendentry{Linked-list/Local LB}
+      \addplot[black,mark=o] table[
+      x=thread,
+      y expr=\thisrowno{4}/1000000
+      ]{fig/list/uniform-10/singlecore_mtf_roundrobin_uniform.txt};
+      \addlegendentry{Move-to-front/Non-local LB}
+      \addplot[black,mark=square] table[
+      x=thread,
+      y expr=\thisrowno{4}/1000000
+      ]{fig/list/uniform-10/singlecore_linkedlist_roundrobin_uniform.txt};
+      \addlegendentry{Linked-list/Non-local LB}
+    \end{axis}
+  \end{tikzpicture}
+\end{small}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../../../distributed_mrf.tex"
+%%% End:

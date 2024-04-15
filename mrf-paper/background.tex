@@ -1,0 +1,270 @@
+\section{Background}\label{sec:background}
+
+apply different scaling laws to the distributed computing setup: LB + fully parallel workers
+
+% \begin{figure}
+%   \centering
+%   \begin{tiny}
+% \begin{verbatim}
+%                                      +--------+
+%                               +----->|Thread 1|
+%                               |      +--------+
+%                               |
+%                               |      +--------+
+% +------+    +-------------+   +----->|Thread 2
+% |Source|----|Load-balancer|---+      +--------+
+% +------+    +-------------+   |          .
+%                               |          .
+%                               |          .
+%                               |      +--------+
+%                               +----->|Thread k|
+%                                      +--------+
+% (placeholder)
+% \end{verbatim}
+%   \end{tiny}
+%   \caption{A typical distributed computing architecture.}
+%   \label{fig:model}
+% \end{figure}
+
+
+
+\subsection{Amdahl's Law}
+\label{sec:amdahl-law}
+
+A cornerstone result in parallel computing, Amdahl's law \cite{10.1145/1465482.1465560} establishes a firm limit on the performance gain obtainable by distributing a computation task over multiple processors. Given a partially parallel program, denote the fraction of execution time spent % by a single-threaded execution
+% by the processor 
+in the serial part of the code by $s$, and the parallel fraction by $(1-s)$. Here, some code is ``serial'' if it cannot benefit from the improvement of the computing resources, like single-threaded code, critical sections guarded by exclusion locks, etc. Denote by $T(k)$ the runtime (in seconds) of the program when executed on $k$ processors, and let $S(k)=\frac{T(1)}{T(k)}$ denote the  performance improvement relative to a single-threaded execution (i.e., the \emph{speedup}). Then, the following relation holds:
+\begin{equation}\label{eq:amdahl}
+S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{k}} \enspace .
+\end{equation}
+
+Here, the term $\frac{1-s}{k}$ establishes that the perfectly parallel part of the program executes $k$ times faster on $k$ processors than on a single core. By Amdahl's law, (1) no code can scale faster than linear (i.e., $\frac{d S(k)}{d k} \le 1$, with equality exactly when $s=0$), (2) throwing additional processors on a computation task yields diminishing returns ($\frac{d S(k)}{d k}$ is decreasing in $k$) and (3) the asymptotics is limited by the serial part only ($\lim_{k\to \infty}S(k) = \frac1{s}$). Despite often being misused \cite{10.5555/775339.775386}, debated \cite{10.1145/42411.42415} and extended \cite{4563876, 6280307,1580395,406581,6163449}, Amdahl's law has remained one of the most useful tools in the system engineering toolbox to today \cite{10.5555/1951599}. %A sample plot is given in Fig.~\ref{fig:amdahl}. 
+
+
+mention  Gustafson's Law %  J. L. Gustafson, “Reevaluating Amdahl’s law,” Communication of ACM, vol. 31, no. 5, pp. 532–533, May 1988. doi: 10.1145/42411.42415. [Online]. Available: http://doi.acm.org/10.1145/42411.42415
+
+
+Speedup S(p) is defined as a ratio of the execution times of
+the best sequential algorithm T (1) and the parallel implemen-
+tation on p processors T (p), as presented in (1). However, this
+definition holds only for fixed-time algorithms. When analyzed
+more broadly, the speedup should be defined as a ratio of
+speeds, and not of times, as defined in (2). Note, that for
+fixed-time algorithms, the amount of work is constant, which
+results in (1).
+
+% S(p)= T (1) / T (p) = (ParallelWork / ParallelTime) / (SerialWork / SerialTime)
+
+% USL:
+
+% There is a model for parallel processing performance in distributed systems by Gunther [28].
+% He calls it the Universal Scalability Law (USL). For a relative capacity R(N ) (i.e., XN /X1 , for
+% throughput XN achieved using N processors and throughput X1 for one processor) he defines
+% N
+% R(N ) =
+% 1 + α((N − 1) + βN (N − 1))
+% ,
+% (2)
+% for a coefficient α that gives the degree of contention (inference) in the system and coefficient β
+% that gives the lack of coherency in the distributed data. Contention occurs because resources are
+% shared. Whenever the capacity of a shared resource is used completely and another process requests
+% to use that resource, then the process has to wait. Contention increases with increasing system
+% size, while keeping resources at the same capacity. Lack of coherency occurs because processes, to
+% a certain extent, operate locally. For example, they have local changes in their caches that are not
+% immediately communicated to all other processes. Maintaining coherency is costly and the costs
+% increase with increasing system size.
+
+
+\subsection{Superlinear speedup}
+\label{sec:backgound-superlinear}
+
+The uniting idea of both parallel computing and multi-robot systems is that having multi-
+ple processors or robots working on a task decreases the processing time. Typically we desire
+a linear speedup, that is, doubling the number of processing units halves the execution time.
+Sometimes superlinear scalability is observed in parallel computing systems and more fre-
+quently in multi-robot and swarm systems. Superlinearity means each individual processing
+unit gets more efficient by increasing the system size—a desired and rather counterintuitive
+phenomenon.
+
+As superlinear speedups seem special, they were frequently discussed and studied [2, 3]. There
+even exists a proof showing the impossibility of superlinear speedups but it assumes fixed problem
+size [4]. Superlinear speedups are rather infrequently observed in parallel computing (e.g., cache-
+size effects [5]) compared to rather frequent observations in multi-robot and swarm systems (e.g.,
+inherently collaborative tasks [6]). When observed, superlinearity is often a discrete effect, such
+as a workpackage happening to fit into the processors cache [5] or a robot group being able to
+form a bucket brigade [7, 8]. Superlinear scalability has much potential that should be enough
+motivation to investigate it across different domains and to understand how one can provoke it.
+
+
+THE systems goalis of to today’s achieve world the greatest of parallel speedup, and represented
+distributed either as the lowest time for execution of a single task (High Performance Computing),
+or to execute as many tasks as possible for a given time (High Throughput Computing), when the
+task(s) are executed on scaled resources. Many new algorithms and computing paradigms appeared in
+the last decade, and new challenges have emerged to solve more complex problems faster, or to
+achieve greater speedup, as much as possible [1].  The speedup is usually defined as a ratio of the
+wall times of sequential and parallel execution of an algorithm. The target of the parallelization
+is to achieve the lowest execution time in order to maximize the speedup against the best
+sequential algorithm. Increasing the number of computing resources will increase the
+intra-resource’s communication and requires additional operations, such as reduction operations.
+
+
+Many authors reported the existence of a superlinear
+speedup, but most of them only mentioned it as a side effect
+[4]. Besides reporting a superlinearity, other researchers briefly
+presented that the reason for achieving a superlinear speedup
+is because of the greater amount of cache memory in the
+parallel execution compared to the sequential [5].
+
+% [4] J. Rufino, A. I. Pereira, and J. Pidanic, “copssa - constrained paral-
+% lel stretched simulated annealing,” in Radioelektronika (RADIOELEK-
+% TRONIKA), 2015 25th International Conference, April 2015. doi:
+% 10.1109/RADIOELEK.2015.7129044 pp. 435–439.
+% [5] T. Ciamulski and M. Sypniewski, “Linear and superlinear
+% speedup in parallel fdtd processing,” in 2007 IEEE Antennas and
+% Propagation Society International Symposium, June 2007. doi:
+% 10.1109/APS.2007.4396642. ISSN 1522-3965 pp. 4897–4900.
+
+Superlinear speedup for non-persistent algorithms
+Typical examples of non-persistent algorithms are searching
+algorithms, which finish when one of the processors finds
+the solution, and together with all the other processors stop
+the execution, without finishing all operations.
+
+Indeed, superlinear speedup is a bona fide
+phenomenon that can be expected to appear more
+frequently in practice as new applications are deployed
+onto distributed architectures. As demonstrated
+here using Hadoop MapReduce, however, the USL
+is not only capable of accommodating superlinear
+speedup in a surprisingly simple way, it also reveals
+that superlinearity, although alluring, is as illusory as
+perpetual motion.
+
+super-
+linearity is a genuinely measurable
+effect,4,12,14,19,20,21–23 so it is important to
+understand exactly what it represents in
+order to address it when sizing distribut-
+ed systems for scalability. As far as we are
+aware, this has not been done before.
+
+[hadoop paper]
+
+We must note that sometimes, the speedup could be S(p) <
+1, (sublinear speedup), which means that it is not speedup,
+but a slowdown. This could happen for several reasons. For
+example, for small problem size, which is negligible for good
+performance comparison, sequential execution will be faster
+than the time for forking threads. Another example is the case
+when the number of threads or processes is greater than the
+number of existing processors. Or more generally, a slowdown
+may happen due to the communication and synchronization
+time, or the overload of instruction in parallel execution.
+Further on, using the cache line for time and space locality in
+sequential execution can overcome the problem of the limited
+number of processors
+
+the ``fixed size'' vs. ``scaled size'' distinction here: \emph{Fixed Time, Tiered Memory, and Superlinear Speedup} and \emph{Modeling Speedup (n) Greater than n} (section V)
+
+
+
+ In parallel computing, superlinear speedups can occur due to some interplay between
+problem size per computing unit and available memory. For example, if the problem can be di-
+vided into pieces that fit completely into a CPU’s cache, then one can observe a considerable
+speedup.
+
+
+explain superlinear + also called ``superunitary'' in % Modeling Speedup ( n ) Greater than n
+
+
+
+\subsection{Example: Distributed Caching}
+\label{sec:backgound-dist-caching}
+
+Sometimes, parallel execution achieves a superlinear
+speedup because it partitions and reduces the data chunks,
+which can be placed in the cache memory, thus reducing the
+cache misses [24], [25], [26], [27], [28].
+
+% [24] I. A.-S. Ibrahim, H.-W. Loidl, and P. Trinder, “High-performance
+% cloud computing for symbolic computation domain,” Journal of
+% Computations & Modelling, vol. 6, no. 1, pp. 107–133, 2016. [Online].
+% Available: http://www.scienpress.com/journal_focus.asp?main_id=58&
+% Sub_id=IV&Issue=1771
+% [25] N. Theera-Ampornpunt, S. G. Kim, A. Ghoshal, S. Bagchi, A. Grama,
+% and S. Chaterji, “Fast training on large genomics data using distributed
+% support vector machines,” in 2016 8th International Conference on
+% Communication Systems and Networks (COMSNETS), Jan 2016. doi:
+% 10.1109/COMSNETS.2016.7439943 pp. 1–8.
+% [26] P. E. McKenney, “Retrofitted parallelism considered grossly sub-
+% optimal,” in Proceedings of the 4th USENIX Conference on
+% Hot Topics in Parallelism, ser. HotPar’12. Berkeley, CA, USA:
+% USENIX Association, 2012, pp. 13–13. [Online]. Available: http:
+% //dl.acm.org/citation.cfm?id=2342788.2342801
+% [27] J. Ichnowski and R. Alterovitz, “Scalable multicore motion planning
+% using lock-free concurrency,” IEEE Transactions on Robotics, vol. 30,
+% no. 5, pp. 1123–1136, Oct 2014. doi: 10.1109/TRO.2014.2331091
+% [28] S. Priyadarshi, C. S. Saunders, N. M. Kriplani, H. Demircioglu, W. R.
+% Davis, P. D. Franzon, and M. B. Steer, “Parallel transient simulation of
+% multiphysics circuits using delay-based partitioning,” IEEE Transactions
+% on Computer-Aided Design of Integrated Circuits and Systems, vol. 31,
+% no. 10, pp. 1522–1535, Oct 2012. doi: 10.1109/TCAD.2012.2201156
+
+
+
+It is then simple to apply Amdahl's law in the load-balancer architecture: the load balancer itself corresponds to the serial workload and the workers constitute the parallel part. Since networking workloads are typically massively parallel (so $s \ll 1$) we expect close-to-linear scaling, at least in the initial regime of the scalability plot (i.e., for small values of $k$). A simple example, however, casts a completely different picture.
+
+Fig.~\ref{fig:multicore-cache} plots a scalability benchmark obtained on a makeshift distributed caching system, implemented in a couple of hundred lines of Go and deployed to a CoTS blade server with a 24-core Intel CPU. % (see [GITHUB LINK WILL BE REVEALED IN THE FINAL VERSION])
+Here, 1000 items are stored in $k$ independent least-recently-used (LRU) caches, executing in lightweight parallel execution threads (``goroutines''). A simple serial load balancer, first using round robin and then with hashing over the request id, spreads requests across the parallel caches. Requests are distributed uniformly across the 1000 items, which is a trivial worst-case input for LRU caches.
+
+Clearly, distributed caching adheres to Amdahl's law, at least as long as the load balancing policy is round robin. But when load balancing uses the id hash we see something unexpected: we observe a rapid superlinear scaling, with $50\times$ speedup at 20 cores compared to the single-threaded case. This is $2.5\times$ faster than predicted by Amdahl's law.
+
+What is going on here? How can such a simple distributed application violate Amdahl's law (if at all)? The rest of this paper is devoted to an attempt to answer these questions. % We argue that the load balancer % distributed system
+% pattern, with a combination of a \emph{locality boosting load balancing} (like, e.g., id hashing above) and worker threads implemented using \emph{self-adjusting data structures}, has the potential to unlock faster-than-linear initial scaling for massive-scale networked applications. We also derive the corresponding scaling law for some select use cases; see Fig.~\ref{fig:amdahl} for an example.
+
+% \subsection{Extensions to Amdahl's Law}
+% \label{sec:extended-amdahl-law}
+
+Caches are really the simplest mechanism that can ``self-adjust'' to the input thrown at them (self-adjustments will come up below frequently!): a cache will keep recent, or frequently-used, data items in fast storage, where access is much more efficient than from normal storage, in order to improve lookup time for future requests. Today we get efficient caches built into all modern CPUs, but many networking applications explicitly contain a fast-path\slash cache component; e.g., distributed caches (e.g., \texttt{memcached}) used as a fast frontend for a ``slow'' web service or relational database, popular keys offloaded to the OS kernel for fast access into key-value stores \cite{179747, ghigoff2021bmc}, FIB caches that maintain the most frequent IP routes in a fast-path cache to sidestep slowish longest prefix matching \cite{rottenstreich2016optimal}, hierarchical flow-caches that serve as a fast-path in programmable software switches \cite{188960}, etc. It is then somewhat surprising that such simple distributed LRU caches alone, paired with a proper load balancing policy like id-hashing, can already provide superlinear (initial) scaling beyond what's predicted by Amdahl's law\footnote{We theoretize that, perhaps without knowing, the prospect of superlinear scaling is \emph{exactly} the reason for the ubiquitous use of caches in networking.} (recall Fig.~\ref{fig:multicore-cache}).
+
+
+
+
+
+
+
+
+\begin{figure}[t]
+  \centering
+  \begin{small}
+    \input{fig/cache/cache_analysis.tex}
+\end{small}
+\caption{Scaling laws for distributed caching: hash-based load balancing, lower envelope (round robin load balancing) and upper envelope (perfect cache hit rate with $k$ caches). Parameters: $s=0.1$, $\delta=0.1$ and $\rho=10$.}
+  \label{fig:dcache-analysis}
+\end{figure}
+
+% refer to "Modeling Speedup (n) Greater than n" -> analysis
+
+assumption for the analysis? ``I think equation 2 should be explained much better. It is not at all obvious (not sure even correct) that hit rate scales linearly with threads (I think only true is delta << 1). What is $\rho$ exactly the ratio of (fetching time in the event of miss) / (fetching time in the event of a catch hit)?''
+
+A quick back-of-an-envelope analysis will help quantify the effect of locality boosting in distributed caches. Suppose a source emits uniformly distributed random requests for $m$ items and the load balancer dispatches requests by hashing on the request id. This effectively partitions the requests into $k$ random buckets, so that each cache instance will experience uniformly distributed requests for only $\frac{m}{k}$ items. If the cache hit rate for a single LRU cache instance processing $m$ requests is $\delta$, then our locality boosting load balancer will improve the cache hit rate to $k\delta$ for $k$ threads ($k\delta \le 1$). This puts the lookup time of the system of $k$ parallel caches to
+\begin{align}\label{eq:dist-cache}
+  T_c(k) = \begin{cases} s + \frac{1-s}{k}(k\delta + (1-k\delta)\rho) & \text{if } k\delta \le 1\\s + \frac{(1-s)}{k} & \text{otherwise}\end{cases} \enspace ,
+\end{align}
+where $\rho$ is the penalty for a cache miss event.
+
+The speedup $S_c(k)=\frac{T_c(1)}{T_c(k)}$ is depicted in Fig.\ref{fig:dcache-analysis}. The lower envelope of the scaling profile is given by Amdahl's law for the system with round-robin load-balancing ($\frac{T_c(1)}{s + \frac{1-s}{k}(\delta + (1-\delta)\rho)}$), from which the profile progresses over a superlinear curve to an elevated Amdahl's law profile, representative of a system where \emph{all} requests are served from fast memory ($\frac{T_c(1)}{s + \frac{1-s}{k}}$).
+
+HINT: this occurs only with a proper LB! we need two ingredients: an algorithm that can adopt to the workload + a load-balancer that can partition queries
+
+
+
+there is an actual conclusion in `` SUPERLINEAR SPEEDUP IN HPC SYSTEMS: WHY AND WHEN?``: ``Mainly the superlinear speedup performance in persistent algorithms occurs due to the increased cache re- sources in the parallel computer architectures, the prefetching of shared variables in shared memory organization, or better scheduling in heterogeneous environments.''
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "distributed_mrf"
+%%% End:
+

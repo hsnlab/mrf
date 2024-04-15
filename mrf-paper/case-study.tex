@@ -1,0 +1,63 @@
+\section{Case-study }\label{sec:case-study}
+
+\subsection{Self-adjusting packet classifiers}
+\label{sec:sa-nf-tables}
+
+\subsection{Implementation}
+\label{sec:sa-nf-tables-impl}
+
+\subsection{Evaluation}
+\label{sec:sa-nf-tables-eval}
+
+- synthetic microbenchmarks and realistic macrobenchmark: rulesets and traffic
+
+% when superlinear scaling appears
+\noindent%
+\textbf{Superlinear scaling.} %  (3 figs + 1 with Jonas's stats?)
+\begin{itemize}
+\item no dependency rule-set and uniform traffic
+\item rule-template: 1.2.3.4+udp-dst:i[1,n], where n is a parameter: 997, 4999, 10007 (primes)
+\item flows: uniform + zipf: 20000 * packets=pcap
+\item RSS: 5-tuple hash
+\item one fig per rule size (packet rate): 4 plots: SA+uniform, SA+zipf, baseline+uniform,baseline+zipf
+\item takeaway: rule size + traffic-locality do not matter (3 figs + 1 with Jonas's stats?)
+\end{itemize}
+
+% when superlinear scaling deteriorates into linear because SA does not work
+\noindent%
+\textbf{Active flow size.} %  (1 fig)
+\begin{itemize}
+\item same no-dep rule-set (udp-dst) + 5, 50, 500 flows per rule
+\item RSS: 5-tuple hash
+\item fig: 3 scaling laws, one for each active-flow-size: speedup (speedup: normalized for the single-core rate)
+\item takeaway: the more the flow count the more rules are replicated across cores and the larger the working set size and superlinearity vanishes
+\end{itemize}
+
+\noindent%
+\textbf{Rule dependencies.} % (1 fig)
+\begin{itemize}
+\item rule template: 1.2.3.4/{32,28,24,20,16,12,8,4,0}+udp-dst:i[1,500]
+\item   traffic template: uniform: 1.2.3.4:i (500 flows) 
+\item   3 rules-sets: small-dep (/0 and /32 for each chain), medium-dep (/{32,24,16,8,0}  for each chain), high-dep (/{32,28,24,20,16,12,8,4,0}  for each chain)
+\item   RSS: 5-tuple hash
+\item: fig: 3 scaling laws: speedup (normalized for the single-core rate)
+\item takewaway: the more dependencies, the less superlinearity (dependencies must be in the working set at each thread)
+\end{itemize}
+
+\noindent%
+\textbf{Locality boosting.} % (1 fig)
+\begin{itemize}
+\item benchmark the high-dep rule-set with different RSS hashes: bad hash: IP-dst(everything goes to 1 cpu, no scaling), 5-tuple hash (same as in the previous case), good hash: udp-dst hash (dep chains are partitioned across cpus: only a few chains per each CPU) 
+\item  takeaway: load-balancing policy matters, the less locality-boosting, the less superlinearity
+\end{itemize}
+
+% realistic macrobenchmark
+\noindent%
+\textbf{Real workload.} % (3 figs)
+classbench: the good news (3 figs with 3 different seeds + 5000 rules)
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "distributed_mrf"
+%%% End:
+

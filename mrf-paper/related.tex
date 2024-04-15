@@ -1,0 +1,82 @@
+\section{Related work}
+\label{sec:related-work}
+
+superlinear scaling:
+
+% general argument:
+%
+% Fixed Time, Tiered Memory, and Superlinear Speedup
+% John L. Gustafson
+% Ames Laboratory-USDOE
+% Ames, IA 50011
+% http://www.johngustafson.net/pubs/pub26/Superlinear.pdf
+
+% Modeling Speedup (n) Greater than n
+% IEEE Transactions on Parallel and Distributed Systems · May 1990
+% DOI: 10.1109/71.80148 · Source: IEEE Xplore
+% David P. Helmbold
+% Charles E. Mcdowell
+% https://www.researchgate.net/profile/David-Helmbold/publication/3299493_Modeling_Speedup_n_Greater_than_n/links/5509aca30cf26198a6391fcb/Modeling-Speedup-n-Greater-than-n.pdf
+
+% systematic analysis, focusing on the cloud and data analytics
+%
+% Superlinear Speedup in HPC Systems: why and when?
+% Sasko Ristov, Radu Prodan, Marjan Gusev, Karolj Skala
+% https://annals-csis.org/Volume_8/pliks/498.pdf
+
+% M. Gusev and S. Ristov, “Superlinear speedup in Windows Azure cloud,”
+% in Cloud Networking (IEEE CLOUDNET), 2012 IEEE 1st International
+% Conference on, Paris, France, 2012, pp. 173–175.
+% https://www.researchgate.net/publication/258770134_Superlinear_Speedup_in_Windows_Azure_Cloud
+
+% NEIL J. GUNTHER, PAUL PUGLIA, AND KRISTOFER TOMASETTE
+% Hadoop Superlinear Scalability
+% ACQ Queue
+% https://dl.acm.org/doi/pdf/10.1145/2719919
+
+% for caching
+%
+% The Elements of Cache Programming Style
+% Chris B. Sears
+% Google Inc.
+% https://www.usenix.org/legacy/publications/library/proceedings/als00/2000papers/papers/full_papers/sears/sears.pdf
+
+% in robot control
+%
+% http://heikohamann.de/pub/hamannARCS2018.pdf
+% Superlinear Scalability in Parallel Computing and Multi-Robot Systems: Shared Resources, Collaboration, and Network Topology
+% Heiko Hamann
+% http://heikohamann.de/pub/hamannARCS2018.pdf
+
+% impossible:
+% Faber, V., Lubeck, O. M., and White, A. B., “Superlinear Speedup of an Efficient Sequential
+% Algorithm is Not Possible,” Parallel Computing, 3 (1986), pp. 259–260.
+
+% no application in networking
+
+caching in networking:
+\begin{itemize}
+\item state caching in NFs: https://www.usenix.org/conference/nsdi24/presentation/lei
+\item SQL caches: redis, memcached
+\item distributed web caching and CDNs: https://www.usenix.org/conference/nsdi24/presentation/zhang-yazhuo
+\item dataplane kv store caching (NSDI)
+\item caching in microservices: https://www.usenix.org/conference/nsdi24/presentation/zhang-haoran
+\end{itemize}
+
+load-balancing:
+\begin{itemize}
+\item Justin's ccr paper
+\item RSS++
+\end{itemize}
+
+sa classifiers:
+\begin{itemize}
+\item our INFOCOM paper
+\item any other SA paper from the systems literature?
+\end{itemize}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "distributed_mrf"
+%%% End:
+
