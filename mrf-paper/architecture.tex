@@ -102,33 +102,42 @@ Indeed, a quick analysis proves that our MTF lists initially exhibit quadratic s
 
 For small values of $k$ we indeed obtain $O(k^2)$ scaling, despite that uniform request distribution is the worst case for self-adjustments. The fact that we see such speedups, even over a worst case input, hints at a great future potential over networking workloads that typically exhibit highly skewed request distributions~\cite{832484}.
 
-
-
 \subsection{Simulations}
 \label{sec:sims}
 
-
 \begin{figure*}
   \begin{tabularx}{\textwidth}{D *{2}{s}}
-    \multirow{-14.8}{*}{\subcaptionbox{List lookup/uniform input\label{fig:multicore-list-uniform-50k}}{\input{fig/list/uniform-50k/multicore_list.tex}}}
-    & \subcaptionbox{Cache lookup/uniform input\label{fig:5}}{\input{fig/cache/uniform-50k/mcore_cache.tex}}\vspace{8pt}
-    & \subcaptionbox{Tree lookup/uniform input\label{fig:2}}{\input{fig/tree/uniform-50k/multicore_tree.tex}}\vspace{8pt}
-    \\
-    & \subcaptionbox{List lookup/Zipf input\label{fig:3}}{\input{fig/list/zipf-50k/multicore_list.tex}}
+    \hspace{28pt}\input{fig/sim-legend.tex}\\
+    \multirow{-11.9}{*}{\subcaptionbox{List lookup/uniform input\label{fig:multicore-list-uniform-100k}}{\input{fig/list/uniform-100k/multicore_list.tex}}}%
+    & \hspace{8pt}\subcaptionbox{List lookup/Zipf input\label{fig:3}}{\input{fig/list/zipf-100k/multicore_list.tex}}
     & \subcaptionbox{List lookup/uniform/single-core\label{fig:6}}{\input{fig/list/uniform-10k/singlecore_list.tex}}
+    \\
+    & \hspace{8pt}\subcaptionbox{Cache lookup/uniform input\label{fig:5}}{\input{fig/cache/uniform-50k-2/mcore_cache.tex}}\vspace{8pt}
+    & \subcaptionbox{Tree lookup/uniform input\label{fig:2}}{\input{fig/tree/uniform-500/multicore_tree.tex}}\vspace{8pt}
   \end{tabularx}
   \caption{A figure}
   \label{fig:fig1}
 \end{figure*}
 
-
 Again, Amdahl's law perfectly describes the $3$ systems where at least one of the two components, locality-boosting load balancing and self-adjusting data structures, is missing. But when both ingredients are present we again identify a superlinear scaling profile, but this time in a much more pronounced form: with MTF lists and hash-based load balancing we see $150\times$ speedup with 24 cores compared to the single-threaded case. This is $6\times$ faster than what is predicted by Amdahl's law.
 
 The results also corroborate that self-adjustments do have their cost: in Fig.~\ref{fig:multicore-list} we see that MTF lists, when used with non-locality-boosting load balancing (i.e., round robin), are slower than the non-self-adjusting versions.  This effect, however, is due to that the input is chosen to be the worst-case for MTF: for a skewed input distribution MTF shows visible performance margin over the static lists (see Fig.~\ref{fig:multicore-list-poisson}).
 
+
+it cannot be due to more L1: then all algorithms would benefit!
+
 Finally, a surprising finding: Fig.~\ref{fig:singlecore-list-uniform-10} and Fig.~\ref{fig:singlecore-list-poisson-300} indicate that parallelization benefits performance even when we do not actually add more CPU power to the system! With uniformly distributed requests, for instance, we achieve $25\times$ speedup by spawning 25 parallel goroutines, while the total available CPU share is kept at $110$\%. % (i.e., $1,100$ milicores). % : roughly 100 mcores is kept for the load-balancer and the equivalent of 1 CPU core is available for the MTF threads.
 And this is despite that the overhead of request generation, goroutine scheduling, and memory management all count towards the total system load and take away precious CPU time from the workload.
 
+\begin{itemize}
+\item LB+SA works with essentially any SA algorithm/use-case
+\item only LB+SA works, all other combinations abide to Amdahl's law
+\item SA is worth: only for single-core and uniform input the overhead dominates the performance improvement
+\item single-core + LB + SA yield linear scaling
+\end{itemize}
+
+
+glitches are cpu architecture specific
 
 % LET's SKIP THIS: highly speculative!!!!!!!!!!!1
 %

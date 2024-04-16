@@ -1,0 +1,44 @@
+\begin{small}
+  \begin{tikzpicture}
+    \begin{axis}[
+      width=165pt,
+      height=162pt,
+      xlabel={number of CPU cores},
+      x label style={at={(0.5,0.04)}},      
+      ylabel={Speedup},
+      % xlabel near ticks,
+      % ylabel near ticks,
+      y label style={at={(0.1,0.5)}},      
+      xmin=1,
+      xmax=36,
+      xtick={1,10,20,30},
+      % xmax=48,
+      % xtick={1,12,24,36,48},
+      ymin=0,
+      % ymax=170,
+      legend style = {
+        anchor = north west,
+        at = {(0.01, 1.01)},
+        font=\scriptsize,
+        % draw = none,
+      },
+      % scaled y ticks=false
+      % no markers
+      ]
+      % use TeX as calculator:
+      \addplot[black,mark=*] table[x=thread,y=speedup] {fig/list/zipf-100k/multicore_mtf_modulo_zipf.txt};
+      % \addlegendentry{Move-to-front/Local LB}
+      \addplot[black,mark=+] table[x=thread,y=speedup,each nth point={3}] {fig/list/zipf-100k/multicore_linkedlist_modulo_zipf.txt};
+      % \addlegendentry{Linked-list/Local LB}
+      \addplot[black,mark=o] table[x=thread,y=speedup,each nth point={3}] {fig/list/zipf-100k/multicore_mtf_roundrobin_zipf.txt};
+      % \addlegendentry{Move-to-front/Non-local LB}
+      \addplot[black,mark=square] table[x=thread,y=speedup,each nth point={3}] {fig/list/zipf-100k/multicore_linkedlist_roundrobin_zipf.txt};
+      % \addlegendentry{Linked list/Non-local LB}
+    \end{axis}
+  \end{tikzpicture}
+\end{small}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../../../distributed_mrf.tex"
+%%% End:
