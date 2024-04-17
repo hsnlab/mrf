@@ -1,0 +1,29 @@
+\begin{tikzpicture} 
+  \begin{axis}[%
+    height=45pt,
+    hide axis,
+    xmin=10,
+    xmax=50,
+    ymin=0,
+    ymax=0.4,
+    legend style={
+      draw=white!15!black,
+      legend cell align=left,
+      legend columns=-1,
+      font=\tiny}
+    ]
+    \addlegendimage{black,mark=*}
+    \addlegendentry{Locality-boosting LB + Self-adjusting algorithm}
+    \addlegendimage{black,mark=+}
+    \addlegendentry{Locality-boosting LB + Static algorithm}
+    \addlegendimage{black,mark=o}
+    \addlegendentry{Roundrobin LB + Self-adjusting algorithm}
+    \addlegendimage{black,mark=square}
+    \addlegendentry{Roundrobin LB + Static algorithm}
+  \end{axis}
+\end{tikzpicture}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../distributed_mrf"
+%%% End:
