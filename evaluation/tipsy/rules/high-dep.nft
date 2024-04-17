@@ -4500,4 +4500,3 @@ add rule test test_chain ip daddr 1.2.3.4/12 udp dport 999 counter accept
 add rule test test_chain ip daddr 1.2.3.4/8 udp dport 999 counter accept
 add rule test test_chain ip daddr 1.2.3.4/4 udp dport 999 counter accept
 add rule test test_chain ip daddr 1.2.3.4/0 udp dport 999 counter accept
-add rule ip test testchain counter accept
