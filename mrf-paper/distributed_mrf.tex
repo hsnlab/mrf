@@ -3,6 +3,7 @@
 \documentclass[letterpaper,twocolumn,10pt]{article}
 \usepackage{usenix-2020-09}
 \usepackage{amsmath}
+\usepackage{amsthm}
 
 \usepackage{times}  
 \usepackage{hyperref}
@@ -51,7 +52,6 @@
 
 \maketitle
 
-%%%%%%%%%%%%% ABSTRACT GOES HERE %%%%%%%%%%%%%%
 \begin{abstract}
   Conventional wisdom suggests that doubling the number of workers in a distributed system can result at most 2x performance improvement, but most often less if the system does not provide perfect parallelism.  This common wisdom is codified by Amdahl's famous scaling law, asserting sublinear scaling and diminishing returns for parallelization. Several reports have indicated faster-than-linear (superlinear) scaling for various distributed applications, but most were dismissed as use-case specific artifacts, elusive interplays between memory and CPU, or mere measurement errors.
 
@@ -81,6 +81,8 @@
 \begin{small}
 \bibliography{mrf}
 \end{small}
+
+% \input{appendix.tex}
 
 \end{document}
 

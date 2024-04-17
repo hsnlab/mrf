@@ -8,6 +8,15 @@ Below we show a general distributed systems architecture, which, as we show theo
 \subsection{Self-adjusting algorithms}
 \label{sec:sa-alg}
 
+
+Definitions sketch:
+
+\textbf{Load balancing} refers to the distribution of computational work or incoming network traffic across multiple resources (such as servers, processors, or nodes) to ensure optimal resource utilization, minimize response time, and avoid overloading any single resource. The goal of load balancing is to evenly distribute tasks among available resources.
+
+\textbf{Self-adjusting data structure}.
+A self-adjusting data structure is a dynamic data structure that automatically reorganizes itself based on the sequence of operations or accesses it receives. The structure adapts its organization to optimize performance for frequently accessed or manipulated elements. Self-adjusting data structures aim to reduce access times and improve efficiency by restructuring themselves in response to usage patterns.
+
+
 Temporal locality refers to the reuse of specific data and/or resources within a relatively small time duration. Spatial locality (also termed data locality[3]) refers to the use of data elements within relatively close storage locations.
 
 In general, caches are just one example of the broader category of \emph{self-adjusting data structures}. A self-adjusting data structure can rearrange itself as queries are committed to it, in order to improve efficiency on future requests. In this context, a ``static cache'', which keeps an arbitrary set of items in fast memory without cache eviction, is not self-adjusting, while an LRU\slash LFU cache is. As another example, an AVL tree is not self-adjusting in that it can rearrange only with respect to the items \emph{stored} in it but not with respect to the queries \emph{committed} to it, whereas a splay tree is self-adjusting in that it can dynamically move popular items towards the root of tree, improving future access to the same or similar items \cite{SleatorT85Splay, BoseDL08, Avin0020}. Self-adjusting data structures are widely used in algorithms and computer systems, e.g., in computing point maxima and convex hulls~\cite{BentleyCL93}, organizing lists of identifiers in program compilation and interpretation~\cite{HesterH85}, detecting collisions in hash tables~\cite{HesterH85}, or compressing arbitrary input~\cite{BentleySTW86}. And indeed, every cache management scheme can be viewed as a self-adjusting data structure as well % , in that every algorithm for list reorganization gives rise to a different cache management algorithm~

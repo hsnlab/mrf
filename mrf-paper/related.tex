@@ -75,6 +75,84 @@ sa classifiers:
 \item any other SA paper from the systems literature?
 \end{itemize}
 
+\subsection{Self-adjusting Data Structures}
+
+Self-adjusting data structures are widely used in algorithms and computer systems.
+Even the simplest data structure, self-adjusting is used in e.g. (1) a subroutine in computing point maxima and convex hulls~\cite{BentleyCL93}, (2) organizing lists of identifiers in program compilation and interpretation~\cite{HesterH85} or (3) detecting collisions in hash tables~\cite{HesterH85}.
+Some compression schemes use self-adjusting lists~\cite{BentleySTW86}.
+The problem of managing cache~\cite{SleatorT85} can be viewed as a self-adjusting data structure (every algorithm for list reorganization gives rise to a cache management algorithm).
+Further self-adjusting data structures include splay trees~\cite{SleatorT85Splay}, self-adjusting skip lists~\cite{BoseDL08}, push-down trees~\cite{Avin0020}, or self-adjusting trees for storing geometric data~\cite{ParkM12}.
+
+
+Models of self-adjusting data structures are based on the cost of access and rearrangement. For example:
+
+\begin{enumerate}
+  \item \textbf{Self-adjusting lists}~\cite{SleatorT85}. We are given a set of items, arranged in a linear list, and a sequence of access requests $\sigma$ to the nodes of the list.
+Upon receiving an access request to a node in
+the list, an algorithm searches linearly through the list, starting
+from the head of the list, traversing nodes until encountering the
+accessed node. Accessing the node at position i in the list costs i
+(the first node is at position 1).
+After serving a request, an algorithm may
+choose to rearrange the nodes of the list, paying the cost 1 per each transposition of neighboring items. 
+
+
+\item \textbf{Binary search trees}~\cite{SleatorT85Splay}.
+When the universe of items is ordered, we may store them in a binary search tree.
+A classic binary search tree is a \emph{splay tree}~\cite{SleatorT85Splay}.
+Another important search tree is $O(\log \log n)$-competitive \emph{tango tree}~\cite{demaine2007dyynamic}.
+The dynamic optimality conjecture~\cite{SleatorT85Splay} (does an $O(1)$-competitive algorithm exist?) is a major unresolved question, in contrast to the simpler self-adjusting lists setting.
+Splay trees have other properties, e.g. working set bounds, static optimality~\cite{SleatorT85Splay} and other.
+
+
+
+\item \textbf{Other self-adjusting data structures}. 
+Self-adjusting skip lists~\cite{BoseDL08} have an equivalent of the working set bound of splay trees.
+Push-down trees~\cite{Avin0020} are dynamically optimal and have the working set bound.
+Adaptive geometric space partitioning data structures exist, e.g. self-adjusting trees for storing geometric data~\cite{ParkM12}.
+The online metrical task system model~\cite{Borodin1992} underpins all these models, and captures generalizations such as caching, which has self-adjusting algorithms such as LRU~\cite{SleatorT85}.
+\end{enumerate}
+
+
+% Other examples: intrusion detection as mtflist, flow table lookup as splay tree, etc.
+% Each have their own challenges, and our model is just an example.
+
+\paragraph*{Locality.}
+Common inputs have high locality, i.e. the same items are accessed repeatedly.
+The locality parameter of input is often the determining factor for the performance of self-adjusting data structures (e.g. there exist arguments of locality for self-adjusting lists~\cite{AlbersL16}, working set bounds for splay trees~\cite{SleatorT85Splay} and paging~\cite{AlbersFG05}).
+
+
+\subsection{Load Balancing and Scaling}
+
+\paragraph*{Load balancing with random hash functions.}
+A random load balancing assignment function is sufficient to load-balance correctly.
+Gonnet~\cite{Gonnet81} proved that when throwing $n$ balls uniformly and independently at random into $n$ bins, the fullest bin has
+load $(1 + o(1)) \log n/ \log \log n$ in expectation.
+The maximum bin load with this approach is $O(\log n/ \log \log n)$ with high probability~\cite{DubhashiR98}.
+
+\paragraph*{Practical load balancing.}
+RSS+ paper~\cite{BarbetteKMK19}.
+
+\subsection{Packet classification}
+
+Various data structures for packet classification were proposed in the literature: lists, tries, hash tables, bit vectors, or decision trees~\cite{gupta2001algorithms,Srinivasan1999,Eppstein2001}, as well as hardware solutions (TCAM).
+Packet classifiers are often accompanied by caching systems that provide some adjustability to traffic.
+Due to its simplicity, a~linear lookup structure is commonly applied in practice, e.g., in the default firewall suite of the Linux operating system kernel called \texttt{iptables}~\cite{MianoBRBLP19}, the OpenFlow reference switch~\cite{openflow}, and in many QoS classifiers.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "distributed_mrf"
