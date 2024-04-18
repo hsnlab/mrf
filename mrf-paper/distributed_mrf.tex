@@ -16,6 +16,7 @@
 \usepackage{subcaption}
 \usepackage{multirow}
 \usepackage{tabularx}
+\usepackage{array}
 
 \newcolumntype{s}{>{\hsize=.3\hsize\linewidth=\hsize}X}
 \newcolumntype{D}{>{\hsize=.3\hsize\linewidth=\hsize}X}
@@ -32,6 +33,11 @@
 \setlength{\evensidemargin}{-.25in}
 
 \newcommand{\rg}[1]{\textcolor{blue}{(\textbf{GR:} #1)}}
+
+% we have a big fig
+\renewcommand{\floatpagefraction}{.8}%
+% \renewcommand{\topfraction}{.8}
+% \renewcommand{\bottomfraction}{.8}
 
 % TODO: remove for the CR!
 % \pagestyle{plain}

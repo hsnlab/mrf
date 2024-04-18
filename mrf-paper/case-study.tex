@@ -1,5 +1,6 @@
 \section{Case-study }\label{sec:case-study}
 
+
 self-adjusting algs and applications:
 - linear rule matching: IDS, expert systems, rule-based/explainable AI inference
 - IP FIBs: splay trees
@@ -9,6 +10,9 @@ self-adjusting algs and applications:
 % Received June 10, 2009 1554-1010 $ 03.50 Dynamic Publishers, Inc
 % Dynamic Scheme for Packet Classification Using
 % Splay Trees
+
+% In network applications, however, where static linked lists enjoy wide applicability, e.g., for rule matching in OpenFlow and P4 reference software switches, packet classification in the Linux OS network stack (\texttt{iptables}), etc., so far we haven't seen many uses of the self-adjusting version, i.e., MTF lists. We imagine potential applications in packet classification (see later in \S\ref{sec:packet-classifier}), flow table lookup, evaluating rules in an intrusion detection system, etc.; 
+
 
 \subsection{Self-adjusting packet classifiers}
 \label{sec:sa-nf-tables}
@@ -64,7 +68,7 @@ self-adjusting algs and applications:
 % realistic macrobenchmark
 \noindent%
 \textbf{Real workload.} % (3 figs)
-classbench: the good news (3 figs with 3 different seeds + 5000 rules)
+classbench: the good news (3 figs with 3 different seeds + 5000 rules) + throughput and latency diagrams
 
 %%% Local Variables:
 %%% mode: latex

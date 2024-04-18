@@ -1,34 +1,42 @@
 \section{Distributed Self-adjusting Systems}
 \label{sec:architecture}
 
-Currently the only general methodology to achieve faster-than-linear scaling seems to be distributed caching, i.e., adding more fast memory to a system. Moving an application to a ``bigger machine'' \cite{dobb-2}, however, is not always feasible due to, e.g., physical or financial constraints.  In some cases caching is outright ruled out due to some specifics of the problem domain, e.g., for uniform input, rapidly changing data, inherently stateful computations, or complex database queries caching usually adds more overhead than it saves. Moreover, caching comes with substantial extra complexity \cite{271208}, including cache invalidation and eviction policies and data consistency, which might be too costly to implement in a massively distributed setting. Apart from caching, however, the only way to achieve superlinearity is to rely on comprehensive domain knowledge, piecemeal problem-specific techniques, and pure luck. And even then, some argue that superlinear growth is itself a performance illusion that goes against the very laws of nature, much like perpetual motion \cite{gunther-hotsos, 10.1145/2773212.2789974}
+Next we show a general distributed systems architecture, which, as we show theoretically and empirically later, produces faster-than-linear scaling in several disparate problem domains. Our main observation is that, whenever genuinely observed, superlinear scaling always assumes two critical components: a policy to dispatch jobs to workers in a way to increase the locality of reference in the per-worker input streams, plus an algorithm that can adaptively exploit the structure in the input to process it more efficiently. Our architecture is a purely software technique and does not require, e.g., the addition of new cache memory to a system, but it contains distributed caching as a special case and hence it automatically take advantage of plus fast memory, if available.
 
-Below we show a general distributed systems architecture, which, as we show theoretically and empirically later, produces faster-than-linear scaling in many different problem domains. Our main observation is that, whenever genuinely observed, superlinear scaling always assumes two critical components: a policy to dispatches jobs to workers in a way to ensure that each worker experiences only a carefully curated subset of the possible inputs, plus an algorithm implemented in the workers that can adaptively exploit the structure in its input to process it more efficiently. Our main contribution is that we do not rely on piecemeal problem-specific techniques to carefully partition the input space and implement the workers, but rather we present general algorithmic techniques which, when cautiously applied, guarantee superlinear speedup.
+\subsection{Locality-boosting load balancing}
+\label{sec:lb-lb}
+
+The first crucial component in our architecture is a locality-boosting load balancer.  In this context, load balancing refers to the distribution of computational work or incoming network traffic across multiple parallel workers (servers, processors, or nodes). A good load balancing strategy ensures optimal resource utilization, minimizes response time, avoids overloading any single resource, and, as we argue below, improves the locality in the input presented to the workers. 
+
+In the context of this paper, \emph{locality of reference} refers to the property of a particular sequence of inputs that subsequent items are statistically dependent on each other. Such structure in the input can then be readily exploited by the proper algorithm \cite{SleatorT85Splay, BentleyCL93, HesterH85, HesterH85, BentleySTW86, Avin0020, ParkM12} or a runtime optimization framework \cite{276946,246322,10.1145/3503222.3507769,procieee_2019} to improve the performance of the code that processes it. A request set with minimal locality is totally unpredictable, e.g., a uniformly distributed on the entire domain of possible inputs (unpredictable), and one maximal locality contains only a single item (maximally predictable). A \emph{locality-boosting load balancing} then refers to a request dispatching strategy that can statistically or deterministically improve the locality of reference experienced by the worker threads. In other words, a good locality boosting load balancer will \emph{turn unpredictable input presented to the system into multiple streams of predictable input to be processed by the workers} (see Fig.~\ref{fig:locality-boosting-lb}).
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.85\linewidth]{fig/schema.pdf}
+  \caption{A locality boosting load balancer partitions the input sequence of a given locality into subsequences with higher locality. Self-adjusting data structures perform better on inputs with higher locality.}
+  \label{fig:locality-boosting-lb}
+\end{figure}
+
+We distinguish two types of locality in this context. \emph{Spatial locality} means that the distribution of requested items on the entire input domain is biased towards a particular subset of the items. One way to ensure this in the load balancer is to \emph{partition} the input domain into disjunct subsets, so that worker's input distributions are concentrated on a smaller set of inputs. For instance, the hash-based load balancer we used previously to show superlinear scaling with distributed caching is such a partitioning load balancer to boost spatial locality. In contrast, a round robin or a uniform random load balancer with export its own spatial input locality unchanged to the workers. A related concept is \emph{temporal locality}, which refers to the reuse of specific items in the input within a relatively small time duration. One way to boost temporal locality in a uniform input is to reorder items within a small window of input: e.g., Reframer applies controller delays to particular packets in a packet batch to enable more efficient processing \cite{276946,246322}.
 
 \subsection{Self-adjusting algorithms}
 \label{sec:sa-alg}
 
+The second critical enabler for superlinear scaling in our architecture is self-adjusting algorithms. Self-adjustment is a general term referring to the property of a dynamic data structure to automatically reorganize itself based on the sequence of operations it receives, in order to optimize performance for future operations on frequently accessed or manipulated elements. Internal data reorganization always introduces extra complexity and overhead compared to a static data structure, therefore self adjustment can improve performance only if the input processed by the algorithm exhibits a certain amount of spatial or temporal locality.
 
-Definitions sketch:
-
-\textbf{Load balancing} refers to the distribution of computational work or incoming network traffic across multiple resources (such as servers, processors, or nodes) to ensure optimal resource utilization, minimize response time, and avoid overloading any single resource. The goal of load balancing is to evenly distribute tasks among available resources.
-
-\textbf{Self-adjusting data structure}.
-A self-adjusting data structure is a dynamic data structure that automatically reorganizes itself based on the sequence of operations or accesses it receives. The structure adapts its organization to optimize performance for frequently accessed or manipulated elements. Self-adjusting data structures aim to reduce access times and improve efficiency by restructuring themselves in response to usage patterns.
-
-
-Temporal locality refers to the reuse of specific data and/or resources within a relatively small time duration. Spatial locality (also termed data locality[3]) refers to the use of data elements within relatively close storage locations.
-
-In general, caches are just one example of the broader category of \emph{self-adjusting data structures}. A self-adjusting data structure can rearrange itself as queries are committed to it, in order to improve efficiency on future requests. In this context, a ``static cache'', which keeps an arbitrary set of items in fast memory without cache eviction, is not self-adjusting, while an LRU\slash LFU cache is. As another example, an AVL tree is not self-adjusting in that it can rearrange only with respect to the items \emph{stored} in it but not with respect to the queries \emph{committed} to it, whereas a splay tree is self-adjusting in that it can dynamically move popular items towards the root of tree, improving future access to the same or similar items \cite{SleatorT85Splay, BoseDL08, Avin0020}. Self-adjusting data structures are widely used in algorithms and computer systems, e.g., in computing point maxima and convex hulls~\cite{BentleyCL93}, organizing lists of identifiers in program compilation and interpretation~\cite{HesterH85}, detecting collisions in hash tables~\cite{HesterH85}, or compressing arbitrary input~\cite{BentleySTW86}. And indeed, every cache management scheme can be viewed as a self-adjusting data structure as well % , in that every algorithm for list reorganization gives rise to a different cache management algorithm~
-\cite{SleatorT85}.  % Further self-adjusting data structures include splay trees~\cite{SleatorT85Splay}, self-adjusting skip lists~\cite{BoseDL08}, push-down trees~\cite{Avin0020}, or self-adjusting trees for storing geometric data \cite{ParkM12}.
-
+Next we review some typical self-adjusting algorithms.
 
 \noindent%
-\textbf{List lookup.} % MTF
+\textbf{Caches.} %
+Caches are really the simplest but most universal self-adjusting data structure. A cache is a software or a hardware component that can serve frequently accessed items fast, at least typically much faster than if we had to run the request through the full algorithm or the slow backing storage. Caches have that almost magical capability of self-adaptation to any input, without us having to engineer any prior knowledge into the cache mechanism apart from a promise that the input has nontrivial locality. When the promise is true, caches are an inexpensive way to improve throughput and response time.
 
+Note that caches do not necessarily have to come in the form of hardware memory: a fast key-value store is a candidate cache for a slow database \cite{10.5555/1012889.1012894}, a kernel fast-path flow cache is a useful way to speed up a slow user-space software switch \cite{188960}, etc. However, caches also come with additional complexity and overhead in order to be able reorganize themselves with respect to the input: cachee entries have to be created for storing recently accessed data, invalidated when the backing data changes, evicted when the cache is full, and synchronized to consistently represent data that may be present in multiple caches. Hardware implementations are appealing from this aspect, since they hide the extra complexity behind a fast on-chip implementation.
 
-Perhaps the best-known general self-adjusting data structure is the \emph{move-to-front list}. Suppose we wish to store a list of $m$ items in a way so that reordering, insertion and deletion is fast, while lookup is also ``reasonably'' efficient. A straightforward choice is a (singly) linked list. Here, the cost of accessing an item at position $i$ is exactly $i$. Then, a static linked list can easily be upgraded to a self-adjusting list using the move-to-front (MTF) heuristics: after accessing an item we move it to the front of the list (see Fig.~\ref{fig:mtf-example}). As such a reordering is supposed to be ``cheap'', MTF generally improves lookup time for future requests of the same item at minimal cost.
+The performance of a cache is determined by the cache hit rate $\delta$, defined as the ratio of operations served from fast memory to those served on the slow path. In general, for a common LFU or LRU cache the higher the locality in the input and the bigger the cache compared to the input domain, the higher the cache hit rate and the lower the response time. When there is no locality in the input, caches usually just add extra latency and overhead.
 
+\noindent%
+\textbf{List lookup.} %
+One of the most widely used self-adjusting data structure is the \emph{move-to-front list}. Suppose we wish to store a list of $m$ items in a way so that reordering, insertion and deletion is fast, while lookup is also ``reasonably'' efficient. A straightforward choice is a (singly) linked list. Here, the cost of accessing an item at position $i$ is exactly $i$. Then, any linked list can easily be upgraded to a self-adjusting list using the move-to-front (MTF) heuristics: after accessing an item the list is reorganized by moving the item to the front of the list (see Fig.~\ref{fig:mtf-example}). As such a reordering is supposed to be ``cheap'' compared to list access, MTF generally improves lookup time for future requests of the same item at minimal cost. MTF lists come with appealing theoretical properties, namely that blindly moving the accessed item to the fron is close to the best one could achieve even if one knew all future requests \cite{SleatorT85}. In addition, they can handle both spatial and temporal locality. However, for uniformly distributed input MTF lists usually add nontrivial overhead compared to static lists due to the frequent and useless relinking of the list.
 
 \begin{figure}
   \centering
@@ -37,13 +45,11 @@ Perhaps the best-known general self-adjusting data structure is the \emph{move-t
   \label{fig:mtf-example}
 \end{figure}
 
-Classic applications of MTF lists are information retrieval systems, compression~\cite{BentleySTW86}, etc. In network applications, however, where static linked lists enjoy wide applicability, e.g., for rule matching in OpenFlow and P4 reference software switches, packet classification in the Linux OS network stack (\texttt{iptables}), etc., so far we haven't seen many uses of the self-adjusting version, i.e., MTF lists. We imagine potential applications in packet classification (see later in \S\ref{sec:packet-classifier}), flow table lookup, evaluating rules in an intrusion detection system, etc.; in general, all networking use cases are relevant where ``matching'' a request against a list item is costly and the items do not lend themselves readily to be arranged into a fast lookup structure (like a search tree).
-
-
+Classic applications of MTF lists are information retrieval systems, compression~\cite{BentleySTW86}, etc. In general, any use case is a potential candidate application for MTF lists where the task is to match a request against a list of complex ``rules'' that do not lend themselves readily to be arranged into a fast lookup structure (like a search tree), like inference in explainable ``rule-based'' AI and expert systems \cite{dovsilovic2018explainable}, rule matching in OpenFlow and P4 reference software switches \cite{openflow}, packet classification in the Linux OS network stack (see later), etc.  We note that caching is a subset of list lookup, in that every algorithm for list reorganization gives rise to a different cache management algorithm \cite{SleatorT85}.  
 
 \noindent%
-\textbf{Search trees.}
-
+\textbf{Search trees.} %
+A search tree is an efficient tree data structure for locating specific keys from within an ordered set. A \emph{splay tree} is self-adjusting version of a static tree, in that it can dynamically reorganize the tree by move popular items closer to the root of tree and less frequently accessed elements to the bottom \cite{SleatorT85Splay, BoseDL08, Avin0020}. Since access time in a search tree is fully determined by the depth at which an the requested item is to be found, self-adjusting splay trees can improve future access to the same or similar items when the input exhibits temporal or spatial locality (see Fig.~\ref{fig:bst_root_3}).  Note that a red-black tree, an AVL tree or any similar self-balancing tree is only partially ``self-adjusting'', in that it can rearrange only with respect to the items \emph{stored} in it but not with respect to the queries \emph{posed} to it.
 
 \begin{figure}
  \centering
@@ -75,73 +81,55 @@ Classic applications of MTF lists are information retrieval systems, compression
  \label{fig:bst_root_3}
 \end{figure}
 
+Splay trees are widely used to adaptively speed up associative memory and data compression algorithms \cite{jones1988application}. Splay trees and MTF lists are also use frequently as building blocks for more complex self-adjusting algorithms, like skip lists~\cite{BoseDL08}, push-down trees~\cite{Avin0020}, or self-adjusting geometric data storages \cite{ParkM12}.
 
-
-
-\subsection{Locality-boosting load balancing}
-\label{sec:lb-lb}
-
-We call a request dispatching strategy that improves the temporal and\slash or spatial locality as experienced by the worker threads as a \emph{locality boosting load balancing policy}, and we identify such locality boosting load balancers as the first key ingredient in the superlinear scaling of distributed systems.
-
-\begin{figure}
-  \centering
-  \includegraphics[width=.85\linewidth]{fig/schema.pdf}
-  \caption{A locality boosting load balancer partitions the input sequence of a given locality into
-    subsequences with higher locality. Self-adjusting data structures perform better on inputs with
-    higher locality.}
-  \label{fig:locality-boosting-lb}
-\end{figure}
+% Self-adjusting data structures are widely used in algorithms and computer systems, e.g., in computing point maxima and convex hulls~\cite{BentleyCL93}, organizing lists of identifiers in program compilation and interpretation~\cite{HesterH85}, detecting collisions in hash tables~\cite{HesterH85}, or compressing arbitrary input~\cite{BentleySTW86}. And indeed, every cache management scheme can be viewed as a self-adjusting data structure as well
 
 \subsection{Superlinear scaling}
 \label{sec:arch-scaling}
 
-% <PLACEHOLDER FOR MACIEK: discuss MTF lists without going into details, give examples with figs, and applications. Remember, we want to popularize the idea across the systems community, so be as gentle to practitioners as possible.>
+So how can locality-boosting load balancing and self-adjusting algorithms, when used together in a distributed system, produce superlinear scaling? Below we present a particular example, distributed self-adjusting list lookup, along with a quick back-of-an-envelope analysis as demonstration.
 
-show superlinear scaling with MTF
+Our distributed self-adjusting list lookup architecture consists of a locality-boosting hash-based load-balancer (see Fig.~\ref{fig:locality-boosting-lb}) combined with a self-adjusting move-to-front list (see Fig.~\ref{fig:mtf-example}) implemented in the workers. The rationale for this design is the following. Suppose that there are $m$ items to be stored and there are $k$ workers, each maintaining an independent index into the list. Suppose further that, at the input, requests can be received for any of the $m$ items. To make things more difficult for the algorithm, we will assume a uniform request distribution on the system's input, which is, recall, the worst case for any self-adjusting algorithm by being totally \emph{unpredictable}. Thus, for a single worker move-to-front reordering has no useful effect and the worst case access time is $m$, identical to that of a static linked list.
 
-Indeed, a quick analysis proves that our MTF lists initially exhibit quadratic scaling over uniformly distributed requests. For a static linked list the worst-case lookup time is equals the length of the list, $m$, while for MTF it is rather the working set size $w\le m$ that determines lookup performance. This is because in MTF lists the working set will occupy the first $w$ positions in the list, which can be traversed in $w$ steps at most, and the inactive items will be moved to the back. Then, assuming that a hash-based load balancer partitions the $m$ possible requests over $k$ threads, each perceiving a working set size of $w=\frac{m}{k}$, the parallel MTF list will finish a lookup in amortized $\frac{m}{k}$ time. Plugging into Amdahl's law yields:
+Now suppose we move from 1 worker to $k$ parallel workers. This results that, within our architecture, the hash-based load balancer effectively partitions the uniformly distributed input on $m$ items into $k$ uniformly distributed input streams for only $\frac{m}{k}$ different items (see Fig.~\ref{fig:locality-boosting-lb}). This means that the workers' input features a much higher spatial locality than the system's input (which sports none).  Had we used a random or a round robin load balancer the workers would still see all the $m$ possible inputs, just with a sampled uniform distribution, and no locality. After a while, each MTF list in the workers will have its specific subset of $\frac{m}{k}$ items moved to the first $\frac{m}{k}$ positions (in an arbitrary order), reducing the worst-case lookup time from $m$ (1 worker) to $\frac{m}{k}$ ($k$ workers). This introduces $k$ speedup compared to the single-threaded case.
+
+Then, superlinear speedup is merely a product of two simultaneous $k\times$ speedup, one $k\times$ speedup because the self-adjusting lists get progressively faster as we add new workers, and another $k\times$ speedup just because we multiply the total compute capacity available to the system $k$ times. The effective speedup is then just the multiple of the two, yielding $k^2$ speedup compared to the $k\times$ speedup that we would obtain without locality boosting load balancing and self-adjusting lists. Plugging into Amdahl's law we get the folllowing \emph{scaling law for distributed MTF lists}, which just happens to be the illustration we used for superlinear scaling in S\ref{sec:introduction} (see Fig.~\ref{fig:amdahl}):
 \begin{equation}\label{eq:mtf-perf}
   S_l(k) = \frac{T_l(1)}{T_l(k)} = \frac1{s + \frac{1-s}{k^2}} \enspace .
 \end{equation}
 
-For small values of $k$ we indeed obtain $O(k^2)$ scaling, despite that uniform request distribution is the worst case for self-adjustments. The fact that we see such speedups, even over a worst case input, hints at a great future potential over networking workloads that typically exhibit highly skewed request distributions~\cite{832484}.
+For small values of $k$ we obtain $O(k^2)$ scaling, despite that uniform request distribution is the worst case for self-adjustments. The fact that we see such speedups, even over a worst case input, hints at a great future potential over networking workloads that typically exhibit highly skewed request distributions~\cite{832484}.
 
-\subsection{Simulations}
-\label{sec:sims}
-
-\begin{figure*}
-  \begin{tabularx}{\textwidth}{D *{2}{s}}
+\begin{figure*}[t]
+  % \begin{tabularx}{\textwidth}{D *{2}{s}}
+  \begin{tabular}{m{.3\textwidth} m{.3\textwidth} m{.3\textwidth}}
+  % \begin{tabular}{ccc}
     \hspace{28pt}\input{fig/sim-legend.tex}\\
-    \multirow{-11.9}{*}{\subcaptionbox{List lookup/uniform input\label{fig:multicore-list-uniform-100k}}{\input{fig/list/uniform-100k/multicore_list.tex}}}%
-    & \hspace{8pt}\subcaptionbox{List lookup/Zipf input\label{fig:3}}{\input{fig/list/zipf-100k/multicore_list.tex}}
-    & \subcaptionbox{List lookup/uniform/single-core\label{fig:6}}{\input{fig/list/uniform-10k/singlecore_list.tex}}
+    \multirow{-6.4}{*}{\subcaptionbox{List lookup/uniform input\label{fig:multicore-list-uniform}}{\input{fig/list/uniform-100k/multicore_list.tex}}}%
+    & \hspace{8pt}\subcaptionbox{List lookup/Zipf input\label{fig:multicore-list-zipf}}{\input{fig/list/zipf-100k/multicore_list.tex}}
+    & \subcaptionbox{List lookup/uniform/single-core\label{fig:singlecore-list-uniform}}{\input{fig/list/uniform-10k/singlecore_list.tex}}
     \\
-    & \hspace{8pt}\subcaptionbox{Cache lookup/uniform input\label{fig:5}}{\input{fig/cache/uniform-50k-2/mcore_cache.tex}}\vspace{8pt}
-    & \subcaptionbox{Tree lookup/uniform input\label{fig:2}}{\input{fig/tree/uniform-500/multicore_tree.tex}}\vspace{8pt}
-  \end{tabularx}
-  \caption{A figure}
-  \label{fig:fig1}
+    & \hspace{8pt}\subcaptionbox{Cache lookup/uniform input\label{fig:multicore-cache-uniform}}{\input{fig/cache/uniform-50k-2/mcore_cache.tex}}
+    & \subcaptionbox{Tree lookup/uniform input\label{fig:singlecore-tree-uniform}}{\input{fig/tree/uniform-500/multicore_tree.tex}}
+  % \end{tabularx}
+  \end{tabular}
+  \caption{Static vs. self-adjusting distributed systems scaling laws combined with round-robin and hash-based load balancing: (a) static vs. MTF list access speedup on uniform input ($m=100k$); (b) static vs. MTF list speedup on skewed input ($m=100k$, Zipf power law with $s=1.01$), (c) static vs. MTF list access goodput with multiple threads running on a \emph{single core} for uniform input ($m=10k$); (d) cache access on uniform input ($m=50k$, $\delta=0.05$, $\rho=100k$ cycles); and (e) static balanced vs. splay tree lookup time speedup ($m=500$, $w=100k$ cycles).  Panels (a), (b), (d) and (e) show multicore speedup as the function of the number of CPU cores, each running a single worker, while (c) shows the single-core throughput (goodput) using an increasing number of lightweight parallel threads.}
+  \label{fig:dist-self-adjusting-eval}
 \end{figure*}
 
-Again, Amdahl's law perfectly describes the $3$ systems where at least one of the two components, locality-boosting load balancing and self-adjusting data structures, is missing. But when both ingredients are present we again identify a superlinear scaling profile, but this time in a much more pronounced form: with MTF lists and hash-based load balancing we see $150\times$ speedup with 24 cores compared to the single-threaded case. This is $6\times$ faster than what is predicted by Amdahl's law.
+\subsection{Evaluation}
+\label{sec:sims}
 
-The results also corroborate that self-adjustments do have their cost: in Fig.~\ref{fig:multicore-list} we see that MTF lists, when used with non-locality-boosting load balancing (i.e., round robin), are slower than the non-self-adjusting versions.  This effect, however, is due to that the input is chosen to be the worst-case for MTF: for a skewed input distribution MTF shows visible performance margin over the static lists (see Fig.~\ref{fig:multicore-list-poisson}).
+Fig.~\ref{fig:dist-self-adjusting-eval} presents the results from a comprehensive simulation study we conducted to understand distributed self-adjusting systems performance over a broad selection of load balancing policies, self-adjusting algorithms, and input distributions. The simulator was coded in roughly 1,000 lines of Go and uses lightweight threads (goroutines) managed by the Go runtime to run a given number of workers in parallel. We used a simple home-grown implementation for static and MTF lists and standard Go modules for LRU caches \cite{golang-lru}, static balanced trees \cite{golang-btree} and splay trees \cite{golang-splay}. In order to make tree lookup CPU bounded we used an ``expensive'' order underneath the tree, where every comparison operation costs a configurable $w$ number of extra cycles. The simulator creates the specified combination of a load balancer, $k$ worker threads running the selected lookup algorithm, and a random input sequence with a given request distribution, warms up the threads, and then performs a configurable number of lookup operations and measures the total execution time with nanosecond precision. For the specification of the evaluation platform, refer to \S\ref{sec:sa-nf-tables-eval}.
 
+Our observations are as follows. First, it is immediate that \emph{the right combination of a locality boosting load balancer and a self-adjusting algorithm robustly delivers the expected superlinear speedup}, irrespectively of the problem domain or the input distribution. Even for worst-case uniform request distribution, we obtain 3,300x speedup(!) for list access on 48 CPU cores, almost 70x of ``ideal'' linear speedup, 200x speedup on LRU caches and 65x speedup on tree search with 36 CPU cores. Usually the superlinear growth is so dominant that we can hardly put the Amdahl's scaling on the same diagram.  Second, \emph{only the combination of locality-boosting load balancing and self-adjusting algorithms produces superlinear speedup}, all other combinations (i.e., round robin with any algorithm or static algorithm with any load balancer) fall back to Amdahl's scaling.  Third, \emph{self-adjustment clearly has its overhead}. This can be observed in Fig.~\ref{fig:singlecore-list-uniform}, which, instead of the relative speedup shows the absolute throughput (goodput). Here, the single-threaded self-adjusting version is clearly slower than the static version (a trait we identified in essentially all cases with uniform input). Fourth, \emph{the overhead of self-adjustment becomes irrelevant for more than one CPU core, or with skewed request distributions}. For instance on a Zipf input distribution (Fig.~\ref{fig:multicore-list-zipf}) even the single-threaded self-adjusting version is already 2--2.5x faster in an absolute term irrespectively of the load balancer (not shown in the figure). However, \emph{only} the locality boosting version produces superlinear speedup.
 
-it cannot be due to more L1: then all algorithms would benefit!
+And finally a rather surprising finding. In Fig.~\ref{fig:singlecore-list-uniform} we show an evaluation that was executed with an increasing number of parallel threads manually constrained to run with at most 110\% CPU utilization using \texttt{cpulimit}. This effectively simulates a single core worth of total CPU shared by all the parallel workers. The results indicate, unexpectedly, that the distributed self-adjusting system (but \emph{only} this combination!) delivers linear speedup. With uniformly distributed requests, we achieve $25\times$ speedup by spawning 25 parallel goroutines.  And this is despite that the overhead of request generation, goroutine scheduling, and memory management all count towards the total system load and take away precious CPU time from the workload.  
 
-Finally, a surprising finding: Fig.~\ref{fig:singlecore-list-uniform-10} and Fig.~\ref{fig:singlecore-list-poisson-300} indicate that parallelization benefits performance even when we do not actually add more CPU power to the system! With uniformly distributed requests, for instance, we achieve $25\times$ speedup by spawning 25 parallel goroutines, while the total available CPU share is kept at $110$\%. % (i.e., $1,100$ milicores). % : roughly 100 mcores is kept for the load-balancer and the equivalent of 1 CPU core is available for the MTF threads.
-And this is despite that the overhead of request generation, goroutine scheduling, and memory management all count towards the total system load and take away precious CPU time from the workload.
+But how can parallelization benefit performance when we do not even add more CPU power to the system? Recall, in the multi-core case superlinear speedup emerges thanks to the superposition of two independent $k\times$ speedup trends, one delivered by the self-adjusting workers and another added by us throwing $k\times$ more CPU power to the system. When the total available CPU is limited only first $k\times$ speedup factor is in effect, resulting in the observed linear scaling trend.
 
-\begin{itemize}
-\item LB+SA works with essentially any SA algorithm/use-case
-\item only LB+SA works, all other combinations abide to Amdahl's law
-\item SA is worth: only for single-core and uniform input the overhead dominates the performance improvement
-\item single-core + LB + SA yield linear scaling
-\end{itemize}
-
-
-glitches are cpu architecture specific
+% glitches are cpu architecture specific
 
 % LET's SKIP THIS: highly speculative!!!!!!!!!!!1
 %
