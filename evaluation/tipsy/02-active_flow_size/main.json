@@ -10,11 +10,12 @@
 		    "SUTSSHPORT": "721",
 		    "TESTERMAC": "68:05:ca:30:45:d8"
 		    "SCRIPT": "/home/levai/test-runner.sh",
-		    "NFTRULESFILE": "/root/mrf-rules/udp_dst-997.nft",
+		    "NFTRULESFILE": "/root/mrf-rules/udp_dst-1997.nft",
 		    "PCAPFILE": [
-			"../../../pcaps/udp_dst-499-1.pcap",
-			"../../../pcaps/udp_dst-499-5.pcap",
-			"../../../pcaps/udp_dst-499-50.pcap"
+			"../../../pcaps/udp_dst-1997.pcap",
+			"../../../pcaps/udp_dst-1997-5.pcap",
+			"../../../pcaps/udp_dst-1997-50.pcap",
+			"../../../pcaps/udp_dst-1997-500.pcap"
 		    ],
 		    "MRFENABLE": [1],
 		    "CORES": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
@@ -43,9 +44,8 @@
     "visualize": [{
 	"type": "simple",
 	"title": "Throughput",
-	"group-by": "sut.environ.MRFENABLE",
+	"group-by": "sut.environ.PCAPFILE",
 	"x-axis": "sut.environ.CORES",
 	"y-axis": "out.throughput.RX.PacketRate"
     }]
-
 }
