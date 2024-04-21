@@ -6,12 +6,13 @@
 		"type": "generic",
 		"environ": {
 		    "SUTUSER": "levai",
-		    "SUTHOST": "192.168.0.22",
-		    "SUTSSHPORT": "721",
-		    "TESTERMAC": "68:05:ca:30:45:d8"
-		    "SCRIPT": "/home/levai/test-runner.sh",
+		    "SUTHOST": "0.0.0.0",
+		    "SUTSSHPORT": "22",
+		    "TESTERMAC": "04:3f:72:ed:82:c2",
+		    "SCRIPT": "/home/levai/mrf-debian/scripts/test-runner.sh",
 		    "NFTRULESFILE": "/root/mrf-rules/high-dep.nft",
-		    "PCAPFILE": "../../../pcaps/udp_dst-499.pcap",
+		    "PCAPFILE": "../../../pcaps/udp_dst-1997.pcap",
+		    "RXFLOWHASH": ["sdfn", "d"],
 		    "MRFENABLE": [1],
 		    "CORES": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
 			      21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,
@@ -24,7 +25,7 @@
 		"uplink-port": "0",
 		"downlink-port": "0",
 		"test-time": 120,
-		"moongen-cmd": "/home/levai/MoonGen/build/MoonGen",
+		"moongen-cmd": "/home/tamas/MoonGen/build/MoonGen",
 		"setup-script": "../../../scripts/copy-pcap.sh"
 	    }
 	}
@@ -39,8 +40,15 @@
     "visualize": [{
 	"type": "simple",
 	"title": "Throughput",
-	"group-by": "sut.environ.MRFENABLE",
+	"group-by": "sut.environ.RXFLOWHASH",
 	"x-axis": "sut.environ.CORES",
 	"y-axis": "out.throughput.RX.PacketRate"
+    },
+    {
+	"type": "simple",
+	"title": "Latency",
+	"group-by": "sut.environ.RXFLOWHASH",
+	"x-axis": "sut.environ.CORES",
+	"y-axis": "out.latency.Samples"
     }]
 }
