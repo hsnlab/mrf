@@ -18,7 +18,7 @@ def generate_pkt(udp_sport=1234, udp_dport=500, ip_dst="1.2.3.4", packet_len=100
     return pkt
 
 
-def generate_pkt_index_table(distribution: str, num_pkts: int, num_flows: int,
+def generate_pkt_index_table(distribution: str, num_pkts: int, max_idx: int,
                              zipf_param=4.0) -> list:
     """Generate packet index table, which can be used to shuffle a
     list of packets following a given distribution.
@@ -31,12 +31,12 @@ def generate_pkt_index_table(distribution: str, num_pkts: int, num_flows: int,
         distrib = np.random.uniform(0.0, 1.0, num_pkts)
     elif distribution == 'nosampling':
         idxs = list(range(num_pkts))
-        random.shuffle(idxs)
         distrib = np.array(idxs)
+        np.random.shuffle(distrib)
     else:
         raise ValueError("invalid distribution")
 
-    return [int(i) for i in (distrib/float(max(distrib)))*(num_flows-1)]
+    return [int(i) for i in (distrib/float(max(distrib)))*(max_idx-1)]
 
 
 if __name__ == "__main__":
@@ -63,19 +63,19 @@ if __name__ == "__main__":
     args = parser.parse_args()
     baseport = args.baseport
     maxport = args.maxport
-    num_flows = maxport - baseport
-    if num_flows < 0:
+    num_dports = maxport - baseport
+    if num_dports < 0:
         raise ValueError("maxport < baseport, exiting")
 
     num_pkts = args.numpkts
     if args.numpkts is None:
-        num_pkts = num_flows * args.multiplier
+        num_pkts = num_dports * args.multiplier
 
     # generate packets
     pkts_base = []
     sport_base = 1234
     dport = baseport
-    for _ in range(num_flows):
+    for _ in range(num_dports):
         for i in range(args.multiplier):
             pkts_base.append(
                 generate_pkt(udp_dport=dport,
@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
     pkt_idxs = generate_pkt_index_table(args.distribution,
                                         num_pkts,
-                                        num_flows,
+                                        num_dports * args.multiplier,
                                         args.zipf)
 
     pkts = [pkts_base[i] for i in pkt_idxs]
