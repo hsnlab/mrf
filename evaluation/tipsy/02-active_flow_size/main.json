@@ -12,7 +12,7 @@
 		    "SCRIPT": "/home/levai/test-runner.sh",
 		    "NFTRULESFILE": "/root/mrf-rules/udp_dst-1997.nft",
 		    "PCAPFILE": [
-			"../../../pcaps/udp_dst-1997.pcap",
+			"../../../pcaps/udp_dst-1997-1.pcap",
 			"../../../pcaps/udp_dst-1997-5.pcap",
 			"../../../pcaps/udp_dst-1997-50.pcap",
 			"../../../pcaps/udp_dst-1997-500.pcap"
