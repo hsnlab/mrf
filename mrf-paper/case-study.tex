@@ -1,64 +1,73 @@
 \section{Case-study }\label{sec:case-study}
 
-Next, we present a case study for systematically applying the distributed self-adjusting systems architecture to a common networking problem: software packet classification \cite{gupta2001algorithms}. The goal is to demonstrate the general engineering methodology by assembling \emph{existing} techniques into a distributed self-adjusting scheme and understand when, and to what extent, superlinear scaling emerges. We consider it a success if we find at least one synthetic and one realistic workload that produces positive result (as we will see, we find way more). It is a stated \emph{nongoal} to conceive novel algorithms and present new capabilities, let alone to present the fastest ever software packet classifier implementation. % (that award undeniably goes to DPDK \texttt{rte\_acl} \cite{rte-acl})
-Still, our multicore self-adjusting firewall will prove several times faster than the default Linux kernel implementation on a wide range of workloads.
+Next, we present a case study for systematically applying the distributed self-adjusting systems architecture to a common networking problem: software packet classification \cite{gupta2001algorithms}. The goal is to demonstrate the general engineering methodology by assembling \emph{existing} techniques into a distributed self-adjusting scheme and understand when, and to what extent, superlinear scaling emerges. We consider it a success if we find at least one workload that produces positive result (as we will see, we find way more). It is a stated \emph{nongoal} to conceive novel algorithms, let alone to produce the fastest existing software packet classifier. % (that award undeniably goes to DPDK \texttt{rte\_acl} \cite{rte-acl})
+Yet, our self-adjusting firewall will prove several times faster than the default Linux kernel implementation on a wide range of workloads.
 
-Recall, to achieve superlinear scaling we have to combine a locality-boosting load balancer with a self-adjusting algorithm. There is a broad range of potential use cases that come with an adequate self-adjusting algorithm \cite{SleatorT85Splay, BentleyCL93, HesterH85, HesterH85, BentleySTW86, Avin0020, ParkM12}. Eventually, we stayed with packet classification for the following reasons.  First, packet classifiers possess an intrinsic linear lookup structure, where the filter rules defined by the administrator are matched in the order of priority for each packet. This makes packet classification an appealing candidate for applying the move-to-front heuristics (but see ramifications related to handling rule-dependencies below). Second, the default Linux firewall implementation, \nftables, performs a linear sweep of a static rule list ordered priority-wise for each packet. This will buy us the non-self-adjusting baseline for free. Third, there is an infamously difficult theoretical problem underlying packet classification \cite{10.1145/2619239.2626294,10.1006/jagm.1996.0063, PacutVAPRS2022, 10.1145/2619239.2626294, 10.1145/1851182.1851208, 10.1145/863955.863980, gupta2001algorithms, 10.1145/3359989.3365431}. Achieving superlinear speedup on such a hard problem poses a great challenge. Fourth, the Linux kernel network stack offers several flexible software and hardware based load balancers for dispatching packets to multiple parallel classifier instances running on different CPU cores \cite{rss-linux}. These readily support for 5-tuple hashing along with many other policies for obtaining a hash on the packet header fields, and we can easily reuse these to implement the locality boosting load balancer component. And fifth, there is a recently published geneal self-adjusting algorithm that lends itself to be implemented in \nftables for experimentally checking superlinear scaling right on the Linux kernel firewall \cite{10228937}.
+To achieve superlinear scaling we need a self-adjusting algorithm in the first place (plus a locality-boosting load balancer). From the many potential use cases % for which a self-adjusting algorithm exists
+\cite{SleatorT85Splay, BentleyCL93, HesterH85, HesterH85, BentleySTW86, Avin0020, ParkM12} we eventually chose packet classification for the following reasons.  First, packet classifiers possess an intrinsic linear structure, where the rules are matched in the order of priority for each packet, which makes it appealing candidate for applying the move-to-front (MTF) heuristics (but see ramifications related to handling rule-dependencies below). Second, the default Linux firewall implementation, \nftables, uses a static doubly linked list to match rules, which will buy us the non-self-adjusting baseline for free. Third, underlying packet classification there is an infamously difficult theoretical problem \cite{10.1145/2619239.2626294,10.1006/jagm.1996.0063, PacutVAPRS2022, 10.1145/2619239.2626294, 10.1145/1851182.1851208, 10.1145/863955.863980, gupta2001algorithms, 10.1145/3359989.3365431}, and achieving superlinear speedup on such a hard problem promises massive performance gain. Fourth, the Linux kernel network stack offers several flexible software and hardware based load balancers for dispatching packets to parallel classifier instances running on different CPU cores \cite{rss-linux}, which we will reuse to implement the locality boosting load balancer component. And fifth, packet classifiers are very difficult to cache \cite{1354643} (recall, caches are the ``cheap'' way to obtain superlinear scaling), which calls for a true self-adjusting packet classifier algorithm that goes beyond caching. % \cite{10228937}.
 
 \subsection{The Linux packet classier}
 \label{sec:sa-pack-class}
 
-Network firewalls, in general, are a means to control incoming and outgoing network traffic based on user-defined packet classifier rules. This is useful to improve security, control access, filter and protect against ongoing attacks, and log\slash monitor network activity. The Linux kernel contains several packet classifier implementations, the newest of which is \texttt{nftables}.
+A network firewall is a means to control incoming and outgoing network traffic based on user-defined packet classifier rules. This is useful to improve security, control access, filter and protect against ongoing attacks, and log\slash monitor network activity. The main concept in a classifier is a \emph{rule}, a pair of a filter and an action (see Fig.~\ref{fig:class-sample}). A filter is essentially a user-defined regular expression defined on specific fields of the packet header or metadata, and the action decides what to do with the packets that match the filter (accept, drop, log, etc.). Rules are organized into linear rule chains. When a packet enters a chain, it is compared against the first rule of the chain. If there is a match, the corresponding action is executed and the lookup is over. Otherwise, subsequent rules are matched in the order of priority until the first match is found.
 
-The main concept of a packet classifier is a \emph{rule}, which specify a pair of a filtering criteria and the corresponding actions. The filter is essentially a user-defined regular expression on specific fields of the packet header or metadata, and the action decides what to do for packets that match the filter (accept, drop, log, etc.). Chains are sequences of related rules, which must be matched in the order of priority (see Fig.~\ref{fig:class-dep}). When a packet enters a chain, it is compared against the rules in that chain. If there is a match, the corresponding is executed and the lookup is over. Otherwise, the next rule is matched priority-wise, and the linear search goes on until the first match is found.  The \nftables kernel engine adds a simple virtual machine that defines a DSL to inspect network packets and make decisions, which contains some optimization allowing multiple comparisons to be replaced with a single operation. This makes the \nftables packet classifier agnostic to the specifics of particular network protocols, in contrast to, e.g., \texttt{iptables}, which contains an embedded fixed protocol parser.
+The Linux kernel contains several built-in packet classifier implementations. The \nftables kernel engine adds a simple virtual machine to the Linux kernel that uses a DSL for parsing and matching packet header fields. This makes \nftables agnostic to specific network protocols, in contrast to, e.g., \texttt{iptables}, which contains an embedded protocol parser. Currently, \nftables is the default packet classifier in most Linux distributions.
 
 \begin{table}[t]
   \centering
+  \caption{Sample firewall rule set. Source ports do not matter.}
+  \label{fig:class-sample}
   \begin{small}
     \renewcommand{\tabcolsep}{2pt}
     \begin{tabular}{r|l|l|r|r|l}
       \textbf{Prio} & \textbf{Proto} & \textbf{Src IP} & \textbf{Dst IP} & \textbf{Dst Port} & \textbf{Action}\\
       \hline
-      1 & UDP & 192.168.178.33 & 23.0.0.45 & 53 & ACCEPT\\
-      2 & TCP & 10.10.10.0/24 & 23.0.0.45 & 443 & DROP\\
-      3 & TCP & 10.10.10.10/32 & 23.0.0.45 & ANY & ACCEPT\\
-      4 & UDP & 192.168.178.0/24 & 23.0.0.45 & 53 & DROP\\
-      5 & IP & 192.168.0.0/16 & 23.0.0.0/8 &  & ACCEPT\\
+      1 & UDP & 192.168.178.33   & 23.0.0.45  & 53  & ACCEPT\\
+      2 & TCP & 10.10.10.0/24    & 23.0.0.45  & 443 & DROP\\
+      3 & UDP & 192.168.178.0/24 & 23.0.0.45  & 53  & DROP\\
+      4 & TCP & 10.10.10.10/32   & 23.0.0.45  & ANY & ACCEPT\\
+      5 & IP  & 192.168.0.0/16   & 23.0.0.0/8 &     & ACCEPT\\
     \end{tabular}
   \end{small}%
-  \caption{Sample firewall rule set}
-  \label{fig:class-sample}
 \end{table}
 
 \subsection{Self-adjusting packet classification}
 \label{sec:sa-sa-pack-class}
 
-\begin{figure}[t]
-  \centering
-  \begin{small}
-    \begin{tikzpicture}[->,>=stealth,node distance=2.5cm, auto, every node/.style={circle,draw,minimum size=0.5cm,inner sep=2pt}]
-      % Branch 1
-      \node[circle,draw] (5) {5};
-      \node[circle,draw,right of=5] (4) {4};
-      \node[circle,draw,right of=4] (1) {1};
-      
-      % Branch 2
-      \node[circle,draw,below of=5,yshift = 1.5cm] (3) {3};
-      \node[circle,draw,right of=3] (2) {2};
-      
-      % Edges
-      \draw (5) -- (4);
-      \draw (4) -- (1);
-      \draw (3) -- (2);
-    \end{tikzpicture}
-  \end{small}
-  \caption{Dependency graph}%
-  \label{fig:class-dep}
-\end{figure}
+One way to make \nftables self-adjusting would be to replace the static linked list it uses internally for rule matching with a self-adjusting list. A naive application of MTF, however, would easily break the semantics of the firewall. This is because rules in the chain may not be independent from each other, and hence may not be freely swapped \cite{10.1145/2619239.2626294}.
 
-\begin{algorithm}
+Consider the example in Fig.~\ref{fig:class-sample} and suppose that, initially, rules are ordered priority-wise in the list: $[1, 2, 3, 4, 5]$. Suppose that a packet with the IP 5-tuple (192.168.0.1, 23.0.0.45, UDP, 1, 3478) enters the classifier, where the fields in the 5-tuple are IP source and destination address, protocol, and source and destination port, respectively. Rules are inspected in linear order until rule 5 is found as the first match, at which point the lookup terminates with the verdict ACCEPT. Now, a naive application of MTF would move rule 5 to the front of list, resulting in the order $[5, 1, 2, 3, 4]$. Suppose another packet with the 5-tuple (192.168.178.1, 23.0.0.45, UDP, 1, 53) is to be processed next: this will immediately match rule 5 at the front of the list yielding the verdict ACCEPT, despite that, if matched in priority order, rule 3 would be the correct match and the verdict should be DROP. To maintain correctness, the furthest we can move rule 5 towards the front of the list is the position immediately after its dependency, rule 3.
+
+We say that rule $u$ is \emph{dependent} on another rule $v$ if they have overlapping match criteria in all fields, $v$ has a higher priority than $u$, and $u$ and $v$ define different actions. Such a dependency means that $u$ is not allowed to be moved before $v$ in the list, otherwise some packets may be erroneously classified. For instance, in the example of Fig.~\ref{fig:class-sample} rule 5 is dependent on rule 3, which is in turn dependent on rule 1, implying the dependency chain $5\to 3\to 1$. Similarly, rule $4$ is dependent on rule $2$. % Rule dependencies define a Directed Acyclic Graph (DAG) in the graph whose nodes are the set of rules, where there is an edge $(u, v)$ from $u$ to $v$ if $u$ is dependent on $v$ (see Fig.~\ref{fig:class-dep}).
+
+% \begin{figure}[t]
+%   \centering
+%   \begin{small}
+%     \begin{tikzpicture}[->,>=stealth,node distance=2.5cm, auto, every node/.style={circle,draw,minimum size=0.5cm,inner sep=2pt}]
+%       % Branch 1
+%       \node[circle,draw] (5) {5};
+%       \node[circle,draw,right of=5] (3) {3};
+%       \node[circle,draw,right of=3] (1) {1};
+      
+%       % Branch 2
+%       \node[circle,draw,below of=5,yshift = 1.5cm] (4) {4};
+%       \node[circle,draw,right of=4] (2) {2};
+      
+%       % Edges
+%       \draw (5) -- (3);
+%       \draw (3) -- (1);
+%       \draw (4) -- (2);
+%     \end{tikzpicture}
+%   \end{small}
+%   \caption{Dependency graph}%
+%   \label{fig:class-dep}
+% \end{figure}
+
+A dependency-aware variant of the MTF heuristics, called the \emph{More-recursively-Forward} (MRF) algorithm, is defined in \cite{10228937} (see Alg.~\ref{alg:mrf}). The idea is to push an accessed item forward in the list until the first dependency is reached. To prevent the item from blocking behind its direct dependency, the dependency is also moved forward until the first transitive dependency is hit. This process repeats until the head of the list is reached.  Independent rules are however free to be moved without restrictions, to the point that when there are no dependencies in the rule chain MRF simplifies into a plain MTF policy.  The MRF algorithm tends to move frequently hit rules, with all their dependencies, to the first positions of the chain, which tends to improve linear lookup performance on high-locality data without altering the semantics of the classifier \cite{10228937}. In addition, MRF is ``almost''optimal in the strong competitive sense just like MTF, in that the best reordering one could obtain even if one knew the entire lookup sequence in advance would yield only a small constant factor improvement over MRF.
+
+\begin{algorithm}[t]
   \caption{Move Recursively Forward (MRF)}
-  \label{alg:alg}
+  \label{alg:mrf}
   \begin{small}
     \begin{algorithmic}[1]
       \Procedure{MRF}{$y$}
@@ -74,69 +83,81 @@ The main concept of a packet classifier is a \emph{rule}, which specify a pair o
   \end{small}
 \end{algorithm}
 
-\subsection{Locality boosting with RSS}
+Going back to our earlier example, after rule $5$ is hit in the list $[1, 2, 3, 4, 5]$ MRF moves it immediately after the direct dependency $3$ along the dependency chain $5\to 3\to 1$, $3$ is moved to the position after $1$, and the recursion ends resulting the order $[1, 3, 2, 5, 4]$. If $5$ was hit again, the lookup time would be only $4$ instead of $5$. Then, $5$ would be moved forward again, yielding the order $[1, 3, 5, 2, 4]$ and a lookup time of $3$. Note that dependency chains can be moved by MRF independently from each other: e.g., if $4$ was hit first then it would be moved after its dependency $2$, yielding $[2, 1, 4, 3, 5]$ in the first iteration and eventually $[2, 4, 1, 3, 5]$ with lookup time of $2$. 
+
+\subsection{Locality boosting load balancing}
 \label{sec:sa-rss}
 
+The above discussion suggests that an ideal locality boosting load balancer would partition the rule set dependency-wise, keeping independent rule dependency chains at different workers. Since such independent chains are allowed to be moved around freely, MRF at each worker would eventually arrange the worker's active rules, with their dependencies, to the first positions, obtaining a faster lookup time. Unfortunately, it is difficult to obtain such ``perfectly partitioning'' load balancers in practice, therefore we resort to different imperfect approximations of the ideal policy in our implementation.
 
+The difficulty lies in that packet classifiers use wildcard rules, each matching potentially a huge number of packets, and hash function may assign those packets to different workers. Once two packets matching the same rule appear at two different workers, both workers will have to add the same rule, with all its dependencies, to its active rule set, and try to move it towards the front. This imperfect partitioning tends to blow up active rule sets at the workers, increasing lookup performance. This rule duplication problem plagues many software packet classifier algorithms and substantial active research activity focuses on finding ways to prevent it \cite{10.1145/863955.863980, 820051, 10.1145/1851182.1851208, 8485947}. Instead of adopting the ideas from recent research, however, we will opt for a simple hash-based load balancing scheme below, since this is very easy to implement in common NIC hardware. Later, we will show empirically that even this imperfect scheme is enough to reach superlinear speedup in many practical cases.
 
+The simplest load balancer for scaling the Linux networking stack to multiple CPU cores is Receive Side Scaling (RSS, \cite{10.1145/3359989.3365412, rss-linux}). Most NICs support multiple packet queues to distribute packets to different CPUs. In order to preserve processing order for the different packets of logical flows, NICs typically apply a hash function over the packet header fields. The resultant hash value is then used as an index into an indirection table to select the queue, and hence the CPU core, that will process the packet. Since a ``logical flow'' can mean a different thing in different contexts, the hash function is configurable to consider only certain header fields, e.g., only the source IP address (``sticky sessions'') or the entire IP 5-tuple.
 
 \subsection{Implementation}
 \label{sec:sa-nf-tables-impl}
-In our case study, we focus on the \textit{nf\_tables} firewall within the Linux Kernel. First, we replace the static list used to store the rules with the self-adjusting RMF list. 
-In order to achieve optimal scaling properties and avoid any lock contention, the ruleset is replicated for all CPUs. To distribute the network traffic across all cores, we use RSS hash filter options (\textit{rx-flow-hash}).
-This generates a hash using the header fields within the network packet, which then dictates to which receive queue the packet is delivered.
-We use Classbench \cite{4237157} to generate the rulesets and traffic traces with which we test our implementation using real-world resembling scenarios. 
 
+We created a comprehensive self-adjusting packet classifier implementation on top of \nftables. Our implementation uses the dependency-aware MRF algorithm to match rules from a self-adjusting list \cite{10228937}. Each classifier instance maintains a per-CPU array of pointers that index into a shared static rule list, running the MRF algorithm on its pointer array instead of directly on the rule list. This allows to run as many parallel MRF instances, each maintaining its own local rule order, as there are CPU cores. This approach also lets us support rule addition\slash deletion in a completely lockless manner: every time the rule list is updated we simply allocate a new pointer array at each CPU and update the list head atomically.
+
+In order to simplify the code we used an iterative version of the MRF algorithm. When a rule is to be moved forward, we first check whether it can be swapped with the preceding rule. This is done by checking whether the two rules overlap using a range-based representation, which we extract from the \nftables virtual machine. If there is an overlap then the rule cannot be moved further so we restart the process, this time trying to move the blocking rule forward. Otherwise, the two rules are independent, so they are immediately swapped and the iteration is repeated with the subsequent preceding rule. The iteration terminates when we reach the first position. A more efficient implementation would be to precompute dependencies on rule insertion\slash deletion and run the recursive MRF algorithm using the cached dependencies. This, however, would complicate code, make insertions more expensive, and may even end up slower since recursion in the kernel can be costly due to the overhead of a potentially deep call stack.
 
 \subsection{Evaluation}
 \label{sec:sa-nf-tables-eval}
 
-- synthetic microbenchmarks and realistic macrobenchmark: rulesets and traffic
+We conducted several experiments with the distributed self-adjusting packet classifier, using a simple hash-based RSS load balancer to distribute load. Our goal was to understand whether superlinear scaling can indeed be reproduced on a real network application and using real packet I/O and determine the conditions (rule sets, flow size, etc) under which it emerges.
 
-% when superlinear scaling appears
-\noindent%
-\textbf{Superlinear scaling.} %  (3 figs + 1 with Jonas's stats?)
+\noindent
+\textbf{Testbed.} %
+
+\begin{itemize}
+\item server specs
+\item tipsy
+\end{itemize}
+
+\noindent
+\textbf{Macrobenchmarks.} %
+\begin{itemize}
+\item classbench: speedup and raw packet rate with latency in inset for 3 classbench seeds: acl, ipc and firewall
+\item takeaway: superlinear scaling emerges in real workloads + baseline (nftables) only linearly scales + SA version is much faster + imperfect hash-based LB works + dependency matters (fw seed result is poor)
+\end{itemize}
+
+\noindent
+\textbf{Rule size.} %
 \begin{itemize}
 \item no dependency rule-set and uniform traffic
 \item rule-template: 1.2.3.4+udp-dst:i[1,n], where n is a parameter: 997, 4999, 10007 (primes)
-\item flows: uniform + zipf: 20000 * packets=pcap
+\item flows: uniform 
 \item RSS: 5-tuple hash
-\item one fig per rule size (packet rate): 4 plots: SA+uniform, SA+zipf, baseline+uniform,baseline+zipf
-\item takeaway: rule size + traffic-locality do not matter (3 figs + 1 with Jonas's stats?)
+\item 1 fig with 3 plots for each rule size
+\item takeaway: rule size does not matter
 \end{itemize}
 
-% when superlinear scaling deteriorates into linear because SA does not work
-\noindent%
-\textbf{Active flow size.} %  (1 fig)
+\noindent
+\textbf{Active flow size.} %
 \begin{itemize}
-\item same no-dep rule-set (udp-dst) + 5, 50, 500 flows per rule
+\item same no-dep rule-set (udp-dst) + 0, 5, 50, 500 flows per rule
 \item RSS: 5-tuple hash
-\item fig: 3 scaling laws, one for each active-flow-size: speedup (speedup: normalized for the single-core rate)
-\item takeaway: the more the flow count the more rules are replicated across cores and the larger the working set size and superlinearity vanishes
+\item 1 fig with the 4 scaling laws, one for each active-flow-size: speedup (speedup: normalized for the single-core rate)
+\item takeaway: the more flows the more rules are replicated across cores and the larger the working set size and superlinearity vanishes
 \end{itemize}
 
 \noindent%
-\textbf{Rule dependencies.} % (1 fig)
+\textbf{Rule dependencies.} %
 \begin{itemize}
 \item rule template: 1.2.3.4/{32,28,24,20,16,12,8,4,0}+udp-dst:i[1,500]
-\item   traffic template: uniform: 1.2.3.4:i (500 flows) 
-\item   3 rules-sets: small-dep (/0 and /32 for each chain), medium-dep (/{32,24,16,8,0}  for each chain), high-dep (/{32,28,24,20,16,12,8,4,0}  for each chain)
-\item   RSS: 5-tuple hash
-\item: fig: 3 scaling laws: speedup (normalized for the single-core rate)
-\item takewaway: the more dependencies, the less superlinearity (dependencies must be in the working set at each thread)
+\item traffic template: uniform: 1.2.3.4:i (500 flows) 
+\item 4 rules-sets: no-dep, small-dep (/0 and /32 for each chain), medium-dep (/{32,24,16,8,0} for each chain), high-dep (/{32,28,24,20,16,12,8,4,0} for each chain)
+\item RSS: 5-tuple hash
+\item 1 fig with 4 scaling laws: speedup (normalized for the single-core rate)
+\item takewaway: the more dependencies, the less superlinearity (dependencies must be in the working set at each thread) (but note that our high-dep rule sets have more rules!)
 \end{itemize}
 
 \noindent%
 \textbf{Locality boosting.} % (1 fig)
 \begin{itemize}
-\item benchmark the high-dep rule-set with different RSS hashes: bad hash: IP-dst(everything goes to 1 cpu, no scaling), 5-tuple hash (same as in the previous case), good hash: udp-dst hash (dep chains are partitioned across cpus: only a few chains per each CPU) 
-\item  takeaway: load-balancing policy matters, the less locality-boosting, the less superlinearity
+\item benchmark the high active flow-count benchmark with different RSS hashes: bad hash: IP-dst (everything goes to 1 cpu, no scaling), 5-tuple hash (imperfect partitioning in the LB), good hash: udp-dst hash (dep chains are partitioned across cpus: only a few chains per each CPU) 
+\item takeaway: locality boosting matters
 \end{itemize}
-
-% realistic macrobenchmark
-\noindent%
-\textbf{Real workload.} % (3 figs)
-classbench: the good news (3 figs with 3 different seeds + 5000 rules) + throughput and latency diagrams
 
 %%% Local Variables:
 %%% mode: latex

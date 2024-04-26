@@ -2,19 +2,7 @@
 
 we advocate a new style for architecting distributed systems: LB-LB+SA-algs, yields superlinear scaleup
 
-adding a minimal caching can already imply faster-than-linear scaling: linux fib? 
-
-can we reproduce our findings with other SA algorithms?
-\begin{itemize}
-\item any linear rule matching use cases immediately qualify: DPI + explainable/rule-based AI
-\item \emph{any} combination of a self-adjusting algorithm used in workers, with a sufficient LB, will yield superlinear speedup
-\item SA distributed AI/ML training????
-\item map/reduce
-\end{itemize}
-
-
-Our goal in this paper is to debunk the misconception that linear scaling is the best one can achieve and demonstrate the viability of our methodology to systematically design distributed systems for superlinear scaling. For this, we present experimental studies using off-the-shelf components from earlier studies. It is a nongoal to show novel algorithms or new hardware; just the contrary, our main message is that superlinearity is achievable with \emph{existing} components, or perhaps some applications \emph{already} achieve it to some extent without realizing the general architectural pattern in the background.
-
+Our goal in this paper is to debunk the misconception that linear scaling is the best one can achieve and demonstrate the viability of our methodology to systematically design distributed systems for superlinear scaling. For this, we present experimental studies using off-the-shelf components from earlier studies. It is a nongoal to show novel algorithms or new hardware; just the contrary, our main message is that superlinearity is achievable with \emph{existing} components. The most far-reaching consequence is that perhaps some distributed applications \emph{already} achieve superlinear scaling to some extent, without us realizing the general architectural pattern in the background.
 
 %%% Local Variables:
 %%% mode: latex

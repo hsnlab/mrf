@@ -1,147 +1,96 @@
 \section{Related work}
 \label{sec:related-work}
 
-superlinear scaling:
-
-% general argument:
-%
-% Fixed Time, Tiered Memory, and Superlinear Speedup
-% John L. Gustafson
-% Ames Laboratory-USDOE
-% Ames, IA 50011
-% http://www.johngustafson.net/pubs/pub26/Superlinear.pdf
-
-% Modeling Speedup (n) Greater than n
-% IEEE Transactions on Parallel and Distributed Systems · May 1990
-% DOI: 10.1109/71.80148 · Source: IEEE Xplore
-% David P. Helmbold
-% Charles E. Mcdowell
-% https://www.researchgate.net/profile/David-Helmbold/publication/3299493_Modeling_Speedup_n_Greater_than_n/links/5509aca30cf26198a6391fcb/Modeling-Speedup-n-Greater-than-n.pdf
-
-% systematic analysis, focusing on the cloud and data analytics
-%
-% Superlinear Speedup in HPC Systems: why and when?
-% Sasko Ristov, Radu Prodan, Marjan Gusev, Karolj Skala
-% https://annals-csis.org/Volume_8/pliks/498.pdf
-
-% M. Gusev and S. Ristov, “Superlinear speedup in Windows Azure cloud,”
-% in Cloud Networking (IEEE CLOUDNET), 2012 IEEE 1st International
-% Conference on, Paris, France, 2012, pp. 173–175.
-% https://www.researchgate.net/publication/258770134_Superlinear_Speedup_in_Windows_Azure_Cloud
-
-% NEIL J. GUNTHER, PAUL PUGLIA, AND KRISTOFER TOMASETTE
-% Hadoop Superlinear Scalability
-% ACQ Queue
-% https://dl.acm.org/doi/pdf/10.1145/2719919
-
-% for caching
-%
-% The Elements of Cache Programming Style
-% Chris B. Sears
-% Google Inc.
-% https://www.usenix.org/legacy/publications/library/proceedings/als00/2000papers/papers/full_papers/sears/sears.pdf
-
-% in robot control
-%
-% http://heikohamann.de/pub/hamannARCS2018.pdf
-% Superlinear Scalability in Parallel Computing and Multi-Robot Systems: Shared Resources, Collaboration, and Network Topology
-% Heiko Hamann
-% http://heikohamann.de/pub/hamannARCS2018.pdf
-
-% impossible:
-% Faber, V., Lubeck, O. M., and White, A. B., “Superlinear Speedup of an Efficient Sequential
-% Algorithm is Not Possible,” Parallel Computing, 3 (1986), pp. 259–260.
-
-% no application in networking
-
-caching in networking:
+\noindent%
+\textbf{Locality boosting load balancing.} %
 \begin{itemize}
-\item state caching in NFs: https://www.usenix.org/conference/nsdi24/presentation/lei
-\item SQL caches: redis, memcached
-\item distributed web caching and CDNs: https://www.usenix.org/conference/nsdi24/presentation/zhang-yazhuo
-\item dataplane kv store caching (NSDI)
-\item caching in microservices: https://www.usenix.org/conference/nsdi24/presentation/zhang-haoran
+\item NICs increasingly used to intelligently move data between the network, CPU, GPU and accelerators \cite{sherry-ccr23}
+\item Linux contains a comprehensive toolset to tune the way packets are dispatched to CPUs \cite{rss-linux}
+\item plain RSS is static, RSS++ is a load and state-aware receive side scaling mechanism aiming to keep CPU load constant \cite{10.1145/3359989.3365412}
+\item Reframer can be used to reorder packets for improving temporal locality \cite{276946,246322}
+\item rule partitioning: Hicuts \cite{820051}, Hypercuts \cite{10.1145/863955.863980}, Efficuts \cite{10.1145/1851182.1851208}, CutSplit \cite{8485947} build a decision tree, with each node representing a ``cut'' of the rule-space, whose leaf nodes store only a small number of rules. A linear search among these rules yields the desired matching. The cuts are designed so that the rule lists in the leaves are as small as possible, with the least possible rules replicated in multiple lists. We argue that these cuts could be reused in our multicore classifier to partition the rule set, and represented in the NIC as Receive Flow Steering (RFS) filters
+\item In fact, our classifier can be viewed as a parallel extension to these schemes, just with ``dumb'' hash-based cuts for traversing the decision tree in one step and maintaining the rule lists in the leaves in a self-adjusting list. It is a surprising finding that such a simple extension of Hicuts \cite{820051}, Hypercuts \cite{10.1145/863955.863980}, Efficuts \cite{10.1145/1851182.1851208}, CutSplit \cite{8485947} can yield superlinear scaling
 \end{itemize}
 
-load-balancing:
+\noindent%
+\textbf{Self-adjusting data structures.} %
 \begin{itemize}
-\item Justin's ccr paper
-\item RSS++
+\item Self-adjusting data structures are widely used in algorithms and computer systems
+\item simplest SA algorithms are caches; often used in distributed computing: predictive state caching in NFs \cite{295537}, SQL caches: redis, memcached \cite{10.5555/1012889.1012894, 180324}, distributed web caching and CDNs \cite{295603}, dataplane kv store caching \cite{ghigoff2021bmc}, query result caching in microservices \cite{295493}
+\item to what extent these achieve superlinear scaling is an open question
+\item MTF: building block of a self-adjusting algorithm for computing point maxima and convex hulls \cite{BentleyCL93}, program compilation and interpretation \cite{HesterH85}, detecting collisions in hash tables~\cite{HesterH85}, and data compression \cite{BentleySTW86}
+\item the problem of cache management can be viewed as a self-adjusting list rearrangement problem \cite{SleatorT85}
+\item further self-adjusting data structures include splay trees \cite{SleatorT85Splay}, self-adjusting skip lists \cite{BoseDL08}, push-down trees \cite{Avin0020}, or self-adjusting trees for storing geometric data \cite{ParkM12}
+\item these are all candidates to be used, along with a proper locality boosting load balancer, to reach superlinear scaling in distributed applications
 \end{itemize}
 
-sa classifiers:
+\noindent%
+\textbf{Superlinear scaling.} %
 \begin{itemize}
-\item our INFOCOM paper
-\item any other SA paper from the systems literature?
+\item applications: database systems \cite{scalability-analyzed, 10.5555/1012889.1012894}, SDN analytics \cite{sdn-analytitcs}, high-performance computing \cite{556383, 7733347, 6483679}, multi-robot systems \cite{10.1007/978-3-319-77610-1}, and parallel search in information retrieval systems \cite{dobb-1, dobb-2}
+\item full taxonomies in \cite{7733347, 80148}
+\item two ways to achieve such superlinear speedup \cite{7733347, 80148}: do disproportionately less work in each worker as we scale the system \cite{7733347}, or add more resources per thread \cite{80148}
+\item distributed caching \cite{271208, dobb-2} is a variant of the second: the more parallel workers the more cache space available, which tends to make memory-bound\slash cache-bound code disproportionately faster \cite{80148}
+\item non-persistent algorithms, which finish when one of the workers finds the solution, often cause a ``spurious superlinear'': our SA scheme does not belong to this category, since a single packet is always fully matched at a single worker \cite{7733347}
+\item counter arguments: impossible \cite{10.1016/0167-8191(86)90024-4}, complete dismissal by the father of the ``Universal Scalaility Law'' \cite{gunther-hotsos, 10.1145/2773212.2789974}
+\item never reported in networked application as far as we are aware of + ours is the first general design methodology to achieve it
+\item superlinear growth is often found in nature, e.g., describing the scaling of human communities to large cities \cite{PhysRevE.79.016115}
 \end{itemize}
 
-% \subsection{Self-adjusting Data Structures}
+%   Models of self-adjusting data structures are based on the cost of access and rearrangement. For example:
 
-% Self-adjusting data structures are widely used in algorithms and computer systems.
-% Even the simplest data structure, self-adjusting is used in e.g. (1) a subroutine in computing point maxima and convex hulls~\cite{BentleyCL93}, (2) organizing lists of identifiers in program compilation and interpretation~\cite{HesterH85} or (3) detecting collisions in hash tables~\cite{HesterH85}.
-% Some compression schemes use self-adjusting lists~\cite{BentleySTW86}.
-% The problem of managing cache~\cite{SleatorT85} can be viewed as a self-adjusting data structure (every algorithm for list reorganization gives rise to a cache management algorithm).
-% Further self-adjusting data structures include splay trees~\cite{SleatorT85Splay}, self-adjusting skip lists~\cite{BoseDL08}, push-down trees~\cite{Avin0020}, or self-adjusting trees for storing geometric data~\cite{ParkM12}.
-
-
-% Models of self-adjusting data structures are based on the cost of access and rearrangement. For example:
-
-% \begin{enumerate}
+%   \begin{enumerate}
 %   \item \textbf{Self-adjusting lists}~\cite{SleatorT85}. We are given a set of items, arranged in a linear list, and a sequence of access requests $\sigma$ to the nodes of the list.
-% Upon receiving an access request to a node in
-% the list, an algorithm searches linearly through the list, starting
-% from the head of the list, traversing nodes until encountering the
-% accessed node. Accessing the node at position i in the list costs i
-% (the first node is at position 1).
-% After serving a request, an algorithm may
-% choose to rearrange the nodes of the list, paying the cost 1 per each transposition of neighboring items. 
+%     Upon receiving an access request to a node in
+%     the list, an algorithm searches linearly through the list, starting
+%     from the head of the list, traversing nodes until encountering the
+%     accessed node. Accessing the node at position i in the list costs i
+%     (the first node is at position 1).
+%     After serving a request, an algorithm may
+%     choose to rearrange the nodes of the list, paying the cost 1 per each transposition of neighboring items. 
 
 
-% \item \textbf{Binary search trees}~\cite{SleatorT85Splay}.
-% When the universe of items is ordered, we may store them in a binary search tree.
-% A classic binary search tree is a \emph{splay tree}~\cite{SleatorT85Splay}.
-% Another important search tree is $O(\log \log n)$-competitive \emph{tango tree}~\cite{demaine2007dyynamic}.
-% The dynamic optimality conjecture~\cite{SleatorT85Splay} (does an $O(1)$-competitive algorithm exist?) is a major unresolved question, in contrast to the simpler self-adjusting lists setting.
-% Splay trees have other properties, e.g. working set bounds, static optimality~\cite{SleatorT85Splay} and other.
+%   \item \textbf{Binary search trees}~\cite{SleatorT85Splay}.
+%     When the universe of items is ordered, we may store them in a binary search tree.
+%     A classic binary search tree is a \emph{splay tree}~\cite{SleatorT85Splay}.
+%     Another important search tree is $O(\log \log n)$-competitive \emph{tango tree}~\cite{demaine2007dyynamic}.
+%     The dynamic optimality conjecture~\cite{SleatorT85Splay} (does an $O(1)$-competitive algorithm exist?) is a major unresolved question, in contrast to the simpler self-adjusting lists setting.
+%     Splay trees have other properties, e.g. working set bounds, static optimality~\cite{SleatorT85Splay} and other.
 
 
 
-% \item \textbf{Other self-adjusting data structures}. 
-% Self-adjusting skip lists~\cite{BoseDL08} have an equivalent of the working set bound of splay trees.
-% Push-down trees~\cite{Avin0020} are dynamically optimal and have the working set bound.
-% Adaptive geometric space partitioning data structures exist, e.g. self-adjusting trees for storing geometric data~\cite{ParkM12}.
-% The online metrical task system model~\cite{Borodin1992} underpins all these models, and captures generalizations such as caching, which has self-adjusting algorithms such as LRU~\cite{SleatorT85}.
-% \end{enumerate}
+%   \item \textbf{Other self-adjusting data structures}. 
+%     Self-adjusting skip lists~\cite{BoseDL08} have an equivalent of the working set bound of splay trees.
+%     Push-down trees~\cite{Avin0020} are dynamically optimal and have the working set bound.
+%     Adaptive geometric space partitioning data structures exist, e.g. self-adjusting trees for storing geometric data~\cite{ParkM12}.
+%     The online metrical task system model~\cite{Borodin1992} underpins all these models, and captures generalizations such as caching, which has self-adjusting algorithms such as LRU~\cite{SleatorT85}.
+%   \end{enumerate}
 
 
-% % Other examples: intrusion detection as mtflist, flow table lookup as splay tree, etc.
-% % Each have their own challenges, and our model is just an example.
+% %   Other examples: intrusion detection as mtflist, flow table lookup as splay tree, etc.
+% %   Each have their own challenges, and our model is just an example.
 
-% \paragraph*{Locality.}
-% Common inputs have high locality, i.e. the same items are accessed repeatedly.
-% The locality parameter of input is often the determining factor for the performance of self-adjusting data structures (e.g. there exist arguments of locality for self-adjusting lists~\cite{AlbersL16}, working set bounds for splay trees~\cite{SleatorT85Splay} and paging~\cite{AlbersFG05}).
+%   \paragraph*{Locality.}
+%   Common inputs have high locality, i.e. the same items are accessed repeatedly.
+%   The locality parameter of input is often the determining factor for the performance of self-adjusting data structures (e.g. there exist arguments of locality for self-adjusting lists~\cite{AlbersL16}, working set bounds for splay trees~\cite{SleatorT85Splay} and paging~\cite{AlbersFG05}).
 
 
-% \subsection{Load Balancing and Scaling}
+%   \subsection{Load Balancing and Scaling}
 
-% \paragraph*{Load balancing with random hash functions.}
-% A random load balancing assignment function is sufficient to load-balance correctly.
-% Gonnet~\cite{Gonnet81} proved that when throwing $n$ balls uniformly and independently at random into $n$ bins, the fullest bin has
-% load $(1 + o(1)) \log n/ \log \log n$ in expectation.
-% The maximum bin load with this approach is $O(\log n/ \log \log n)$ with high probability~\cite{DubhashiR98}.
+%   \paragraph*{Load balancing with random hash functions.}
+%   A random load balancing assignment function is sufficient to load-balance correctly.
+%   Gonnet~\cite{Gonnet81} proved that when throwing $n$ balls uniformly and independently at random into $n$ bins, the fullest bin has
+%   load $(1 + o(1)) \log n/ \log \log n$ in expectation.
+%   The maximum bin load with this approach is $O(\log n/ \log \log n)$ with high probability~\cite{DubhashiR98}.
 
-% \paragraph*{Practical load balancing.}
-% RSS+ paper~\cite{BarbetteKMK19}.
+%   \paragraph*{Practical load balancing.}
+%   RSS+ paper~\cite{10.1145/3359989.3365412}.
 
-% \subsection{Packet classification}
+%   \subsection{Packet classification}
 
-% Various data structures for packet classification were proposed in the literature: lists, tries, hash tables, bit vectors, or decision trees~\cite{gupta2001algorithms,Srinivasan1999,Eppstein2001}, as well as hardware solutions (TCAM).
-% Packet classifiers are often accompanied by caching systems that provide some adjustability to traffic.
-% Due to its simplicity, a~linear lookup structure is commonly applied in practice, e.g., in the default firewall suite of the Linux operating system kernel called \texttt{iptables}~\cite{MianoBRBLP19}, the OpenFlow reference switch~\cite{openflow}, and in many QoS classifiers.
-
-% retrogade speedup and the USL
-
-% superlinear scaling in social sciences, "scaling human communities in large cities"
+%   Various data structures for packet classification were proposed in the literature: lists, tries, hash tables, bit vectors, or decision trees~\cite{gupta2001algorithms,Srinivasan1999,Eppstein2001}, as well as hardware solutions (TCAM).
+%   Packet classifiers are often accompanied by caching systems that provide some adjustability to traffic.
+%   Due to its simplicity, a~linear lookup structure is commonly applied in practice, e.g., in the default firewall suite of the Linux operating system kernel called \texttt{iptables}~\cite{MianoBRBLP19}, the OpenFlow reference switch~\cite{openflow}, and in many QoS classifiers.
 
 
 %%% Local Variables:
