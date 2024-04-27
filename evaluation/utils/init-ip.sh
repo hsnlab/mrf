@@ -2,7 +2,7 @@
 set -x
 
 MEASDEV="enp7s0"
-TESTERMAC="3c:fd:fe:ba:19:00"
+TESTERMAC="3c:fd:fe:a4:3c:58"
 
 modprobe nf_tables
 sysctl -w net.ipv4.ip_forward=1
