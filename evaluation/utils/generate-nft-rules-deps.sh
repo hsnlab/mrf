@@ -16,6 +16,9 @@ case $DEPCHAINLEN in
     2)
 	prefixes="32 0"
 	;;
+    3)
+	prefixes="32 16 0"
+	;;
     5)
 	prefixes="32 24 16 8 0"
 	;;
