@@ -108,94 +108,10 @@ Splay trees are widely used to adaptively speed up associative memory and data c
 % Self-adjusting data structures are widely used in algorithms and computer systems, e.g., in computing point maxima and convex hulls~\cite{BentleyCL93}, organizing lists of identifiers in program compilation and interpretation~\cite{HesterH85}, detecting collisions in hash tables~\cite{HesterH85}, or compressing arbitrary input~\cite{BentleySTW86}. And indeed, every cache management scheme can be viewed as a self-adjusting data structure as well
 
 
-\section{Superlinear scaling law for self-adjusting systems}
 
-(MACIEK's token for this section)
+\input{superlinear.tex}
 
-
-\subsection{The model}
-
-- consider a horizontally scaled architecture of self-adjusting data structures managed by any load balancer
-
-- Our baseline is an algorithm that uses a load-balancer (incurs the same cost per item -- can vary with items, but is uniquely determined by the item, lbtime(it)), and is a single self-adjusting data structure.
-
-- However, the main point of this comparison: in the self-adjusting world, the simplest baseline is the non-scaled reference point. It is the simplest to reason about, and the self-adjusting Amdahl's law gives initial superlinear scaling in such an approach.
-
-
-\subsection{Relations to Amdahl's law}
-
-The baseline choice is crucial for the benchmark to show superlinear scaling.
-In reality, even locally we should use the best possible algorithm, a sophisticated load-balancers to break-down self-adjusting data structures.
-With such a perspective, the baseline changes, and Amdahl's law applies.
-
-\subsection{Our Results Overview}
-
-First, we show an upper bound in this supposedly uneven benchmark.
-It shows that the superlinear scaling cannot continue with k indefinitely. Rather, it hits a limit for some value of k.
-
-Even if superlinear scaling is an ephemeral phenomena, under good conditions we may enjoy it in \emph{inital} growth with k.
-The good conditions are: the system's cost model follows the working set property. The load balancer breaks working sets (increases locality).
-
-% In our architecture, scaling is not dependent on the number of machines, but rather on the effectiveness of the load balancer to break working sets.
-% Our architecture fixes the number of load-balancer "server affinity" domain linearly growing with the number of machines.
-
-
-
-
-
-
-
-A system \emph{scales superlinearly} if baseline/system follows Amdahl with k:=k times r for an infinite set of input sequences (carefully constructed below). There is s in this equation.
-
-
-
-
-\subsection{Upper-bound on superlinear scaling of self-adjusting data structures.}
-
-definitions.
-Input sigma.
-Self-adjusting data structure's cost.
-LB savings.
-
-We aim to give a common upper bound for parallel scaling of caching, self-adjusting lists and splay trees.
-
-- all these can be captured by varying access cost
-
-
-
-\begin{theorem}
- We upper-bound the total scaling (scaled / baseline) latency in finishing the jobs by k := k times r in Amdahl, where r is obtained by -(cost saved due to working set breaking)).
-
-* objective: completion time
-* for an upper bound, we can take a perspective of average load over time (?) to upper bound completion time, assuming best machine scheduling and load balancing
-* so, how does the total work behave?
-    * we have -r for the cost reduced from the baseline, which is a single self-adjusting data structure that needs to incur the cost of load-balancing too.
-
-* then, scaling is a product of machine scaling and load-balancing savings -r
-
- 
-\end{theorem}
-
-\begin{proof}
-  by working sets breaking, total work argument, and Amdahl
-\end{proof}
-
-* link to theorems with more thorough characterization:
-    * upper bound of opt for caching Albers
-    * upper bound on opt for list access locality Albers
-    * why these are useful?
-
-
-An immediate corrolary is that caching superlinear scaling eventually ends for a fixed cache size per machine and a finite universe of items (do we need the 2nd assumption?)
-
-
-\subsection{Initial superlinear scaling by locality-boosting load balancers.}
-
-
-
-A locality boosting load balancer is defined then by any growth of r as a function of k. It may give initial superlinear scaling (performance gain in terms of k).
-
-Corollary: We should adapt some algorithm-specific logic to the load-balancer to achieve superlinear scaling.
+% I'll clean this up. M
 
 
 
