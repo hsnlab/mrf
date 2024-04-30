@@ -1,7 +1,10 @@
 \input{fig/common.tex}
 
 \begin{tikzpicture}
-  \begin{axis}[SpeedupPlot]
+  \begin{axis}[
+    SpeedupPlot,
+    legend cell align = right,
+   ]
 
     \addplot coordinates {
      (1, 1.00000)
@@ -68,7 +71,7 @@
      (62, 418.20244)
      (63, 422.64641)
     };
-    \addlegendentry{1997}
+    \addlegendentry{1997 rules}
 
     \addplot coordinates {
      (1, 1.00000)
@@ -135,7 +138,7 @@
      (62, 991.51270)
      (63, 1005.94749)
    };
-    \addlegendentry{4999}
+    \addlegendentry{4999 rules}
 
     \addplot coordinates {
      (1, 1.00000)
@@ -202,7 +205,7 @@
      (62, 1329.98301)
      (63, 1374.24497)
    };
-    \addlegendentry{10007}
+    \addlegendentry{10007 rules}
 
   \end{axis}
 \end{tikzpicture}
