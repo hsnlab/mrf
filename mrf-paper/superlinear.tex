@@ -2,10 +2,91 @@
 
 \section{Superlinear scaling law for self-adjusting systems}
 
-(MACIEK's token for this section)
-
-
 \subsection{The model}
+\label{sec:model}
+
+Consider $k$ identical parallel machines $M_1, M_2, M_3, \ldots, M_k$, each having its own isolated memory and running an instance of a self-adjusting data structure $D$. A stream of requests $\sigma$ arrives to the load balancer that partitions the stream into $k$ streams $\sigma(M_1), \sigma(M_2), \ldots, \sigma(M_k)$ and dispatches them to the machines.
+
+The load balancer is \emph{sticky}, i.e., it dispatches the requests to machines based solely on the request itself, and not on the state of the system.
+Each request from $\sigma$ belongs to a universe $\mathcal{U}$. 
+The load balancer is a function $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ that partitions the universe $\mathcal{U}$ into $k$ affinity domains $\mathcal{U}_1, \mathcal{U}_2, \ldots, \mathcal{U}_k$.
+
+The time needed for the system to process a request $\sigma_t$ at time $t$ is the sum of computing the assignment of $\sigma_t$ (denoted $T(f(\sigma_t))$) and the time to schedule and process the request by $D$ at machine $M_f(\sigma_t)$ (denoted $T(D(\sigma_t)$).
+The time $T(D(\sigma_t))$ depends on the internal state of the self-adjusting data structure $D$ at machine $f(\sigma_t)$.
+Self-adjusting data structures change their internal state over time, hence for two identical requests coming at different times, the time to process them may differ.
+
+The schedule finishes when all requests from $\sigma$ are processed. Some machines may be idle throughout execution, but the system is not allowed to reassign the requests to other machines.
+We are interested in minimizing the completion time of the schedule.
+
+% crucially, it's not only this:
+% \[
+%     \min \sum_t T(f(\sigma_t)) + T(D(\sigma_t)) \enspace .
+% \]
+% but more general schedule with gaps, but no reassignment
+
+\subsection{Scaling Law Overview}
+
+Scaling is defined as the ratio of the completion time of the baseline system with a single machine to the completion time of the system with $k$ machines, $S(k) = T(1) / T(k)$.
+Consider a single job $j$ consisting of the \emph{serial} part $s$ and the \emph{parallel} part $1-s$.
+Assumming fixed problem size, task independence and divisible work, Amdahl's law states that the completion time of the system with $k$ machines cannot scale linearly
+\begin{equation}\label{eq:mtf-perf}
+  S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s}{k}} \enspace .
+\end{equation}
+
+Superlinear scaling of the parallel part of the workload would occur if $S(k) = \frac1{s + \frac{1-s}{g(k)}}$ for some $g(k) > k$.
+In the next section we show that no self-adjusting system can scale better than
+\begin{equation}\label{eq:mtf-perf}
+  S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s}{k \cdot r}} \enspace ,
+\end{equation}
+for some value $r$ that accounts for savings from load-balancing, which depends on how well the load balancer $f_k$ reduces the input $\sigma$.
+For $T(1)$, our benchmark, we use the self-adjusting data structure $D$ that runs on a single machine \footnote{A single self-adjusting data structure is the most natural baseline choice for the considered setting. But it differs from the baseline in Amdahl's law --- that would be a single machine simulating a non-trivial load balancer $f_k$ and $k$ independent machines to decrease the problem size. Another difference from the Amdahl's law is that the problem size is not fixed. The problem size at a machine, $T(f(\sigma_t))$, depends on the internal state of the self-adjusting data structure $D$ at time $t$ and machine $M_f(\sigma_t)$.}and processes the entire stream $\sigma$, with a trivial load balancer $f_1(\cdot) = M_1$.
+
+
+
+This law does not rule out achieving superlinear scaling for some inputs, and indeed we empirically witness superlinear scaling in our experiments (see Section X).
+But how fast can $r$ grow with $k$? Can we e.g. achive quadratic scaling, i.e., $r = k$?
+The main finding of our analysis is negative: $r$ cannot grow indefinitely with $k$, and eventually the effects of load balancing ,,dry up". Concretely, for each input sequence there exists a large enough value of $k$ so that adding machines no longer increases $r$. Hence, superlinear scaling is an initial phenomenon, and it cannot continue forever.
+
+
+\subsection{An upper bound on scaling of self-adjusting systems}
+
+\maciek{Finished here}
+
+The main finding of this section is that the superlinearity cannot continue forever.
+
+
+Theorem. r is a function of , and on $k$ and $s$.
+
+In similar fashion to Amdahl's law, we define $s$ as the serial part of the workload, i.e., the time needed to compute the assignment of the requests, $s := \sum \sum_t T(f(\sigma_t))$.
+
+We aim to show a scaling law 
+
+
+
+In the run of the system for the input $\sigma$, the serial part is to compute the load balancer's assignment, $s$, and the parallel part is to process the requests by the self-adjusting data structures, $1-s$.
+
+
+
+
+
+
+Self-adjusting data structures scaled horizontally with load 
+
+
+
+We observe two 
+
+
+
+Superlinear speedup is a product of two simultaneous speedup factors: one $r\times$ speedup comes from the self-adjusting list getting progressively faster as the load balancer partitions the input better, and another $k\times$ speedup because we extend the total compute capacity available to the system $k$ times. The effective speedup is then just the multiple of the two, yielding $k^2$ times speedup in total. Plugging into Amdahl's law we get the \emph{scaling law for distributed MTF lists on uniform input} (see Fig.~\ref{fig:amdahl}):
+\begin{equation}\label{eq:mtf-perf}
+  S_l(k) = \frac{T_l(1)}{T_l(k)} = \frac1{s + \frac{1-s}{k^2}} \enspace .
+\end{equation}
+
+
+
+
+
 
 - consider a horizontally scaled architecture of self-adjusting data structures managed by any load balancer
 
