@@ -49,11 +49,11 @@ We say that rule $u$ is \emph{dependent} on another rule $v$ if they have overla
 %       \node[circle,draw] (5) {5};
 %       \node[circle,draw,right of=5] (3) {3};
 %       \node[circle,draw,right of=3] (1) {1};
-      
+
 %       % Branch 2
 %       \node[circle,draw,below of=5,yshift = 1.5cm] (4) {4};
 %       \node[circle,draw,right of=4] (2) {2};
-      
+
 %       % Edges
 %       \draw (5) -- (3);
 %       \draw (3) -- (1);
@@ -125,24 +125,30 @@ We conducted several experiments with the distributed self-adjusting packet clas
 \begin{figure*}
   \centering
   \subfloat[][acl1]{
-    \resizebox{.325\textwidth}{!}{
+    \resizebox{.225\textwidth}{!}{
       \input{fig/classbench-acl1.tex}
       \label{fig:classbench-acl1}
     }
   }
   \subfloat[][ipc1]{
-    \resizebox{.325\textwidth}{!}{
+    \resizebox{.225\textwidth}{!}{
       \input{fig/classbench-ipc1.tex}
       \label{fig:classbench-ipc1}
     }
   }
   \subfloat[][fw1]{
-    \resizebox{.325\textwidth}{!}{
+    \resizebox{.225\textwidth}{!}{
       \input{fig/classbench-fw1.tex}
       \label{fig:classbench-fw1}
     }
   }
-  \caption{ClassBench results on three rulesets with roughly 5000 rules coming from different seeds: acl1, ipc1, and fw1.}
+  \subfloat[][Synthetic traffic]{
+    \resizebox{.225\textwidth}{!}{
+      \input{fig/rule-size.tex}
+      \label{fig:rule-size}
+    }
+  }
+  \caption{ClassBench results on three rulesets with roughly 5000 rules coming from different seeds, and synthetic test with uniform traffic.}
   \label{fig:classbench}
 \end{figure*}
 
@@ -157,15 +163,6 @@ We conducted several experiments with the distributed self-adjusting packet clas
 \item takeaway: rule size does not matter
 \end{itemize}
 
-\begin{figure}
-  \centering
-  \resizebox{.85\columnwidth}{!}{
-    \input{fig/rule-size.tex}
-    }
-  \caption{Speedup with different rule sizes.}
-  \label{fig:rule-size}
-\end{figure}
-
 \noindent
 \textbf{Active flow size.} %
 \begin{itemize}
@@ -175,20 +172,11 @@ We conducted several experiments with the distributed self-adjusting packet clas
 \item takeaway: the more flows the more rules are replicated across cores and the larger the working set size and superlinearity vanishes
 \end{itemize}
 
-\begin{figure}
-  \centering
-  \resizebox{.85\columnwidth}{!}{
-    \input{fig/active-flow-size.tex}
-    }
-  \caption{Active flow size.}
-  \label{fig:active-flow-size}
-\end{figure}
-
 \noindent%
 \textbf{Rule dependencies.} %
 \begin{itemize}
 \item rule template: 1.2.3.4/{32,28,24,20,16,12,8,4,0}+udp-dst:i[1,500]
-\item traffic template: uniform: 1.2.3.4:i (500 flows) 
+\item traffic template: uniform: 1.2.3.4:i (500 flows)
 \item 4 rules-sets: no-dep, small-dep (/0 and /32 for each chain), medium-dep (/{32,24,16,8,0} for each chain), high-dep (/{32,28,24,20,16,12,8,4,0} for each chain)
 \item RSS: 5-tuple hash
 \item 1 fig with 4 scaling laws: speedup (normalized for the single-core rate)
@@ -198,12 +186,42 @@ We conducted several experiments with the distributed self-adjusting packet clas
 \noindent%
 \textbf{Locality boosting.} % (1 fig)
 \begin{itemize}
-\item benchmark the high active flow-count benchmark with different RSS hashes: bad hash: IP-dst (everything goes to 1 cpu, no scaling), 5-tuple hash (imperfect partitioning in the LB), good hash: udp-dst hash (dep chains are partitioned across cpus: only a few chains per each CPU) 
+\item benchmark the high active flow-count benchmark with different RSS hashes: bad hash: IP-dst (everything goes to 1 cpu, no scaling), 5-tuple hash (imperfect partitioning in the LB), good hash: udp-dst hash (dep chains are partitioned across cpus: only a few chains per each CPU)
 \item takeaway: locality boosting matters
 \end{itemize}
+
+\begin{figure*}
+  \centering
+  \subfloat[][Classbench acl1 latency]{
+    \resizebox{.225\textwidth}{!}{
+      \input{fig/classbench-acl1-latency.tex}
+      \label{fig:classbench-acl1-latency}
+    }
+  }
+  \subfloat[][Active flow size]{
+    \resizebox{.225\textwidth}{!}{
+      \input{fig/active-flow-size.tex}
+      \label{fig:active-flow-size}
+    }
+  }
+  \subfloat[][Zipf traffic (1997 rules)]{
+    \resizebox{.225\textwidth}{!}{
+      \input{fig/zipf.tex}
+      \label{fig:zipf}
+    }
+  }
+  \subfloat[][Locality boosting (RSS)]{
+    \resizebox{.225\textwidth}{!}{
+      \input{fig/locality-boosting.tex}
+      \label{fig:locality-boosting}
+    }
+  }
+  \caption{Microbenchmark results.}
+  \label{fig:microbenchmark}
+\end{figure*}
+
 
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "distributed_mrf"
 %%% End:
-
