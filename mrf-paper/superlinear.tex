@@ -109,7 +109,6 @@ More complicated situation. No multiplying in amdahl, but a subtraction. However
 
 If the benchmark for scaling would be the lb single core with locakity broken, the superlinearity would not hold. However, it holds wrt. A single algorithm that is non-efficient is then used as a baseline.
 
-Perhaps it is better not to say superlinear?
 
 
 
@@ -120,7 +119,6 @@ Outcomes of the paper. Scaling sa ds requires careful load balancing. We can rui
 Ripe the benefits of scaling with a simple architecture that is horizontally scalable.
 
 
-Should we call it superlinear performance improvement with scaling? There is a difference.
 
 On superlinear performance improvements of horizontally scaled self adjusting ds with good load balancing pattern.
 
@@ -130,19 +128,12 @@ On superlinear performance improvements of horizontally scaled self adjusting ds
 
 
 
-Let me attempt to state it as a proper law.
 
 As an interesting corollary, it should also imply that superlinear scaling for caching (with load balancing) is only an initial phenomenon.
 
 
-Disclaimers. It may still fail if I discover a bug at the proof writing stage.
 
 
-
-
-
-
-Gabor write that it gives scaling limit for caching.
 
 
 
@@ -189,26 +180,17 @@ If the single core must calculate lb for some reason. Then l+s=1, and the law is
 * Say we do not batch, then we need to process in parallel many requests. If we can scale the single core load (beyond this paper, wait for rss or employ many cores in a single traversal of a long path).
 * The superlinear scaling clearly vanishes when there are no more runs to cut. Its however not a quadratic number of runs to cut, since each cut partitions into two, cutting at least linear number of edges.
 * To obtain perfect superlinear scaling, one must break all runs, maybe even dynamically changing the partition
-* B
-* Mrf rss+
-* A
-* A
-* A
-* A
-* Write a main body explanation, and appendix  should have details, and explanation of mtf, packet classification. Splays out of scope, say explicitly. Caches and lru are similar, but the function f is general. No longer we
+
+
+
+
+Caches and lru are similar, but the function f is general. No longer we
 * No longer we care about each overtake, but about the events that there are k overlaps. For lru. Since these are correlated with number of overtakse, we can conclude that it can be analyzed similarly, but we focus on lists.
 * Caches cannot be scaled single core. I.e. they could be, but we need more memory, so its a bigger machine.
-* B
 
 \subsection{4}
 
 
-Thank you Gabor for taking your time to compose the draft. I love your style! I'm back in the next days. Please let me know Gabor if you need any help in addressing any issues or rewrites.
-
-My minimal commentary:
-
-
-Our statement is bold, and reviewers still may call us doing trickery. To defend it, we must explicitly state that our scaling is only an initial phenomenon.
 
 The section 3.3 splits superlinear into the product  of (1) extra  capacity and (2) self-adjustments. Gabor wrote there k^2 in modified amdahl. But the self-adjustment gains do not scale with k. Rather, the second factor(call it r) is a new parameter for locality boosting.This gives us a product of k and r (not k^2) in amdahl. The parameter  r is based on the input sequence (rules and packets) and datastructure, independently of k. Locality boosting is tied to the concept of "broken runs", explained in the appendix.
 
@@ -230,8 +212,6 @@ Our Amdahl law for self-adjusting systems is hence not a generalization of Amdah
 
 
 
-I'll elaborate when we meet. How does Tue/Wed work for you?
-
 
 Our scaling law however generalizes locality analysis for mtf (Albers) in distributed setting.
 
@@ -251,7 +231,6 @@ The theorem of Albers that we use is tight, in a sense that it is not an upper o
 
 
 
-Thanks Gabor, and sorry for the mess.
 
 In the appendix we analytically explain the paradox of the single cpu performance improvements with LB.
 
@@ -260,5 +239,3 @@ We state the performance of partitioned mtf lists in terms of input locality. Th
 The theorem of Albers that we use is tight, in a sense that it is not an upper or a lower bound, it's exactly the cost, so our bounds are strong. Our characterization also generalizes to the mrf model.
 
 The model also explains parallelism gains, but only for the objective of total work minimization, not completion time.
-
-M.
