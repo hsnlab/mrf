@@ -122,12 +122,36 @@ We conducted several experiments with the distributed self-adjusting packet clas
 \item takeaway: superlinear scaling emerges in real workloads + baseline (nftables) only linearly scales + SA version is much faster + imperfect hash-based LB works + dependency matters (fw seed result is poor)
 \end{itemize}
 
+\begin{figure*}
+  \centering
+  \subfloat[][acl1]{
+    \resizebox{.325\textwidth}{!}{
+      \input{fig/classbench-acl1.tex}
+      \label{fig:classbench-acl1}
+    }
+  }
+  \subfloat[][fw1]{
+    \resizebox{.325\textwidth}{!}{
+      \input{fig/classbench-fw1.tex}
+      \label{fig:classbench-fw1}
+    }
+  }
+  \subfloat[][ipc1]{
+    \resizebox{.325\textwidth}{!}{
+      \input{fig/classbench-ipc1.tex}
+      \label{fig:classbench-ipc1}
+    }
+  }
+  \caption{ClassBench results on three rulesets with roughly 5000 rules coming from different seeds: acl1, fw1, and ipc1.}
+  \label{fig:classbench}
+\end{figure*}
+
 \noindent
 \textbf{Rule size.} %
 \begin{itemize}
 \item no dependency rule-set and uniform traffic
 \item rule-template: 1.2.3.4+udp-dst:i[1,n], where n is a parameter: 997, 4999, 10007 (primes)
-\item flows: uniform 
+\item flows: uniform
 \item RSS: 5-tuple hash
 \item 1 fig with 3 plots for each rule size
 \item takeaway: rule size does not matter

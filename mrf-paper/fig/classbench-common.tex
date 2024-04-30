@@ -1,0 +1,24 @@
+\pgfplotsset{
+  ClassBenchGroupPlot/.style = {
+    group/group size = 1 by 2,
+    group/horizontal sep = 0pt,
+    group/vertical sep = 12pt,
+  },
+  ClassBenchRatePlot/.style = {
+    tick pos = left,
+    xlabel near ticks,
+    ylabel near ticks,
+    width=.5\textwidth,
+    height=.3\textwidth,
+    legend pos = north west,
+    legend cell align=left,
+    ylabel = {Throughput [Mpps]},
+    xlabel = {number of CPU cores},
+    xmin=1, xmax=32,
+    ymin=0,
+  },
+  ClassBenchSpeedupPlot/.style = {
+    ClassBenchRatePlot,
+    ylabel={Speedup},
+  }
+}
