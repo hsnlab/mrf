@@ -192,7 +192,7 @@ Caches and lru are similar, but the function f is general. No longer we
 
 
 
-The section 3.3 splits superlinear into the product  of (1) extra  capacity and (2) self-adjustments. Gabor wrote there k^2 in modified amdahl. But the self-adjustment gains do not scale with k. Rather, the second factor(call it r) is a new parameter for locality boosting.This gives us a product of k and r (not k^2) in amdahl. The parameter  r is based on the input sequence (rules and packets) and datastructure, independently of k. Locality boosting is tied to the concept of "broken runs", explained in the appendix.
+The section 3.3 splits superlinear into the product  of (1) extra  capacity and (2) self-adjustments. Gabor wrote there $k^2$ in modified amdahl. But the self-adjustment gains do not scale with k. Rather, the second factor(call it r) is a new parameter for locality boosting.This gives us a product of k and r (not $k^2$) in amdahl. The parameter  r is based on the input sequence (rules and packets) and datastructure, independently of k. Locality boosting is tied to the concept of "broken runs", explained in the appendix.
 
 Then, we need to explain why our law has a product, not say, min or max of r and k. But k*r is indeed an upper bound for parallel lists that follow the standard list cost model  (proof by an argument of total work, and a rough upper bound of perfect work sharing).
 
