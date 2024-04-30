@@ -1,0 +1,10 @@
+*.out
+*.aux
+*.bbl
+*.blg
+*.log
+*.synctex.gz
+*.pdf
+!figs/*.pdf
+!cover-letter/signature.pdf
+*.synctex*
