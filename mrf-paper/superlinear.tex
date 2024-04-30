@@ -2,14 +2,64 @@
 
 \section{Superlinear scaling law for self-adjusting systems}
 
+
+
+\label{sec:arch-scaling}
+
+
+Scaling is defined as the ratio of the completion time of the baseline system with a single machine to the completion time of the system with $k$ machines, $S(k) = T(1) / T(k)$.
+Consider a single job $j$ consisting of the \emph{serial} part $s$ and the \emph{parallel} part $1-s$.
+Assumming fixed problem size, task independence and divisible work, Amdahl's law states that the completion time of the system with $k$ machines cannot scale linearly
+\begin{equation}\label{eq:mtf-perf}
+  S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s}{k}} \enspace .
+\end{equation}
+Superlinear scaling of the parallel part of the workload would occur if $S(k) = \frac1{s + \frac{1-s}{g(k)}}$ for some $g(k) > k$. Amdahl's law rules this out.
+
+
+Self-adjusting architectures seem to escape Amdahl's law, and we observe superlinear scaling in our experiments.
+We observe empirical superlinear scaling for distributed caching systems~\cite{271208, 10.5555/1012889.1012894, dobb-2}. To learn more, we empirically examine an example, \emph{distributed self-adjusting list lookup}, along with a performance analysis as demonstration. Our architecture consists of a locality-boosting partitioning load-balancer (see Fig.~\ref{fig:locality-boosting-lb}) combined with a self-adjusting move-to-front list (see Fig.~\ref{fig:mtf-example}) implemented in the workers.
+Similarly to distributed caching, we find that the list lookup may scale its workload superlinearly with $k$ for some inputs.
+
+This evidence suggests to state a hypothesis that the system may achieve superlinear scaling, e.g. quadratic:
+\begin{equation}\label{eq:mtf-perf}
+  \frac{T(1)}{T(k)} \ge_{(?)} \frac1{s + \frac{1-s}{k^2}} \enspace .
+\end{equation}
+Is this possible? We investigate this question in the following sections.
+We obtain a negative and a positive result:
+\begin{enumerate}
+\item Superlinear scaling turns out to be impossible.
+Our analysis  stands that this superlinear scaling cannot continue for arbitrarily large $k$.
+Rather, the superlinear scaling is just an initial phenomenon: scaling initially grows superlinearly, but eventually hits a limit for some value of $k$. See the details in Theorem~\ref{thm:superlinear}.
+
+\item
+Nonetheless, we can reap the fruits of superlinear scaling within the initial values of $k$. When load balancers boost locality of the input stream, performance of distributed self-adjusting data structures improve, and we observe superlinear scaling. For parallel self-adjusting lists, $\ell$ can grow up to $k^2$! See Observation~\ref{obs:list} and our experiments on packet classification (Section~\ref{sec:sims}).
+\end{enumerate}
+To rigorously show these claims, we formulate the following mathematical model.
+
+
+% The rationale for why this design achieves superlinear scaling is the following.
+% Then, superlinear speedup is merely a product of two simultaneous $k\times$ speedup factors: one $k\times$ speedup comes from the self-adjusting list getting progressively faster as we add new workers (recall the ``scaled size'' model from \S\ref{sec:backgound-dist-cache}), and another $k\times$ speedup because we extend the total compute capacity available to the system $k$ times. The effective speedup is then just the multiple of the two, yielding $k^2$ times speedup in total. Plugging into Amdahl's law we get the \emph{scaling law for distributed MTF lists on uniform input} (see Fig.~\ref{fig:amdahl}):
+% \begin{equation}\label{eq:mtf-perf}
+  % S_l(k) = \frac{T_l(1)}{T_l(k)} = \frac1{s + \frac{1-s}{k^2}} \enspace .
+% \end{equation}
+
+% We used this scaling law as the graphical illustration for superlinear scaling in Fig.~\ref{fig:amdahl}. 
+% For small values of $k$ we obtain $O(k^2)$ scaling, despite that uniform request distribution is the worst case for self-adjustments. This hints at a great future potential for networking workloads that typically exhibit highly skewed request distributions~\cite{832484}.
+
+
+
 \subsection{The model}
 \label{sec:model}
+
+\paragraph{Architecture.}
 
 Consider $k$ identical parallel machines $M_1, M_2, M_3, \ldots, M_k$, each having its own isolated memory and running an instance of a self-adjusting data structure $D$. A stream of requests $\sigma$ arrives to the load balancer that partitions the stream into $k$ streams $\sigma(M_1), \sigma(M_2), \ldots, \sigma(M_k)$ and dispatches them to the machines.
 
 The load balancer is \emph{sticky}, i.e., it dispatches the requests to machines based solely on the request itself, and not on the state of the system.
 Each request from $\sigma$ belongs to a universe $\mathcal{U}$. 
 The load balancer is a function $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ that partitions the universe $\mathcal{U}$ into $k$ affinity domains $\mathcal{U}_1, \mathcal{U}_2, \ldots, \mathcal{U}_k$.
+
+\paragraph{Cost model.}
 
 The time needed for the system to process a request $\sigma_t$ at time $t$ is the sum of computing the assignment of $\sigma_t$ (denoted $T(f(\sigma_t))$) and the time to schedule and process the request by $D$ at machine $M_f(\sigma_t)$ (denoted $T(D(\sigma_t)$).
 The time $T(D(\sigma_t))$ depends on the internal state of the self-adjusting data structure $D$ at machine $f(\sigma_t)$.
@@ -24,299 +74,27 @@ We are interested in minimizing the completion time of the schedule.
 % \]
 % but more general schedule with gaps, but no reassignment
 
-\subsection{Scaling Law Overview}
 
-Scaling is defined as the ratio of the completion time of the baseline system with a single machine to the completion time of the system with $k$ machines, $S(k) = T(1) / T(k)$.
-Consider a single job $j$ consisting of the \emph{serial} part $s$ and the \emph{parallel} part $1-s$.
-Assumming fixed problem size, task independence and divisible work, Amdahl's law states that the completion time of the system with $k$ machines cannot scale linearly
+\subsection{The Scaling Law}
+
+The definitions of $s$ and $T(1)$ are natural.
+In similar fashion to Amdahl's law, we define $s$ as the serial fraction of the workload. In our case the serial workload is the total time spent for the load balaning, $\sum \sum_t T(f(\sigma_t))$.
+We define $T(1)$, our benchmark, an the self-adjusting data structure $D$ that runs on a single machine \footnote{A single self-adjusting data structure is the most natural baseline choice for the considered setting. But it differs from the baseline in Amdahl's law --- that would be a single machine simulating a non-trivial load balancer $f_k$ and $k$ independent machines to decrease the problem size. Another difference from the Amdahl's law is that the problem size is not fixed. The problem size at a machine, $T(f(\sigma_t))$, depends on the internal state of the self-adjusting data structure $D$ at time $t$ and machine $M_f(\sigma_t)$.}and processes the entire stream $\sigma$, with a trivial load balancer $f_1(\cdot) = M_1$.
+
+
+Our law states the following: no self-adjusting system can scale better than
 \begin{equation}\label{eq:mtf-perf}
-  S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s}{k}} \enspace .
+  S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s}{k \cdot \ell}} \enspace ,
 \end{equation}
+for some value $\ell$ that depends on how well the load balancer $f_k$ reduces the input $\sigma$.
+We refer to the Appendix for formal definitions, cf. the proof of Theorem~\ref{thm:superlinear}.
 
-Superlinear scaling of the parallel part of the workload would occur if $S(k) = \frac1{s + \frac{1-s}{g(k)}}$ for some $g(k) > k$.
-In the next section we show that no self-adjusting system can scale better than
+
+\paragraph{Consequences of the scaling law.}
+Can we e.g. achive quadratic scaling, i.e., $\ell = k$? 
+Our theorem has implications that (informally) quadratic speedup is impossible to achieve for all $k$:
 \begin{equation}\label{eq:mtf-perf}
-  S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s}{k \cdot r}} \enspace ,
+  \frac{T(1)}{T(k)} \neq \frac1{s + \frac{1-s}{k^2}} \enspace ,
 \end{equation}
-for some value $r$ that accounts for savings from load-balancing, which depends on how well the load balancer $f_k$ reduces the input $\sigma$.
-For $T(1)$, our benchmark, we use the self-adjusting data structure $D$ that runs on a single machine \footnote{A single self-adjusting data structure is the most natural baseline choice for the considered setting. But it differs from the baseline in Amdahl's law --- that would be a single machine simulating a non-trivial load balancer $f_k$ and $k$ independent machines to decrease the problem size. Another difference from the Amdahl's law is that the problem size is not fixed. The problem size at a machine, $T(f(\sigma_t))$, depends on the internal state of the self-adjusting data structure $D$ at time $t$ and machine $M_f(\sigma_t)$.}and processes the entire stream $\sigma$, with a trivial load balancer $f_1(\cdot) = M_1$.
+The $r$ cannot grow indefinitely with $k$, and eventually the effects of load balancing ,,dry up". For each input sequence there exists a large enough value of $k$ so that adding machines no longer increases $r$. Hence, superlinear scaling is an initial phenomenon, and it cannot continue forever.
 
-
-
-This law does not rule out achieving superlinear scaling for some inputs, and indeed we empirically witness superlinear scaling in our experiments (see Section X).
-But how fast can $r$ grow with $k$? Can we e.g. achive quadratic scaling, i.e., $r = k$?
-The main finding of our analysis is negative: $r$ cannot grow indefinitely with $k$, and eventually the effects of load balancing ,,dry up". Concretely, for each input sequence there exists a large enough value of $k$ so that adding machines no longer increases $r$. Hence, superlinear scaling is an initial phenomenon, and it cannot continue forever.
-
-
-\subsection{An upper bound on scaling of self-adjusting systems}
-
-\maciek{Finished here}
-
-The main finding of this section is that the superlinearity cannot continue forever.
-
-
-Theorem. r is a function of , and on $k$ and $s$.
-
-In similar fashion to Amdahl's law, we define $s$ as the serial part of the workload, i.e., the time needed to compute the assignment of the requests, $s := \sum \sum_t T(f(\sigma_t))$.
-
-We aim to show a scaling law 
-
-
-
-In the run of the system for the input $\sigma$, the serial part is to compute the load balancer's assignment, $s$, and the parallel part is to process the requests by the self-adjusting data structures, $1-s$.
-
-
-
-
-
-
-Self-adjusting data structures scaled horizontally with load 
-
-
-
-We observe two 
-
-
-
-Superlinear speedup is a product of two simultaneous speedup factors: one $r\times$ speedup comes from the self-adjusting list getting progressively faster as the load balancer partitions the input better, and another $k\times$ speedup because we extend the total compute capacity available to the system $k$ times. The effective speedup is then just the multiple of the two, yielding $k^2$ times speedup in total. Plugging into Amdahl's law we get the \emph{scaling law for distributed MTF lists on uniform input} (see Fig.~\ref{fig:amdahl}):
-\begin{equation}\label{eq:mtf-perf}
-  S_l(k) = \frac{T_l(1)}{T_l(k)} = \frac1{s + \frac{1-s}{k^2}} \enspace .
-\end{equation}
-
-
-
-
-
-
-- consider a horizontally scaled architecture of self-adjusting data structures managed by any load balancer
-
-- Our baseline is an algorithm that uses a load-balancer (incurs the same cost per item -- can vary with items, but is uniquely determined by the item, lbtime(it)), and is a single self-adjusting data structure.
-
-- However, the main point of this comparison: in the self-adjusting world, the simplest baseline is the non-scaled reference point. It is the simplest to reason about, and the self-adjusting Amdahl's law gives initial superlinear scaling in such an approach.
-
-
-\subsection{Relations to Amdahl's law}
-
-The baseline choice is crucial for the benchmark to show superlinear scaling.
-In reality, even locally we should use the best possible algorithm, a sophisticated load-balancers to break-down self-adjusting data structures.
-With such a perspective, the baseline changes, and Amdahl's law applies.
-
-\subsection{Our Results Overview}
-
-First, we show an upper bound in this supposedly uneven benchmark.
-It shows that the superlinear scaling cannot continue with k indefinitely. Rather, it hits a limit for some value of k.
-
-Even if superlinear scaling is an ephemeral phenomena, under good conditions we may enjoy it in \emph{inital} growth with k.
-The good conditions are: the system's cost model follows the working set property. The load balancer breaks working sets (increases locality).
-
-% In our architecture, scaling is not dependent on the number of machines, but rather on the effectiveness of the load balancer to break working sets.
-% Our architecture fixes the number of load-balancer "server affinity" domain linearly growing with the number of machines.
-
-
-
-
-
-
-
-A system \emph{scales superlinearly} if baseline/system follows Amdahl with k:=k times r for an infinite set of input sequences (carefully constructed below). There is s in this equation.
-
-
-
-
-\subsection{Upper-bound on superlinear scaling of self-adjusting data structures.}
-
-definitions.
-Input sigma.
-Self-adjusting data structure's cost.
-LB savings.
-
-We aim to give a common upper bound for parallel scaling of caching, self-adjusting lists and splay trees.
-
-- all these can be captured by varying access cost
-
-
-
-\begin{theorem}
- We upper-bound the total scaling (scaled / baseline) latency in finishing the jobs by k := k times r in Amdahl, where r is obtained by -(cost saved due to working set breaking)).
-
-* objective: completion time
-* for an upper bound, we can take a perspective of average load over time (?) to upper bound completion time, assuming best machine scheduling and load balancing
-* so, how does the total work behave?
-    * we have -r for the cost reduced from the baseline, which is a single self-adjusting data structure that needs to incur the cost of load-balancing too.
-
-* then, scaling is a product of machine scaling and load-balancing savings -r
-
- 
-\end{theorem}
-
-\begin{proof}
-  by working sets breaking, total work argument, and Amdahl
-\end{proof}
-
-* link to theorems with more thorough characterization:
-    * upper bound of opt for caching Albers
-    * upper bound on opt for list access locality Albers
-    * why these are useful?
-
-
-An immediate corrolary is that caching superlinear scaling eventually ends for a fixed cache size per machine and a finite universe of items (do we need the 2nd assumption?)
-
-
-\subsection{Initial superlinear scaling by locality-boosting load balancers.}
-
-
-
-A locality boosting load balancer is defined then by any growth of r as a function of k. It may give initial superlinear scaling (performance gain in terms of k).
-
-Corollary: We should adapt some algorithm-specific logic to the load-balancer to achieve superlinear scaling.
-
-
-
-\subsection{1}
-
-
-We can grab the fruits of localisty boosting lb even to break single core sa datastructures. However  this is best combined worth scaling of machines. We should maximize balancing on a single machine first. Then, adding manny machines reduces registers contention
-
-
-
-
-Caching is also subject to initial only scaling. How to show? In appendix 4. By Albers, another paper gives a limit on opt in terms of f. Eventually, no more f to decrease by lb, and superlinearity ends. Does scaling work if we share a cache of some size l without scalong number of machines? It actually can hurt you (associate caching, only some items occupy certain space, it is weaker. How gains can be made? Say we split in two, and there are 2l items requested round robin. Then, lru page faults all time. But if we manage to cut out k/2 items that stay in cache, we only page fault 7t% of time.
-
-
-A corollary is that we should not only design self adjusting data structures for where the input has locality. But we should design them in tandems, with locality boositing lbs, that need to be designed for a given data structure solution to a problem. Lbs should retain their usual properties such as sticyness and evening the load among machines.
-
-More complicated situation. No multiplying in amdahl, but a subtraction. However, we can express it this way to have scaling factor like superlinear by multiplying it as a fraction of 1-s, to get the same classification. See concept notes for derivation of the formula with R standards scaling form. This works for cachong too
-
-
-If the benchmark for scaling would be the lb single core with locakity broken, the superlinearity would not hold. However, it holds wrt. A single algorithm that is non-efficient is then used as a baseline.
-
-
-
-
-Why is this phenomenon an argument for using self adjusting ds? When lb done right, we haveand effect of both k and r multiplied. In this architecture.
-
-Outcomes of the paper. Scaling sa ds requires careful load balancing. We can ruin performance or boost it more than linearly.
-
-Ripe the benefits of scaling with a simple architecture that is horizontally scalable.
-
-
-
-On superlinear performance improvements of horizontally scaled self adjusting ds with good load balancing pattern.
-
-
-\subsection{2}
-
-
-
-
-
-As an interesting corollary, it should also imply that superlinear scaling for caching (with load balancing) is only an initial phenomenon.
-
-
-
-
-
-
-
-Universal scaling law.
-
-First, let r be the savings by cutting with lb on single core. This reduces total work by r (normalize so it is not N, but at most 1). Then, define R in terms of s and r. Then, amdahl says that the scaling is ..R*k.
-
-
-Consider a load balancer and k parallel machines according to our horizontally scaling architecture. Fix input sigma and a self adjusting data structure. Let t(1) be the performance of a single ds on sigma.
-
-
-
-
-Let s be the serial part (compute the load balancing primitive in this case).
-
-
-
-
-Let l be the lb work, and s be the single data structure running time. Then, a single core has cost of s. And k machines have work of l+(s-r)/k= l+s/(k*R) by at most perfect split of s and by locality boosting bonus.
-
-If the single core must calculate lb for some reason. Then l+s=1, and the law is as for amdahl.
-
-
-\subsection{3}
-
-
-
-* Mrf is only harder
-* Caching is not s generalization of mtf, it's mtf in different cost model (sleator cite). Say that mtf is lru
-* Load-balance yourself out to superlinear scaling
-* Add my related work
-* Discussion about retaining good properties of lbs, such as uniform balanicing
-* Appendix. We simplify the spatial dimension to two items. Then runs perfectly capture temporal locality. And there is independence between pairs, amd the costs add up
-* Evaluations. Sleep is maybe bad, because it allows for other threads? Instead, random numbers generation in batches.
-* Say stateless classifier
-* The rss link to cut based partitioning? In the intro, abstract, main
-* Todo. Think how to explain single core scaling. This analysis is in case of mtf exact search and sticky hashing. But it is more general, and we can use efficuts like to have the same analysis for packet classification. There are overlaps in each partitioning, where we retain some runs (assigned to different cores) in the cost.
-* Hash table degeneration not always possible. If only one core scaling, it is not superlinear, but we see scaling nonetheless. Superlinear comes from combining these scaling. We do it by changing the objective to total avg work /cores, assumming it is uniform (cheating, todo rss+). Say this is future work.
-* B
-* Is there a limit to superlinear scaling? Yes, this is initial scaling. In the extreme, no self adjustments help. Describe this limitation. On a good side, the initial scaling is practical
-* B
-* Formulas for the objective todo. That also take the parallel scaling into account. Say, we assume perfect load balancing with avg load minimization, which is already captured. But what is really going on is limiting the scaling. The correct objective is.
-* The objective. Batches of packets arrive, and need to be processed. We progress to the next batch when all are finished. Then bad improvement, say we cannot batch. The objective is sum completion times.
-* Say we do not batch, then we need to process in parallel many requests. If we can scale the single core load (beyond this paper, wait for rss or employ many cores in a single traversal of a long path).
-* The superlinear scaling clearly vanishes when there are no more runs to cut. Its however not a quadratic number of runs to cut, since each cut partitions into two, cutting at least linear number of edges.
-* To obtain perfect superlinear scaling, one must break all runs, maybe even dynamically changing the partition
-
-
-
-
-Caches and lru are similar, but the function f is general. No longer we
-* No longer we care about each overtake, but about the events that there are k overlaps. For lru. Since these are correlated with number of overtakse, we can conclude that it can be analyzed similarly, but we focus on lists.
-* Caches cannot be scaled single core. I.e. they could be, but we need more memory, so its a bigger machine.
-
-\subsection{4}
-
-
-
-The section 3.3 splits superlinear into the product  of (1) extra  capacity and (2) self-adjustments. Gabor wrote there $k^2$ in modified amdahl. But the self-adjustment gains do not scale with k. Rather, the second factor(call it r) is a new parameter for locality boosting.This gives us a product of k and r (not $k^2$) in amdahl. The parameter  r is based on the input sequence (rules and packets) and datastructure, independently of k. Locality boosting is tied to the concept of "broken runs", explained in the appendix.
-
-Then, we need to explain why our law has a product, not say, min or max of r and k. But k*r is indeed an upper bound for parallel lists that follow the standard list cost model  (proof by an argument of total work, and a rough upper bound of perfect work sharing).
-
-Scaling cannot increase superlinearly forever because at some point there is no more runs to break. Hence superlinear scaling is only initial. As we scale the number k, in our system design, load balancing also affects r. But the effect of LB on r can be even much larger in k.
-
-Locality boosting load balancing system is defined then by any growth of r as a function of k.
-
-
-
-Our Amdahl law for self-adjusting systems is hence not a generalization of Amdahl, but its application to self adjusting systems (This is proven by performance improvements in single-core). We introduce another parameter related to self-adjusting  data structures (locality boosting parameter r).
-
-
-
-
-
-
-
-
-
-
-Our scaling law however generalizes locality analysis for mtf (Albers) in distributed setting.
-
-\subsection{5}
-
-
-
-In the appendix we explain the paradox of the single cpu performance improvements with LB.
-
-We state the performance of partitioned mtf lists in terms of input locality. This is the simplest cost model for LB+self-adjusting, without parallelism.
-
-The theorem of Albers that we use is tight, in a sense that it is not an upper or a lower bound, it's exactly the cost, so our bounds are strong. Our characterization also generalizes to the mrf m.
-
-
-
-
-
-
-
-
-In the appendix we analytically explain the paradox of the single cpu performance improvements with LB.
-
-We state the performance of partitioned mtf lists in terms of input locality. This is the simplest cost model for LB+self-adjusting for lists.
-
-The theorem of Albers that we use is tight, in a sense that it is not an upper or a lower bound, it's exactly the cost, so our bounds are strong. Our characterization also generalizes to the mrf model.
-
-The model also explains parallelism gains, but only for the objective of total work minimization, not completion time.

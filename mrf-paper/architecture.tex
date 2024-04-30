@@ -109,28 +109,6 @@ Splay trees are widely used to adaptively speed up associative memory and data c
 
 
 
-
-
-
-
-\subsection{Superlinear scaling (previous)}
-\label{sec:arch-scaling}
-
-
-So how can locality-boosting load balancing and self-adjusting algorithms, when used together in a distributed system, produce superlinear scaling? Below we present an example, \emph{distributed self-adjusting list lookup}, along with a performance analysis as demonstration. Our architecture consists of a locality-boosting partitioning load-balancer (see Fig.~\ref{fig:locality-boosting-lb}) combined with a self-adjusting move-to-front list (see Fig.~\ref{fig:mtf-example}) implemented in the workers. The rationale for why this design achieves superlinear scaling is the following.
-
-Suppose that there are $m$ items to be stored in the list and $k$ workers, each maintaining an independent index into the list. Suppose further that, at the input, requests can be received for any of the $m$ items. To make things more difficult we assume uniform request distribution on the system's input, which is, recall, the worst case for any self-adjusting algorithm by being totally \emph{unpredictable}. Thus, for a single worker move-to-front reordering has no useful effect and the worst case access time is $m$, identical to that of a static linked list.
-
-Now suppose we move from 1 worker to $k$ parallel workers. This results, within our architecture, that the load balancer effectively partitions the uniformly distributed input on $m$ items into $k$ uniformly distributed input streams for only $\frac{m}{k}$ different items (see Fig.~\ref{fig:locality-boosting-lb}). This means that the workers' input features a much higher spatial locality than the system's input (which sports none).  Had we used a random or a round robin load balancer the workers would still see all the $m$ possible inputs, just with a sampled uniform distribution, and no locality. After a while, each MTF list in the workers will have its specific subset of $\frac{m}{k}$ items moved to the first $\frac{m}{k}$ positions (in an arbitrary order), reducing the worst-case lookup time from $m$ (1 worker) to $\frac{m}{k}$ ($k$ workers). This introduces $k\times$ speedup compared to the single-threaded case.
-
-Then, superlinear speedup is merely a product of two simultaneous $k\times$ speedup factors: one $k\times$ speedup comes from the self-adjusting list getting progressively faster as we add new workers (recall the ``scaled size'' model from \S\ref{sec:backgound-dist-cache}), and another $k\times$ speedup because we extend the total compute capacity available to the system $k$ times. The effective speedup is then just the multiple of the two, yielding $k^2$ times speedup in total. Plugging into Amdahl's law we get the \emph{scaling law for distributed MTF lists on uniform input} (see Fig.~\ref{fig:amdahl}):
-\begin{equation}\label{eq:mtf-perf}
-  S_l(k) = \frac{T_l(1)}{T_l(k)} = \frac1{s + \frac{1-s}{k^2}} \enspace .
-\end{equation}
-
-% We used this scaling law as the graphical illustration for superlinear scaling in Fig.~\ref{fig:amdahl}. 
-For small values of $k$ we obtain $O(k^2)$ scaling, despite that uniform request distribution is the worst case for self-adjustments. This hints at a great future potential for networking workloads that typically exhibit highly skewed request distributions~\cite{832484}.
-
 %%% mode: latex
 %%% TeX-master: "distributed_mrf"
 %%% End:
