@@ -10,9 +10,9 @@
 Scaling is defined as the ratio of the completion time of the baseline system with a single machine to the completion time of the system with $k$ machines, $S(k) = T(1) / T(k)$.
 Consider a single job $j$ consisting of the \emph{serial} part $s$ and the \emph{parallel} part $1-s$.
 Assumming fixed problem size, task independence and divisible work, Amdahl's law states that the completion time of the system with $k$ machines cannot scale linearly
-\begin{equation}\label{eq:mtf-perf}
-  S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s}{k}} \enspace .
-\end{equation}
+\begin{equation*}\label{eq:mtf-perf}
+  \frac{T(1)}{T(k)} \le \frac1{s + \frac{1-s}{k}} \enspace .
+\end{equation*}
 Superlinear scaling of the parallel part of the workload would occur if $S(k) = \frac1{s + \frac{1-s}{g(k)}}$ for some $g(k) > k$. Amdahl's law rules this out.
 
 
@@ -21,9 +21,9 @@ We observe empirical superlinear scaling for distributed caching systems~\cite{2
 Similarly to distributed caching, we find that the list lookup may scale its workload superlinearly with $k$ for some inputs.
 
 This evidence suggests to state a hypothesis that the system may achieve superlinear scaling, e.g. quadratic:
-\begin{equation}\label{eq:mtf-perf}
-  \frac{T(1)}{T(k)} \ge_{(?)} \frac1{s + \frac{1-s}{k^2}} \enspace .
-\end{equation}
+\begin{equation*}\label{eq:mtf-perf}
+  \frac{T(1)}{T(k)} \overset{?}{\ge} \frac1{s + \frac{1-s}{k^2}} \enspace .
+\end{equation*}
 Is this possible? We investigate this question in the following sections.
 We obtain a negative and a positive result:
 \begin{enumerate}
@@ -32,7 +32,7 @@ Our analysis  stands that this superlinear scaling cannot continue for arbitrari
 Rather, the superlinear scaling is just an initial phenomenon: scaling initially grows superlinearly, but eventually hits a limit for some value of $k$. See the details in Theorem~\ref{thm:superlinear}.
 
 \item
-Nonetheless, we can reap the fruits of superlinear scaling within the initial values of $k$. When load balancers boost locality of the input stream, performance of distributed self-adjusting data structures improve, and we observe superlinear scaling. For parallel self-adjusting lists, improvements can grow up to $k^2$ (see Observation~\ref{obs:list}).
+Nonetheless, we can reap the fruits of superlinear scaling within the initial values of $k$. When load balancers boost locality of the input stream, performance of distributed self-adjusting data structures improve, and we observe superlinear scaling. For parallel self-adjusting lists, improvements can ammount up to $k^2$ (see Observation~\ref{obs:list-k2}).
 \end{enumerate}
 To rigorously show these claims, we formulate the following mathematical model.
 
@@ -82,12 +82,12 @@ In similar fashion to Amdahl's law, we define $s$ as the serial fraction of the 
 Our benchmark $T(1)$ is a single self-adjusting data structure $D$ that runs on a single machine \footnote{A single self-adjusting data structure is the most natural baseline choice for the considered setting. But it differs from the baseline in Amdahl's law --- that would be a single machine simulating a non-trivial load balancer $f_k$ and $k$ independent machines to decrease the problem size. Another difference from the Amdahl's law assumptions is that the problem size is not fixed. The problem size at a machine, $T(f(\sigma_t))$, depends on the internal state of the self-adjusting data structure $D$ at time $t$ and machine $M_f(\sigma_t)$.}and processes the entire stream $\sigma$, with a trivial load balancer $f_1(\cdot) = M_1$.
 
 
-Our law informally states the following: no self-adjusting system can scale better than
-\begin{equation}\label{eq:mtf-perf}
-  S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s}{k \cdot \ell}} \enspace ,
-\end{equation}
+Our law informally states the following: for any input $\sigma$, no self-adjusting distributed system adhering to our model can scale better than
+\begin{equation*}\label{eq:mtf-perf}
+  \frac{T(1)}{T(k)} \le \frac1{s + \frac{1-s}{k \cdot \ell}} \enspace ,
+\end{equation*}
 for some value $\ell$ that depends on how well the load balancer $f_k$ reduces the input $\sigma$.
-We dedicate the Appendix to the definition of $\ell$ and the proof of the theorem.
+We dedicate the Appendix~\ref{sec:apx} to the definition of $\ell$ and the proof of the theorem.
 % We refer to the Appendix for formal definitions, cf. the proof of Theorem~\ref{thm:superlinear}.
 The upper bound on scaling holds for all self-adjusting systems adhering to our architecture, which includes caching as a special case.
 
@@ -97,9 +97,9 @@ The upper bound on scaling holds for all self-adjusting systems adhering to our 
 \paragraph{Consequences of the scaling law.}
 Can we e.g. achieve quadratic scaling, i.e., $\ell = k$? 
 Our theorem has implications that (informally) quadratic speedup is impossible to achieve for all $k$:
-\begin{equation}\label{eq:mtf-perf}
+\begin{equation*}\label{eq:mtf-perf}
   \frac{T(1)}{T(k)} \neq \frac1{s + \frac{1-s}{k^2}} \enspace ,
-\end{equation}
-The $r$ cannot grow indefinitely with $k$, and eventually the effects of load balancing ,,dry up". For each input sequence there exists a large enough value of $k$ so that adding machines no longer increases $r$ (details in Observation~\ref{obs:list}). Hence, superlinear scaling is an initial phenomenon, and it cannot continue forever.
+\end{equation*}
+The $r$ cannot grow indefinitely with $k$, and eventually the effects of load balancing ,,dry up". For each input sequence there exists a large enough value of $k$ so that adding machines no longer increases $r$ (details in Observation~\ref{obs:initial}). Hence, superlinear scaling is an initial phenomenon, and it cannot continue forever.
 
 

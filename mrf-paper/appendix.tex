@@ -5,6 +5,7 @@
 
 
 \section{Superlinear Scaling Theorem}
+\label{sec:apx}
 
 Our law informally stated the following: no self-adjusting system can scale better than
 \begin{equation*}
@@ -54,13 +55,13 @@ By setting $\ell = \frac{(1-s)\cdot k}{1-s-r'}$, we obtain the following theorem
 \begin{theorem}
 	\label{thm:superlinear}
 	Fix an input sequence $\sigma$.
-	Assume that a self-adjusting data structure $D$ whose cost function depends on its working set size with a cost function $g$ that is a monotonically increasing. 
+	Assume that a self-adjusting data structure $D$ whose cost function depends on its working set size with a cost function $g_D$ that is monotonically increasing. 
 	Then, for any number of machines $k$, the scaling of the system is upper-bounded by
 	\begin{equation*}
 	  S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s}{k \cdot \ell}} \enspace ,
 	\end{equation*}
 \end{theorem}
-The proof of this theorem is a direct consequence of the Amdahl's law to the reduced workload. The total workload is reduced additively by $r$, which gives the multiplicative law for our choice of $\ell$.
+The proof of this theorem is a direct consequence of the Amdahl's law to the reduced workload. The total workload is reduced additively by $r$ (the exact value depends on $g_D$ and $f_k$), which gives the multiplicative law for our choice of $\ell$.
 
 
 \paragraph*{Consequences.}
