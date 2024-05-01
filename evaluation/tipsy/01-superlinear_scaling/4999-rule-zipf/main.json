@@ -10,7 +10,7 @@
                     "SUTSSHPORT": "22",
                     "TESTERMAC": "04:3f:72:ed:82:c2",
                     "SCRIPT": "/home/levai/mrf-debian/scripts/test-runner.sh",
-                    "NFTRULESFILE": "/root/mrf-rules/udp_dst-4999.nft",
+                    "NFTRULESFILE": "/root/mrf-rules/udp_dst-4999-rev.nft",
                     "PCAPFILE": "../../../../pcaps/udp_dst-4999-zipf2.pcap",
                     "MRFENABLE": [0, 1],
                     "CORES": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
