@@ -46,7 +46,7 @@ In total, we observe cost savings from load balancing for the stream $\sigma$, d
 \[
 	r = \sum_{t} g(|W_t(x)|) - \sum_{t} g(|W_t(x)| \cap \mathcal{U}_i) \enspace .
 \]
-Then, the total work decreases (a strict deviation from Amdahl's law) by $r$ for the stream $\sigma$. Let $r'$ be a normalized value of $r$ with respect to the total work of the system. Then, applying Amdahl's law to the reduced workload, we obtain the following theorem.
+Then, the total work decreases (a strict deviation from Amdahl's law) by $r$ for the stream $\sigma$. Let $r'$ be a normalized value of $r$ with respect to the total non-serial work of the system. Then, applying Amdahl's law to the reduced workload, we obtain the following theorem.
 \begin{equation*}
   S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s - r'}{k}} \enspace ,
 \end{equation*}

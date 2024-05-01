@@ -6,7 +6,7 @@
 
 Scaling is defined as the ratio of the completion time of the baseline system with a single machine to the completion time of the system with $k$ machines, $S(k) = T(1) / T(k)$.
 Consider a single job $j$ consisting of the \emph{serial} part $s$ and the \emph{parallel} part $1-s$.
-Assumming fixed problem size, task independence and divisible work, Amdahl's law states that the completion time of the system with $k$ machines cannot scale linearly
+Assuming fixed problem size, task independence and divisible work, Amdahl's law states that the completion time of the system with $k$ machines cannot scale linearly
 \begin{equation*}\label{eq:mtf-perf}
   \frac{T(1)}{T(k)} \le \frac1{s + \frac{1-s}{k}} \enspace .
 \end{equation*}
@@ -29,7 +29,7 @@ Our analysis  stands that this superlinear scaling cannot continue for arbitrari
 Rather, the superlinear scaling is just an initial phenomenon: scaling initially grows superlinearly, but eventually hits a limit for some value of $k$. See the details in Theorem~\ref{thm:superlinear}.
 
 \item
-Nonetheless, we can reap the fruits of superlinear scaling within the initial values of $k$. When load balancers boost locality of the input stream, performance of distributed self-adjusting data structures improve, and we observe superlinear scaling. For parallel self-adjusting lists, improvements can ammount up to $k^2$ (see Observation~\ref{obs:list-k2}).
+Nonetheless, we can reap the fruits of superlinear scaling within the initial values of $k$. When load balancers boost locality of the input stream, performance of distributed self-adjusting data structures improve, and we observe superlinear scaling. For parallel self-adjusting lists, improvements can amount up to $k^2$ (see Observation~\ref{obs:list-k2}).
 \end{enumerate}
 To rigorously show these claims, we formulate the following mathematical model.
 
