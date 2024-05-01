@@ -74,11 +74,13 @@ The proof of this theorem is a direct consequence of the Amdahl's law to the red
 \paragraph*{Consequences.}
 The above law has consequences for the scaling of self-adjusting systems. We express these consequences in terms of the additive $r$, but the consequences for $\ell$ are immediate.
 
-First, we observe that after $k = |\mathcal{U}|$, all affinity domains are singletons, and increasing $k$ further does not reduce the cost any further, since there are no more working sets to isolate.
-\begin{observation}
-	\label{obs:initial}
-	The value of $r$ cannot grow indefinitely with~$k$.
-\end{observation}
+The value of $r$ cannot grow indefinitely with~$k$.
+We observe that after $k = |\mathcal{U}|$, all affinity domains are singletons, and increasing $k$ further does not reduce the cost any further, since there are no more working sets to isolate.
+\begin{equation*}\label{eq:mtf-perf}
+ \forall \sigma \exists k \frac{T(1)}{T(k)} \neq \frac1{s + \frac{1-s}{k^2}} \enspace ,
+ TODO
+\end{equation*}
+
 
 \section{Initial Superlinear Scaling}
 
