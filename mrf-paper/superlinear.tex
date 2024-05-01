@@ -87,14 +87,19 @@ Our law informally states the following: no self-adjusting system can scale bett
   S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s}{k \cdot \ell}} \enspace ,
 \end{equation}
 for some value $\ell$ that depends on how well the load balancer $f_k$ reduces the input $\sigma$.
-We refer to the Appendix for formal definitions, cf. the proof of Theorem~\ref{thm:superlinear}.
+We dedicate the Appendix to the definition of $\ell$ and the proof of the theorem.
+% We refer to the Appendix for formal definitions, cf. the proof of Theorem~\ref{thm:superlinear}.
+The upper bound on scaling holds for all self-adjusting systems adhering to our architecture, which includes caching as a special case.
+
+
 
 
 \paragraph{Consequences of the scaling law.}
-Can we e.g. achive quadratic scaling, i.e., $\ell = k$? 
+Can we e.g. achieve quadratic scaling, i.e., $\ell = k$? 
 Our theorem has implications that (informally) quadratic speedup is impossible to achieve for all $k$:
 \begin{equation}\label{eq:mtf-perf}
   \frac{T(1)}{T(k)} \neq \frac1{s + \frac{1-s}{k^2}} \enspace ,
 \end{equation}
-The $r$ cannot grow indefinitely with $k$, and eventually the effects of load balancing ,,dry up". For each input sequence there exists a large enough value of $k$ so that adding machines no longer increases $r$. Hence, superlinear scaling is an initial phenomenon, and it cannot continue forever.
+The $r$ cannot grow indefinitely with $k$, and eventually the effects of load balancing ,,dry up". For each input sequence there exists a large enough value of $k$ so that adding machines no longer increases $r$ (details in Observation~\ref{obs:list}). Hence, superlinear scaling is an initial phenomenon, and it cannot continue forever.
+
 
