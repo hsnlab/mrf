@@ -41,12 +41,17 @@ Recall that the load balancer partitions the stream into $k$ streams $\sigma(M_1
 These streams may have reduced working set sizes at the machines in comparison to the working set sizes of the original stream $\sigma$.
 Precisely, a load balancer $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ partitions the universe $\mathcal{U}$ into $k$ subsets $\mathcal{U}_1, \mathcal{U}_2, \ldots, \mathcal{U}_k$, and the working set for machine $i$ at the time $x = \sigma_t$ is requested is $W_t(x, t, \sigma(M_i)) = W_t(x, t, \sigma) \cap \mathcal{U}_i$.
 
+\paragraph*{Visualize the cost savings with a complete weighted graph.}
+TODO
+
 \paragraph*{Defining $\ell$: from an additive to a multiplicative law.}
 In total, we observe cost savings from load balancing for the stream $\sigma$, data structure $D$ characterized by a function $g$, and a load balancer $f_k$. We denote them as
 \[
 	r = \sum_{t} g(|W_t(x)|) - \sum_{t} g(|W_t(x)| \cap \mathcal{U}_i) \enspace .
 \]
 Then, the total work decreases (a strict deviation from Amdahl's law) by $r$ for the stream $\sigma$. Let $r'$ be a normalized value of $r$ with respect to the total non-serial work of the system. Then, applying Amdahl's law to the reduced workload, we obtain the following theorem.
+
+
 \begin{equation*}
   S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s - r'}{k}} \enspace ,
 \end{equation*}
@@ -67,20 +72,43 @@ The proof of this theorem is a direct consequence of the Amdahl's law to the red
 \paragraph*{Consequences.}
 The above law has consequences for the scaling of self-adjusting systems. We express these consequences in terms of the additive $r$, but the consequences for $\ell$ are immediate.
 
-
-
-\begin{observation}
-	\label{obs:list-k2}
-	The value of $r$ can be $O(k^2)$ for lists.
-\end{observation}
-This can happen for $\sigma$ that requests all items of the universe in a round-robin fashion and for $f_k$ that isolates all affinity domains into singletons. 
-
-
+First, we observe that after $k = |\mathcal{U}|$, all affinity domains are singletons, and increasing $k$ further does not reduce the cost any further, since there are no more working sets to isolate.
 \begin{observation}
 	\label{obs:initial}
 	The value of $r$ cannot grow indefinitely with~$k$.
 \end{observation}
-After $k = |\mathcal{U}|$, all affinity domains are singletons, and increasing $k$ further does not reduce the cost any further, since there are no more working sets to isolate.
+
+Second, we observe that for some inputs, distributed list access can achieve \emph{initial} superlinear scaling.
+
+\begin{observation}
+	\label{obs:list-k2}
+	In the distributed self-adjusting lookup, 
+	for infinitely many inputs $\sigma$, there exists  and a constant $k_0$ such that all $k \le k_0$ there exists a load balancer $f_k$ that achieves have locality boosting savings $r' = \Omega(k^2)$.
+\end{observation}
+
+\begin{proof}
+	Consider an input $\sigma$ that requests selected $k$ items of the universe in a round-robin fashion and repeats an arbitrarily large number of times $m$.
+	The baseline $T(1)$ finishes the schedule in time $T(1) = 1$.
+
+Consider $k$ machines. We construct a load balancer $f_k$.
+First, we construct an auxiliary graph $G$ of $k$ vertices, where each vertex represents a machine. The graph is weighted, and each edge $(M_i, M_j)$ has the cost that is saved by isolating affinity domains between these two machines. For the special case of $\sigma$, this graph is a complete graph with equal weights.
+Consider an ideal load balancer $f_k$ that isolates the affinity domains of all items from $\sigma$ by an arbitrary $k$-cut (components of size $k$)\cite{Frieze97, Mahajan95}. The total savings per each machine amount to $m\cdot(k-1)$.
+Then, the distributed system pays $1$ for handling each request in the list lookup model, as opposed to $\Omega(k)$ of the baseline (all items are in the working set, and the function $g_D$ is linear).
+
+
+
+% The distributed system with $k$ machines finishes its perfectly divisible parallel schedule (equal costs of all requests) in time $T(k) = s + W/k$, where $W$ is the total parallel work.
+
+
+% Then, the total parallel work is 
+% 	\[
+% 		T(1) / T(k) \ge 1 / (s + (1-s-Omega(k^2))/k)  \enspace .
+% 	\]
+
+
+% The value $k_0$ must be chosen such that the load balancer has enough affinity domains. A trivial value of $k_0$ is $|\mathcal{U}|$, but for inputs with high locality $k_0$ can be smaller. 
+\end{proof}
+
 
 %%% Local Variables:
 %%% mode: latex
