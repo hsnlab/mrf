@@ -1,6 +1,6 @@
 
 
-\section{Superlinear scaling law for self-adjusting systems}
+\section{Superlinear Scaling of Self-adjusting\\ Distributed Systems}
 
 
 
@@ -32,7 +32,7 @@ Our analysis  stands that this superlinear scaling cannot continue for arbitrari
 Rather, the superlinear scaling is just an initial phenomenon: scaling initially grows superlinearly, but eventually hits a limit for some value of $k$. See the details in Theorem~\ref{thm:superlinear}.
 
 \item
-Nonetheless, we can reap the fruits of superlinear scaling within the initial values of $k$. When load balancers boost locality of the input stream, performance of distributed self-adjusting data structures improve, and we observe superlinear scaling. For parallel self-adjusting lists, $\ell$ can grow up to $k^2$! See Observation~\ref{obs:list} and our experiments on packet classification (Section~\ref{sec:sims}).
+Nonetheless, we can reap the fruits of superlinear scaling within the initial values of $k$. When load balancers boost locality of the input stream, performance of distributed self-adjusting data structures improve, and we observe superlinear scaling. For parallel self-adjusting lists, improvements can grow up to $k^2$ (see Observation~\ref{obs:list}).
 \end{enumerate}
 To rigorously show these claims, we formulate the following mathematical model.
 
@@ -78,11 +78,11 @@ We are interested in minimizing the completion time of the schedule.
 \subsection{The Scaling Law}
 
 The definitions of $s$ and $T(1)$ are natural.
-In similar fashion to Amdahl's law, we define $s$ as the serial fraction of the workload. In our case the serial workload is the total time spent for the load balaning, $\sum \sum_t T(f(\sigma_t))$.
-We define $T(1)$, our benchmark, an the self-adjusting data structure $D$ that runs on a single machine \footnote{A single self-adjusting data structure is the most natural baseline choice for the considered setting. But it differs from the baseline in Amdahl's law --- that would be a single machine simulating a non-trivial load balancer $f_k$ and $k$ independent machines to decrease the problem size. Another difference from the Amdahl's law is that the problem size is not fixed. The problem size at a machine, $T(f(\sigma_t))$, depends on the internal state of the self-adjusting data structure $D$ at time $t$ and machine $M_f(\sigma_t)$.}and processes the entire stream $\sigma$, with a trivial load balancer $f_1(\cdot) = M_1$.
+In similar fashion to Amdahl's law, we define $s$ as the serial fraction of the workload, where in our case only the load balancing is serial (total serial work is $\sum \sum_t T(f(\sigma_t))$).
+Our benchmark $T(1)$ is a single self-adjusting data structure $D$ that runs on a single machine \footnote{A single self-adjusting data structure is the most natural baseline choice for the considered setting. But it differs from the baseline in Amdahl's law --- that would be a single machine simulating a non-trivial load balancer $f_k$ and $k$ independent machines to decrease the problem size. Another difference from the Amdahl's law assumptions is that the problem size is not fixed. The problem size at a machine, $T(f(\sigma_t))$, depends on the internal state of the self-adjusting data structure $D$ at time $t$ and machine $M_f(\sigma_t)$.}and processes the entire stream $\sigma$, with a trivial load balancer $f_1(\cdot) = M_1$.
 
 
-Our law states the following: no self-adjusting system can scale better than
+Our law informally states the following: no self-adjusting system can scale better than
 \begin{equation}\label{eq:mtf-perf}
   S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s}{k \cdot \ell}} \enspace ,
 \end{equation}
