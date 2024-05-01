@@ -7,7 +7,7 @@
 \section{Superlinear Scaling Theorem}
 \label{sec:apx}
 
-Our law informally stated the following: no self-adjusting system can scale better than
+Our law informally stated the following impossibility result: no self-adjusting system can scale better than
 \begin{equation*}
   S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s}{k \cdot \ell}} \enspace ,
 \end{equation*}
@@ -80,7 +80,10 @@ First, we observe that after $k = |\mathcal{U}|$, all affinity domains are singl
 	The value of $r$ cannot grow indefinitely with~$k$.
 \end{observation}
 
-Second, we observe that for some inputs, distributed list access can achieve \emph{initial} superlinear scaling.
+\section{Initial Superlinear Scaling}
+
+Finally, a positive result.
+For some inputs, distributed self-adjusting list lookup can achieve \emph{initial} superlinear scaling.
 
 \begin{observation}
 	\label{obs:list-k2}
