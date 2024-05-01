@@ -57,7 +57,7 @@ Consider $k$ identical parallel machines $M_1, M_2, M_3, \ldots, M_k$, each havi
 
 The load balancer is \emph{sticky}, i.e., it dispatches the requests to machines based solely on the request itself, and not on the state of the system.
 Each request from $\sigma$ belongs to a universe $\mathcal{U}$. 
-The load balancer is a function $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ that partitions the universe $\mathcal{U}$ into $k$ affinity domains $\mathcal{U}_1, \mathcal{U}_2, \ldots, \mathcal{U}_k$.
+The load balancer is a function $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ that partitions the universe $\mathcal{U}$ into $k$ subsets $\mathcal{U}_1, \mathcal{U}_2, \ldots, \mathcal{U}_k$ (often referred to as affinity domains).
 
 \paragraph{Cost model.}
 
