@@ -10,6 +10,7 @@
 \item Reframer can be used to reorder packets for improving temporal locality \cite{276946,246322}
 \item rule partitioning: Hicuts \cite{820051}, Hypercuts \cite{10.1145/863955.863980}, Efficuts \cite{10.1145/1851182.1851208}, CutSplit \cite{8485947} build a decision tree, with each node representing a ``cut'' of the rule-space, whose leaf nodes store only a small number of rules. A linear search among these rules yields the desired matching. The cuts are designed so that the rule lists in the leaves are as small as possible, with the least possible rules replicated in multiple lists. We argue that these cuts could be reused in our multicore classifier to partition the rule set, and represented in the NIC as Receive Flow Steering (RFS) filters
 \item In fact, our classifier can be viewed as a parallel extension to these schemes, just with ``dumb'' hash-based cuts for traversing the decision tree in one step and maintaining the rule lists in the leaves in a self-adjusting list. It is a surprising finding that such a simple extension of Hicuts \cite{820051}, Hypercuts \cite{10.1145/863955.863980}, Efficuts \cite{10.1145/1851182.1851208}, CutSplit \cite{8485947} can yield superlinear scaling
+\item SAX-PAC \cite{10.1145/2619239.2626294} can be used to decompose a rule set with many dependencies into a set of independent rule sets: this should recover superlinearity
 \end{itemize}
 
 \noindent%
