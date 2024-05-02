@@ -3,14 +3,17 @@
 \begin{tikzpicture}
   \begin{axis}[
     SpeedupPlot,
-    legend cell align = right,
+    legend cell align = left,
+    ylabel=,
    ]
 
-    \addplot coordinates {
+   \addplot coordinates {
+     (1,100)
     };
     \addlegendentry{Static}
 
     \addplot coordinates {
+      (1,100)
     };
     \addlegendentry{Self-adjusting}
 

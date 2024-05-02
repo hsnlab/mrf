@@ -4,7 +4,7 @@
 
  \begin{groupplot}[ClassBenchGroupPlot]
 
-  \nextgroupplot[ClassBenchSpeedupPlot]
+  \nextgroupplot[ClassBenchSpeedupPlot,ylabel=Speedup]
 
   \addplot coordinates {
      (1, 1.00000)
@@ -141,7 +141,7 @@
     \addlegendentry{Self-adjusting}
 
 
-  \nextgroupplot[ClassBenchRatePlot]
+  \nextgroupplot[ClassBenchRatePlot,ylabel={Throughput [Mpps]}]
 
     \addplot coordinates {
       (1, 0.046539629713245)

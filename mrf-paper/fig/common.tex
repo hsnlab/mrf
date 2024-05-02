@@ -1,18 +1,36 @@
 \pgfplotsset{
   RatePlot/.style = {
     tick pos = left,
-    xtick align=outside,
-    ytick align=outside,
+    xtick align = outside,
+    ytick align = outside,
     xlabel near ticks,
     ylabel near ticks,
-    width=.4\textwidth,
-    height=.3\textwidth,
+    width=130pt,
+    height=110pt,
     legend pos = north west,
-    legend cell align=left,
+    legend cell align = left,
+    legend image post style = {scale = .9},
+    legend style = {
+      font = \scriptsize,
+      inner sep = 0.5pt,
+      row sep = -3pt,
+    },
+    legend image code/.code={  % make lines in legend images shorter
+      \draw[mark repeat=2,mark phase=2, yshift=1pt]
+      plot coordinates {
+        (0cm,0cm)
+        (0.15cm,0cm)    %% default is (0.3cm,0cm)
+        (0.3cm,0cm)    %% default is (0.6cm,0cm)
+      };%
+    },
+    mark size = 1pt,
+    major tick length = 2,
+    minor tick length = 1,
+    label style = {font = \footnotesize},
     ylabel = {Throughput [Mpps]},
     xlabel = {number of CPU cores},
-    xmin=1, xmax=32,
-    ymin=0,
+    xmin = 1, xmax = 32,
+    ymin = 0,
   },
   SpeedupPlot/.style = {
     RatePlot,
@@ -21,13 +39,17 @@
   ClassBenchGroupPlot/.style = {
     group/group size = 1 by 2,
     group/horizontal sep = 0pt,
-    group/vertical sep = 28pt,
+    group/vertical sep = 10pt,
   },
   ClassBenchRatePlot/.style = {
-    RatePlot
+    RatePlot,
+    ylabel=,
   },
   ClassBenchSpeedupPlot/.style = {
     SpeedupPlot,
+    ylabel=,
+    xlabel=,
+    xticklabels={},
   }
 }
 
