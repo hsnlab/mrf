@@ -81,10 +81,6 @@ We observe that after $k = |\mathcal{U}|$, all affinity domains are singletons, 
 \end{equation*}
 
 
-\paragraph*{Strong guarantees for list algorithms.}
-Consider a generalized architecture, where we can change the data structure $D$ on each machine $M_i$ to any other data structure $D_i$, even to the offline optimum for the given sequence. 
-Then, the analysis of Albers shows that the system cannot improve more than a constant factor above the Move-to-Front algorithm (there exist competitive bounds).
-
 
 \section{Initial Superlinear Scaling}
 
@@ -122,6 +118,17 @@ TODO. explicitly show scaling by definition
 
 % The value $k_0$ must be chosen such that the load balancer has enough affinity domains. A trivial value of $k_0$ is $|\mathcal{U}|$, but for inputs with high locality $k_0$ can be smaller. 
 \end{proof}
+
+\section{A Stronger Scaling Law for Lists and Packet Classification}
+
+\paragraph*{Strong guarantees for list algorithms.}
+Consider a generalized architecture, where we can change the data structure $D$ on each machine $M_i$ to any other data structure $D_i$, even to the offline optimum for the given sequence. 
+
+cite infocom and sleator papers
+
+
+Then, the analysis of Albers shows that the system cannot improve more than a constant factor above the Move-to-Front algorithm (there exist competitive bounds).
+
 
 
 %%% Local Variables:
