@@ -21,7 +21,7 @@ We begin by defining the data structure $D$.
 
 
 \paragraph*{Self-adjusting data structures and working sets.}
-Our law captures various self-adjusting data structures, such as lists, splay trees or caches.
+Our law captures various self-adjusting data structures, such as lists, caches and their generalizations.
 In these data structures, the cost of accessing an item depends on the internal structure and changes over time depending on the history of requests.
 Self-adjusting data structures have a property that the cost of accessing an item $x$ at time $t$ depends on the number of distinct items requested since the last access of $x$.
 This is often referred to as the \emph{working set property}, and it can hold in an amortized sense.
@@ -36,7 +36,6 @@ With this simplifying assumption, we still capture LRU caches and Move-to-Front 
 % The cost of rearrangement after access is usually proportional to access cost.
 
 We illustrate $g_D$ for Move-to-Front and LRU. In Move-to-Front the cost of accessing an item is linear: $g_\textsf{MTF}(x,t,\sigma) = |W_t(x)| + 1$.  LRU is the algorithm Move-to-Front casted into the cost model of caching\footnote{See~\cite{SleatorT85} for the relationship between caching algorithms and self-adjusting list algorithms.}. Precisely, the cost model for $g_\textsf{LRU}$ is non-linear: for a cache of size $B$, the cost is 1 if the working set is larger than $B$, and 0 otherwise. Both cost functions $g_\textsf{MTF}$ and $g_\textsf{LRU}$ are monotonically increasing in the working set size. In fact, monotonicity of $g_D$ is a sufficient condition for our theorem to hold.
-
 
 \paragraph*{Load balancer isolates working sets.}
 Recall that the load balancer partitions the stream into $k$ streams $\sigma(M_1), \sigma(M_2), \ldots, \sigma(M_k)$ and dispatches them to the machines.
@@ -80,6 +79,11 @@ We observe that after $k = |\mathcal{U}|$, all affinity domains are singletons, 
  \forall \sigma \exists k \frac{T(1)}{T(k)} \neq \frac1{s + \frac{1-s}{k^2}} \enspace ,
  TODO
 \end{equation*}
+
+
+\paragraph*{Strong guarantees for list algorithms.}
+Consider a generalized architecture, where we can change the data structure $D$ on each machine $M_i$ to any other data structure $D_i$, even to the offline optimum for the given sequence. 
+Then, the analysis of Albers shows that the system cannot improve more than a constant factor above the Move-to-Front algorithm (there exist competitive bounds).
 
 
 \section{Initial Superlinear Scaling}
