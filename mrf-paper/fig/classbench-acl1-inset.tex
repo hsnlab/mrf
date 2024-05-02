@@ -4,7 +4,6 @@
   yshift = -32.5pt,
   width=87.5pt,
   height=65pt,
-  mark size = .8pt,
   ylabel shift = -5 pt,
   xlabel shift = -5 pt,
   xlabel = {\# CPU cores},
@@ -24,7 +23,7 @@
   font = \tiny,
   ]
 
-  \addplot coordinates {
+  \addplot[StaticMarkSmall] coordinates {
     (1, 11.5246859)
     (2, 13.0414406)
     (3, 12.0516008)
@@ -90,7 +89,7 @@
     (63, nan)
   };
 
-  \addplot coordinates {
+  \addplot[SelfAdjustingMarkSmall] coordinates {
     (1, 13.7504560)
     (2, 12.8632773)
     (3, 10.5175126)

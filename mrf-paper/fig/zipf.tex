@@ -7,12 +7,12 @@
     ylabel=,
    ]
 
-   \addplot coordinates {
+   \addplot[StaticMark] coordinates {
      (1,100)
     };
     \addlegendentry{Static}
 
-    \addplot coordinates {
+    \addplot[SelfAdjustingMark] coordinates {
       (1,100)
     };
     \addlegendentry{Self-adjusting}

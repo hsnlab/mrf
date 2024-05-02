@@ -23,7 +23,7 @@
         (0.3cm,0cm)    %% default is (0.6cm,0cm)
       };%
     },
-    mark size = 1pt,
+    mark size = 1.25pt,
     major tick length = 2,
     minor tick length = 1,
     label style = {font = \footnotesize},
@@ -50,7 +50,81 @@
     ylabel=,
     xlabel=,
     xticklabels={},
-  }
+  },
+  SelfAdjustingMark/.style = {
+    mark = *,
+    mark options = {
+      solid,
+      mark size = 1.25pt,
+      fill = red!95!white,
+      fill opacity = .8,
+    },
+    red,
+  },
+  StaticMark/.style = {
+    mark = diamond*,
+    mark options = {
+      solid,
+      mark size = 1.15pt,
+      fill = blue!50!white,
+      fill opacity = .8,
+    },
+    blue,
+  },
+  SelfAdjustingMarkSmall/.style = {
+    SelfAdjustingMark,
+    mark options = {
+      solid,
+      mark size = .6pt,
+      fill = red!95!white,
+      fill opacity = .8,
+    },
+  },
+  StaticMarkSmall/.style = {
+    StaticMark,
+    mark options = {
+      solid,
+      mark size = .6pt,
+      fill = blue!50!white,
+      fill opacity = .8,
+    },
+  },
+  BenchMarkI/.style = {
+    mark = *,
+    mark options = {
+      solid,
+      fill = orange!50!white,
+      fill opacity = .8,
+    },
+    orange,
+  },
+  BenchMarkII/.style = {
+    mark = pentagon*,
+    mark options = {
+      solid,
+      fill = cyan!25!white,
+      fill opacity = .8,
+    },
+    cyan!50!blue,
+  },
+  BenchMarkIII/.style = {
+    mark = triangle*,
+    mark options = {
+      solid,
+      fill = olive!50!white,
+      fill opacity = .8,
+    },
+    olive,
+  },
+  BenchMarkIV/.style = {
+    mark = asterisk,
+    mark options = {
+      purple,
+      fill = black!50!white,
+      fill opacity = .8,
+    },
+    purple,
+  },
 }
 
 %%% Local Variables:
