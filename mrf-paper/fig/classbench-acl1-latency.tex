@@ -3,14 +3,17 @@
 \begin{tikzpicture}
 \begin{axis}[
   RatePlot,
-  ylabel={Delay [ms]},
+  ylabel={Latency [ms]},
   legend style = {
-    at={(.98, .56)},
+    at={(.98, .58)},
     anchor = east,
+    font = \scriptsize,
+      inner sep = 0.5pt,
+      row sep = -3pt,
   },
   ]
 
-  \addplot coordinates {
+  \addplot[StaticMark] coordinates {
     (1, 11.5246859)
     (2, 13.0414406)
     (3, 12.0516008)
@@ -77,7 +80,7 @@
   };
   \addlegendentry{Static}
 
-  \addplot coordinates {
+  \addplot[SelfAdjustingMark] coordinates {
     (1, 13.7504560)
     (2, 12.8632773)
     (3, 10.5175126)

@@ -187,6 +187,11 @@ We conducted several experiments with the distributed self-adjusting packet clas
 
 \begin{figure*}
   \centering
+  \subfloat[][ClassBench acl1 Latency]{
+    \input{fig/classbench-acl1-latency.tex}
+    \label{fig:classbench-acl1-latency}
+  }
+  \hspace{-1.5em}
   \subfloat[][Active flow size]{
     \input{fig/active-flow-size.tex}
     \label{fig:active-flow-size}
@@ -196,11 +201,11 @@ We conducted several experiments with the distributed self-adjusting packet clas
     \input{fig/rule-dependencies.tex}
     \label{fig:rule-dependencies}
   }
-  \hspace{-1.5em}
-  \subfloat[][Zipf traffic (1997 rules)]{
-    \input{fig/zipf.tex}
-    \label{fig:zipf}
-  }
+  % \hspace{-1.5em}
+  % \subfloat[][Zipf traffic (1997 rules)]{
+  %   \input{fig/zipf.tex}
+  %   \label{fig:zipf}
+  % }
   \hspace{-1.5em}
   \subfloat[][Locality boosting (RSS)]{
     \input{fig/locality-boosting.tex}
