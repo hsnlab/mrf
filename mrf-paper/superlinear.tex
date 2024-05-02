@@ -61,6 +61,7 @@ The load balancer is a function $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ that
 The time needed for the system to process a request $\sigma_t$ at time $t$ is the sum of computing the assignment of $\sigma_t$ (denoted $T(f(\sigma_t))$) and the time to schedule and process the request by $D$ at machine $M_f(\sigma_t)$ (denoted $T(D(\sigma_t)$).
 The time $T(D(\sigma_t))$ depends on the internal state of the self-adjusting data structure $D$ at machine $f(\sigma_t)$.
 Self-adjusting data structures change their internal state over time, hence for two identical requests coming at different times, the time to process them may differ.
+The time required to process a request is often a function of the working set size of the data structure $D$. (TODO: cite)
 
 The schedule finishes when all requests from $\sigma$ are processed. Some machines may be idle throughout execution, but the system is not allowed to reassign the requests to other machines.
 We are interested in minimizing the completion time of the schedule.
