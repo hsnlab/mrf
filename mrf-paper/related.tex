@@ -2,7 +2,13 @@
 \label{sec:related-work}
 
 \noindent%
-\textbf{Locality boosting load balancing.} %
+\textbf{Superlinear scaling.} %
+Amdahl's famous scaling law \cite{10.1145/1465482.1465560}, asserting sublinear speedup and diminishing returns for parallelization, is a cornerstone result in distributed computing \cite{10.1145/42411.42415, 10.5555/775339.775386}. This is thanks to its wide applicability, ranging from dimensioning distributed systems \cite{1580395} to guiding performance optimization efforts \cite{10.5555/1951599, 10.1145/42411.42415}. During the almost 60 years since its first publication, several violations of the scaling law have been reported from various application areas, triggering the several extensions to sizing VLSI layouts \cite{4563876} and heterogeneous computing systems \cite{6280307}, characterizing failures \cite{406581}, energy usage \cite{6163449}, and retrograde scaling \cite{10.5555/1951599} in large-scale computing systems, etc. One phenomenon that seems to have defied all attempts to be captured by a general scaling law is faster-than-linear scaling, which reported from a broad range of real workloads including database systems \cite{scalability-analyzed, 10.5555/1012889.1012894}, SDN analytics \cite{sdn-analytitcs}, high-performance computing \cite{556383, 7733347, 6483679}, multi-robot systems \cite{10.1007/978-3-319-77610-1}, information retrieval systems \cite{dobb-1, dobb-2}, etc. For instance, \cite{scalability-analyzed} shows superlinear speedup experienced when scaling PostgreSQL 9.1 to multiple CPUs and traces back the reason to a new ``cache plan'' for locally storing compiled SQL queries at each thread. Another report shows that dense matrix multiplication may show faster-than-linear speedup when matrix rows\slash columns are optimized for exploiting CPU caches \cite{7733347}: more CPUs means more CPU case, yielding the surprising scaling effect. Perhaps closes to a new model explaining superlinear growth are \cite{7733347, 80148}; here, the authors present several general architectural patterns that may lead to superlinear speedup (e.g., non-persistent algorithms, extending cache space, job scheduling, etc.) and give general models for characterizing speedup in each case. These works have been the first to identify the most important ingredients in superlinear speedup: do disproportionately less work in each worker as we scale the system \cite{7733347}, or add more resources, e.g., caches, per thread \cite{80148}. The former ``scaled size'' model \cite{556383} is the main trait we capitalize on in our work.  So far, however, each attempt to systematically \emph{reproduce} superlinear scaling, beyond merely \emph{observing} and \emph{explaining} it, have been specific to particular use cases \cite{556383} or relying on larger caches and mere luck \cite{556383}. During that time there have been growing concerns whether superlinear scaling even exists in real-life applications \cite{10.1016/0167-8191(86)90024-4}: for instance, Gunther (the father of the ``Universal Scalaility Law'') proves an earlier report on faster-than-linear scaling observed in large-scale a Hadoop MapReduce workload is attributable to a methodological benchmarking error and, when measured the right way, reduces to a sublinear scaling trend. This prompts him to conclude that superlinearity is ultimately a performance illusion, which goes against the very laws of thermodynamics. This is despite that superlinear growth is often found in nature, e.g., the scaling of human communities to large cities follows a faster-than-linear trend \cite{PhysRevE.79.016115}. To the best of our knowledge, this is the first time that a systematic design methodology is presented for network applications to reach it.
+
+\noindent%
+\textbf{Locality-boosting load balancing.} %
+As one of the main ingredients of our distributed self-adjusting systems architecture, locality-boosting load balancing helps improving the input locality in the per-worker request streams 
+
 \begin{itemize}
 \item NICs increasingly used to intelligently move data between the network, CPU, GPU and accelerators \cite{sherry-ccr23}
 \item Linux contains a comprehensive toolset to tune the way packets are dispatched to CPUs \cite{rss-linux}
@@ -23,19 +29,6 @@
 \item the problem of cache management can be viewed as a self-adjusting list rearrangement problem \cite{SleatorT85}
 \item further self-adjusting data structures include splay trees \cite{SleatorT85Splay}, self-adjusting skip lists \cite{BoseDL08}, push-down trees \cite{Avin0020}, or self-adjusting trees for storing geometric data \cite{ParkM12}
 \item these are all candidates to be used, along with a proper locality boosting load balancer, to reach superlinear scaling in distributed applications
-\end{itemize}
-
-\noindent%
-\textbf{Superlinear scaling.} %
-\begin{itemize}
-\item applications: database systems \cite{scalability-analyzed, 10.5555/1012889.1012894}, SDN analytics \cite{sdn-analytitcs}, high-performance computing \cite{556383, 7733347, 6483679}, multi-robot systems \cite{10.1007/978-3-319-77610-1}, and parallel search in information retrieval systems \cite{dobb-1, dobb-2}
-\item full taxonomies in \cite{7733347, 80148}
-\item two ways to achieve such superlinear speedup \cite{7733347, 80148}: do disproportionately less work in each worker as we scale the system \cite{7733347}, or add more resources per thread \cite{80148}
-\item distributed caching \cite{271208, dobb-2} is a variant of the second: the more parallel workers the more cache space available, which tends to make memory-bound\slash cache-bound code disproportionately faster \cite{80148}
-\item non-persistent algorithms, which finish when one of the workers finds the solution, often cause a ``spurious superlinear'': our SA scheme does not belong to this category, since a single packet is always fully matched at a single worker \cite{7733347}
-\item counter arguments: impossible \cite{10.1016/0167-8191(86)90024-4}, complete dismissal by the father of the ``Universal Scalaility Law'' \cite{gunther-hotsos, 10.1145/2773212.2789974}
-\item never reported in networked application as far as we are aware of + ours is the first general design methodology to achieve it
-\item superlinear growth is often found in nature, e.g., describing the scaling of human communities to large cities \cite{PhysRevE.79.016115}
 \end{itemize}
 
 %   Models of self-adjusting data structures are based on the cost of access and rearrangement. For example:

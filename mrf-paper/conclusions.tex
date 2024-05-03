@@ -1,8 +1,7 @@
 \section{Conclusions}\label{sec:conclusions}
 
-we advocate a new style for architecting distributed systems: LB-LB+SA-algs, yields superlinear scaleup
+In this paper, we presented both theoretical and empirical claims that locality-boosting load balancing combined with parallel self-adjusting algorithms yield faster-than-linear speedup in many disparate applications on a wide range of workloads. Our main contribution not necessarily stands in that we show that superlinear speedup is \emph{possible} (this has been know for quite some time), but rather that we identify the main architectural components commonly appearing in all cases where it was genuinely observed and synthesizing these into a comprehensive and universal design methodology to \emph{reproduce} it.
 
-Our goal in this paper is to debunk the misconception that linear scaling is the best one can achieve and demonstrate the viability of our methodology to systematically design distributed systems for superlinear scaling. For this, we present experimental studies using off-the-shelf components from earlier studies. It is a nongoal to show novel algorithms or new hardware; just the contrary, our main message is that superlinearity is achievable with \emph{existing} components. The most far-reaching consequence is that perhaps some distributed applications \emph{already} achieve superlinear scaling to some extent, without us realizing the general architectural pattern in the background.
 
 %%% Local Variables:
 %%% mode: latex
