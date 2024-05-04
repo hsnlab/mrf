@@ -1,12 +1,14 @@
+\input{fig/common.tex}
+%
 \begin{small}
   \begin{tikzpicture}
     \begin{axis}[
       width=165pt,
       height=142pt,
       xlabel={number of CPU cores},
-      x label style={at={(0.5,0.04)}},      
+      x label style={at={(0.5,0.04)}},
       ylabel={Speedup},
-      y label style={at={(0.1,0.5)}},      
+      y label style={at={(0.1,0.5)}},
       xmin=1,
       xmax=36,
       xtick={1,10,20,30},
@@ -22,13 +24,13 @@
       % no markers
       ]
       % use TeX as calculator:
-      \addplot[black,mark=*] table[x=thread,y=speedup] {fig/tree/uniform-500/multicore_wsplay_modulo_uniform.txt};
+      \addplot[SelfAdjustingSimMark] table[x=thread,y=speedup] {fig/tree/uniform-500/multicore_wsplay_modulo_uniform.txt};
       % \addlegendentry{Splay-tree/Local LB}
-      \addplot[black,mark=+] table[x=thread,y=speedup,each nth point={3}] {fig/tree/uniform-500/multicore_wbtree_modulo_uniform.txt};
+      \addplot[StaticSimMark] table[x=thread,y=speedup,each nth point={3}] {fig/tree/uniform-500/multicore_wbtree_modulo_uniform.txt};
       % \addlegendentry{B-tree/Local LB}
-      \addplot[black,mark=o] table[x=thread,y=speedup,each nth point={3}] {fig/tree/uniform-500/multicore_wsplay_roundrobin_uniform.txt};
+      \addplot[SelfAdjustingSimMark,mark=pentagon*] table[x=thread,y=speedup,each nth point={3}] {fig/tree/uniform-500/multicore_wsplay_roundrobin_uniform.txt};
       % \addlegendentry{Splay-tree/Non-local LB}
-      \addplot[black,mark=square] table[x=thread,y=speedup,each nth point={3}] {fig/tree/uniform-500/multicore_wbtree_roundrobin_uniform.txt};
+      \addplot[StaticSimMark,mark=square] table[x=thread,y=speedup,each nth point={3}] {fig/tree/uniform-500/multicore_wbtree_roundrobin_uniform.txt};
       % \addlegendentry{B-tree/Non-local LB}
     \end{axis}
   \end{tikzpicture}

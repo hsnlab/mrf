@@ -1,4 +1,6 @@
-\begin{tikzpicture} 
+\input{fig/common.tex}
+%
+\begin{tikzpicture}
   \begin{axis}[%
     height=45pt,
     hide axis,
@@ -12,13 +14,13 @@
       legend columns=2,
       font=\footnotesize}
     ]
-    \addlegendimage{black,mark=*}
+    \addlegendimage{SelfAdjustingSimMark}
     \addlegendentry{Locality-boosting load balancer + Self-adjusting algorithm}
-    \addlegendimage{black,mark=+}
+    \addlegendimage{StaticSimMark}
     \addlegendentry{Locality-boosting load balancer + Static algorithm}
-    \addlegendimage{black,mark=o}
+    \addlegendimage{SelfAdjustingSimMark,mark=pentagon*}
     \addlegendentry{Roundrobin load balancer + Self-adjusting algorithm}
-    \addlegendimage{black,mark=square}
+    \addlegendimage{StaticSimMark,mark=square}
     \addlegendentry{Roundrobin load balancer + Static algorithm}
   \end{axis}
 \end{tikzpicture}

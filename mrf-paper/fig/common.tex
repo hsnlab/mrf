@@ -57,39 +57,55 @@
     mark options = {
       solid,
       mark size = 1.25pt,
-      fill = red!95!white,
+      fill = orange!50!white,
       fill opacity = .8,
     },
-    red,
+    black,
+  },
+  SelfAdjustingSimMark/.style = {
+    SelfAdjustingMark,
+    mark options = {
+      solid,
+      fill = orange!50!white,
+      fill opacity = .8,
+    },
   },
   StaticMark/.style = {
     mark = diamond*,
     mark options = {
       solid,
       mark size = 1.15pt,
-      fill = blue!50!white,
+      fill = cyan!50!white,
       fill opacity = .8,
     },
-    blue,
+    cyan!50!blue,
   },
-  SelfAdjustingMarkSmall/.style = {
-    SelfAdjustingMark,
-    mark options = {
-      solid,
-      mark size = .6pt,
-      fill = red!95!white,
-      fill opacity = .8,
-    },
-  },
-  StaticMarkSmall/.style = {
+  StaticSimMark/.style = {
     StaticMark,
     mark options = {
       solid,
-      mark size = .6pt,
-      fill = blue!50!white,
+      fill = cyan!50!white,
       fill opacity = .8,
     },
   },
+  % SelfAdjustingMarkSmall/.style = {
+  %   SelfAdjustingMark,
+  %   mark options = {
+  %     solid,
+  %     mark size = .6pt,
+  %     fill = red!95!white,
+  %     fill opacity = .8,
+  %   },
+  % },
+  % StaticMarkSmall/.style = {
+  %   StaticMark,
+  %   mark options = {
+  %     solid,
+  %     mark size = .6pt,
+  %     fill = blue!50!white,
+  %     fill opacity = .8,
+  %   },
+  % },
   BenchMarkI/.style = {
     mark = *,
     mark options = {
