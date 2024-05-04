@@ -1,29 +1,5 @@
 \appendix
 
-% todo: add references. Also Albers locality for caching and list access for exact characterization
-
-% todo: draw a graph
-% todo: redraw the locality boosting with domains and minimal notation?
-
-% todo: write that Splay trees may escape this theorem, and perform even better: its working set property is only an upper bound.
-
-% todo: write about submodularity of the cost function
-
-% todo: packet classification is not like list, remove from examples below
-
-% todo: write in terms of universes, becasue the main body uses this language. Generalize from there
-
-% todo: write that the load balancer partitions the universes
-
-% todo: monotonically non-decreasing, rather than increasing!
-
-
-% todo: only a lower bound. Model is all self-adjusting data structures that have a monotonic cost function in terms of working set sizes. Why not an upper bound?
-
-
-
-%
-
 \section{Superlinear Scaling of Self-adjusting\\ Distributed Systems}
 \label{sec:arch-scaling}
 
@@ -37,13 +13,30 @@ Assuming fixed problem size, task independence and divisible work, Amdahl's law 
 Superlinear scaling of the parallel part of the workload would occur if $S(k) = \frac1{s + \frac{1-s}{g(k)}}$ for some $g(k) > k$. Amdahl's law rules this out.
 
 
-We examine \emph{distributed self-adjusting list lookup}. Our architecture consists of a locality-boosting partitioning load-balancer (see Fig.~\ref{fig:locality-boosting-lb}) combined with a self-adjusting move-to-front list (see Fig.~\ref{fig:mtf-example}) implemented in the workers.
+For some inputs, distributed self-adjusting architecture can achieve \emph{initial} superlinear scaling. The scaling is initial in a sense it holds for small values of $k$.
+Note that our distributed architecture deviates from the assumptions of Amdahl's law.
 
 
 
 
-When load balancers boost locality of the input stream, performance of distributed self-adjusting data structures improve, and we observe superlinear scaling for this particular architecture. 
-To rigorously show these claims, we formulate the following mathematical model.
+
+
+
+
+% We examine \emph{distributed self-adjusting list lookup}. Our architecture consists of a locality-boosting partitioning load-balancer (see Fig.~\ref{fig:locality-boosting-lb}) combined with a self-adjusting move-to-front list (see Fig.~\ref{fig:mtf-example}) implemented in the workers.
+
+
+
+
+% When load balancers boost locality of the input stream, performance of distributed self-adjusting data structures improve, and we observe superlinear scaling for this particular architecture. 
+% \begin{theorem}
+% 	\label{obs:list-k2}
+% 	In the distributed self-adjusting lookup, 
+% 	for infinitely many inputs $\sigma$, there exists  and a constant $k_0$ such that all $k \le k_0$ there exists a load balancer $f_k$ that achieves have locality boosting savings $r' = \Omega(k^2)$.
+% \end{theorem}
+
+
+To rigorously show this claim, we formulate the following mathematical model.
 
 
 % The rationale for why this design achieves superlinear scaling is the following.
@@ -97,13 +90,14 @@ and processes the entire stream $\sigma$, with a trivial load balancer $f_1(\cdo
 A single self-adjusting data structure is the most natural baseline choice for the considered setting. But it differs from the baseline in Amdahl's law --- that would be a single machine simulating a non-trivial load balancer $f_k$ and $k$ independent machines to decrease the problem size. Another difference from the Amdahl's law assumptions is that the problem size is not fixed. The problem size at a machine, $T(f(\sigma_t))$, depends on the internal state of the self-adjusting data structure $D$ at time $t$ and machine $M_f(\sigma_t)$.
 
 
-\subsection{The Superlinear Scaling}
 
 The definitions of $s$ and $T(1)$ are natural.
 In similar fashion to Amdahl's law, we define $s$ as the serial fraction of the workload, where in our case only the load balancing is serial (total serial work is $\sum \sum_t T(f(\sigma_t))$).
 
 
-Superscaling scaling means the following: for any input $\sigma$, self-adjusting distributed lists can scale by
+\subsection{Characterizing the gains.}
+
+We aim to show the following: for any input $\sigma$, self-adjusting distributed lists can scale by
 \begin{equation*}\label{eq:mtf-perf}
   \frac{T(1)}{T(k)} \le \frac1{s + \frac{1-s}{k \cdot \ell}} \enspace ,
 \end{equation*}
@@ -127,33 +121,73 @@ We dedicate the rest of this section to the definition of $\ell$ and the proof o
 
 
 
-Before we state the theorem formally, we need to provide the formal definition of $\ell$.
-The value of $\ell$ depends on the input $\sigma$, data structure $D$ and the load balancer $f_k$. Hence, $\ell$ indirectly relies on $k$ through $f_k$ (these are tied together in our architecture). Furthermore, for technical reasons, $\ell$ depends on the serial portion of the workload $s$.
-To define $\ell$, we need to relate the input $\sigma$ with the load balancer $f_k$ and the data structure $D$.
+% Before we state the theorem formally, we need to provide the formal definition of $\ell$.
+The value of $\ell$ depends on the input $\sigma$ and the load balancer $f_k$. Hence, $\ell$ indirectly relies on $k$ through $f_k$ (these are tied together in our architecture). Furthermore, for technical reasons, $\ell$ depends on the serial portion of the workload $s$.
+To define $\ell$, we need to relate the input $\sigma$ with the load balancer $f_k$.
 
-
-
+\paragraph*{Self-adjusting data structures and working sets.}
+Our law captures various self-adjusting data structures, such as lists, caches and their generalizations.
+In these data structures, the cost of accessing an item depends on the internal structure and changes over time depending on the history of requests.
+Self-adjusting data structures have a property that the cost of accessing an item $x$ at time $t$ depends on the number of distinct items requested since the last access of $x$.
+This is often referred to as the \emph{working set property}, and it can hold in an amortized sense.
+A working set for an item $\sigma_t$ request at time $t$ is defined as the set of distinct items requested since the last request to the item $\sigma_t$.
 
 With each data structure $D$, there exists an associated cost function $g_D$ 
 \[
-	\textsf{cost}(x, t, \sigma) = |W_t(x)|+1 \enspace ,
+	\textsf{cost}(x, t, \sigma) \le g_D(|W_t(x)|) \enspace ,
 \]
 where $W_t(x)$ is the number of distinct requests to items other than $x$ since the last request to $x$.
+% The working set property is usually an upper bound, but we state the law for the case where the cost is also \emph{lower-bounded} as a function of the working set size.
+With these assumptions, we still capture parallel extensions of LRU caches, Move-to-Front lists, splay trees. 
+% The cost of rearrangement after access is usually proportional to access cost.
+
+We illustrate $g_D$ for Move-to-Front and LRU. In Move-to-Front the cost of accessing an item is linear: $g_\textsf{MTF}(x,t,\sigma) = |W_t(x)| + 1$.  LRU is the algorithm Move-to-Front casted into the cost model of caching\footnote{See~\cite{SleatorT85} for the relationship between caching algorithms and self-adjusting list algorithms.}. Precisely, the cost model for $g_\textsf{LRU}$ is non-linear: for a cache of size $B$, the cost is 1 if the working set is larger than $B$, and 0 otherwise.
+
+(TODO: needed?)
+Both cost functions $g_\textsf{MTF}$ and $g_\textsf{LRU}$ are monotonically increasing in the working set size. In fact, monotonicity of $g_D$ is a sufficient condition for our theorem to hold.
+
+
 
 \paragraph*{Load balancer isolates working sets.}
 Recall that the load balancer partitions the stream into $k$ streams $\sigma(M_1), \sigma(M_2), \ldots, \sigma(M_k)$ and dispatches them to the machines.
 These streams may have reduced working set sizes at the machines in comparison to the working set sizes of the original stream $\sigma$.
 Precisely, a load balancer $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ partitions the universe $\mathcal{U}$ into $k$ subsets $\mathcal{U}_1, \mathcal{U}_2, \ldots, \mathcal{U}_k$, and the working set for machine $i$ at the time $x = \sigma_t$ is requested is $W_t(x, t, \sigma(M_i)) = W_t(x, t, \sigma) \cap \mathcal{U}_i$.
 
-\paragraph*{Visualize the cost savings with a complete weighted graph.}
-TODO
+% With the list we have an associated cost function:
+% \[
+% 	\textsf{cost}(x, t, \sigma) = |W_t(x)|+1 \enspace ,
+% \]
+% where $W_t(x)$ is the number of distinct requests to items other than $x$ since the last request to $x$.
+% This is also known as the working set property of LRU.
+% % (TODO: cite)
 
-\paragraph*{Defining $\ell$: from an additive to a multiplicative law.}
+
+
+% \paragraph*{Visualize the cost savings with a complete weighted graph.}
+% TODO
+
+% \paragraph*{Defining $\ell$: from an additive to a multiplicative law.}
 In total, we observe cost savings from load balancing for the stream $\sigma$, data structure $D$ characterized by a function $g$, and a load balancer $f_k$. We denote them as
 \[
 	r = \sum_{t} g(|W_t(x)|) - \sum_{t} g(|W_t(x)| \cap \mathcal{U}_i) \enspace .
 \]
-Then, the total work decreases (a strict deviation from Amdahl's law) by $r$ for the stream $\sigma$. Let $r'$ be a normalized value of $r$ with respect to the total non-serial work of the system. Then, applying Amdahl's law to the reduced workload, we obtain the following theorem.
+Then, the total work decreases\footnote{A strict deviation from the assumptions of Amdahl's law, where workload is fixed} by $r$ for the stream $\sigma$.
+
+
+\subsection{Conditions for superlinear scaling}
+
+sum of working sets ratio so that g(k) increases more than linearly
+
+\subsection{Initial phenomenon}
+
+\maciek{finished here}
+
+\newpage
+\newpage
+\newpage
+
+
+Let $r'$ be a normalized value of $r$ with respect to the total non-serial work of the system. 
 
 
 \begin{equation*}
@@ -163,13 +197,304 @@ By setting $\ell = \frac{(1-s)\cdot k}{1-s-r'}$, we obtain the following theorem
 
 \begin{theorem}
 	\label{thm:superlinear}
-	Fix an input sequence $\sigma$.
 	% Assume that a self-adjusting data structure $D$ whose cost function depends on its working set size with a cost function $g_D$ that is monotonically increasing. 
+
+	For parallel lists, scaling can be up to
 	Then, for any number of machines $k$, the scaling of the distributed is 
 	\begin{equation*}
 	  S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s}{k \cdot \ell}} \enspace ,
 	\end{equation*}
+	for values of $k<k_0$, where $k_0$ depends on an input sequence $\sigma$.
 \end{theorem}
+
+\begin{proof}
+	Consider an input $\sigma$ that requests selected $k$ items of the universe in a round-robin fashion and repeats an arbitrarily large number of times $m$.
+	The baseline $T(1)$ finishes the schedule in time $T(1) = 1$.
+
+Consider $k$ machines. We construct a load balancer $f_k$.
+First, we construct an auxiliary graph $G$ of $k$ vertices, where each vertex represents a machine. The graph is weighted, and each edge $(M_i, M_j)$ has the cost that is saved by isolating affinity domains between these two machines. For the special case of $\sigma$, this graph is a complete graph with equal weights.
+Consider an ideal load balancer $f_k$ that isolates the affinity domains of all items from $\sigma$ by an arbitrary $k$-cut (components of size $k$)\cite{Frieze97, Mahajan95}. The total savings per each machine amount to $m\cdot(k-1)$.
+Then, the distributed system pays $1$ for handling each request in the list lookup model, as opposed to $\Omega(k)$ of the baseline (all items are in the working set, and the function $g_D$ is linear).
+
+\end{proof}
+
+Next, we show how large the scaling factor $\ell$ can be.
+
+\begin{theorem}
+	% restate k2 for lists
+\end{theorem}
+
+baseline is T(1) = 1.
+The total work is s + (1-s - (1-s)*(1/k) )/k
+
+you divide each list k times in size, that's right
+
+
+
+
+
+
+
+
+
+\section{Main body section: Superlinear scaling}
+\label{sec:arch-scaling}
+
+So how can locality-boosting load balancing and self-adjusting algorithms, when used together in a distributed system, produce superlinear scaling? First, we present a demonstration on a particular instantiation of the architecture, \emph{distributed self-adjusting list lookup}, and then we provide a formal claim characterizing superlinear growth in general distributed self-adjusting systems.
+
+Consider a partitioning load-balancer (see Fig.~\ref{fig:locality-boosting-lb}) combined with a self-adjusting move-to-front list (see Fig.~\ref{fig:mtf-example}) implemented in the workers. Suppose that there are $m$ items to be stored in the list and $k$ workers, each maintaining an independent index into the list. To make things more complicated, we assume uniform request distribution on the entire input domain $m$ at the system's input, which is, recall, the worst case for any self-adjusting algorithm by being totally \emph{unpredictable}. Thus, for a single worker move-to-front reordering has no useful effect and the worst case access time is $m$, identical to that of a static linked list.
+
+Now suppose we move from 1 worker to $k$ parallel workers where $k \le m$. This results, within our architecture, that the load balancer effectively partitions the uniformly distributed input on $m$ items into $k$ uniformly distributed input streams for only $\sfrac{m}{k}$ different items (see Fig.~\ref{fig:locality-boosting-lb}). This means that the workers' input features a higher spatial locality than the system's input (which sports none).  Had we used a random or a round robin load balancer the workers would still see all the $m$ possible inputs, just with a sampled uniform distribution, and no locality. After a while, each MTF list in the workers will have its specific subset of $\sfrac{m}{k}$ items moved to the first $\sfrac{m}{k}$ positions (in an arbitrary order), reducing the worst-case lookup time from $m$ (1 worker) to $\sfrac{m}{k}$ ($k$ workers). This introduces $k\times$ speedup compared to the single-threaded case.
+
+Then, superlinear speedup is merely a product of two simultaneous $k\times$ speedup factors: one $k\times$ factor comes from the self-adjusting list getting progressively faster as we add new workers (recall the ``scaled size'' model from \S\ref{sec:backgound-dist-cache}), and another $k\times$ speedup because we scale the total compute capacity available to the system $k$ times. The effective speedup is then just the multiple of the two, yielding $k^2$ times speedup in total. Plugging into Amdahl's law we get the \emph{scaling law for distributed MTF lists on uniform input} (see Fig.~\ref{fig:amdahl}):
+\begin{equation}\label{eq:mtf-perf}
+  S_l(k) = \frac{T_l(1)}{T_l(k)} = \frac1{s + \frac{1-s}{k^2}} \qquad k \le m \enspace .
+\end{equation}
+
+% We used this scaling law as the graphical illustration for superlinear scaling in Fig.~\ref{fig:amdahl}. 
+For small values of $k$ we obtain $O(k^2)$ scaling. As $k$ grows sufficiently large, say, when $k=m$, the workers' input reduces to a singleton ($\sfrac{m}{k}=1$). From this point the distributed MTF list reduces into a simple parallel hash table and superlinear speedup degrades into an ``ordinary'' Amdahl's scaling profile. For anything between, the system adaptively finds the best combination of an MTF list and a hash-table. Eventually speedup blocks on a serial bottleneck, e.g., the sequential load balancer.
+
+The next theorem generalizes the superlinear scaling characterization from  MTF lists and simple uniform requests to an arbitrary distributed self-adjusting system processing an arbitrary input stream.
+\begin{theorem}\label{thm:general-scaling-law}
+  Consider a load balancer that dispatches inputs $\sigma$ taken from a universe $\mathcal{U}$ to $k$ identical parallel workers $W_1, W_2, \ldots, W_k$, each running an instance of a self-adjusting algorithm $D$, using a deterministic function $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ that partitions the input universe $\mathcal{U}$ into $k$ disjoint subsets $\mathcal{U}_1, \mathcal{U}_2, \ldots, \mathcal{U}_k$. We call an algorithm $D$ ``self-adjusting'' if the running time of $D$ is a submodular function of its input universe $\mathcal{U}$, that is, for any pair of input sequences $\sigma_1 \subseteq \mathcal{U}_1$ and $\sigma_2 \subseteq \mathcal{U}_2 \subset \mathcal{U}_1$ it holds that $T_D(\sigma_2) < T_D(\sigma_1)$, where $T_D$ is the running time of $D$ on input $\sigma$. Consider the speedup in the general form
+  \begin{displaymath}
+    S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{k \cdot g(k)}} \enspace ,
+  \end{displaymath}
+  where $g(k)$ is a general function characterizing superlinear speedup.  Then, there is a threshold $K$ so that:
+\begin{description}\setlength\itemsep{0pt}%
+\item[Superlinear regime:] if $k < K$ then $g(k) > 1$ and $\frac{d S(k)}{d k} > 1$.
+\item[Sublinear regime:] if $k\ge K$ then $g(k) = 1$ and $\frac{d S(k)}{d k} \le 1$.
+\end{description}
+\end{theorem}
+
+See the proof in the Appendix.
+
+This result warrants that superlinear growth in distributed self-adjusting systems is \emph{universal}, in that it should appear for \emph{any} combination of a partitioning load balancer and a self-adjusting algorithm and on \emph{any} input distribution, but it is only a \emph{transient} phenomenon: at a certain threshold $K$ the system goes through a \emph{phase transition}, where the initial superlinear growth reduces to an ``ordinary'' Amdahl's profile.  For distributed caching phase transition occurs at $K=\sfrac{m}{c}$, when total cache capacity $k c$ is enough to store the entire request set (recall the analysis in \eqref{eq:dist-cache} and Fig.~\ref{fig:dcache-analysis}), and for distributed MTF lists $K=m$, i.e., phase transition occurs when workers' input reduces to a singleton set.
+
+
+
+
+% todo: add references. Also Albers locality for caching and list access for exact characterization
+
+% todo: draw a graph
+% todo: redraw the locality boosting with domains and minimal notation?
+
+% todo: write that Splay trees may escape this theorem, and perform even better: its working set property is only an upper bound.
+
+% todo: write about submodularity of the cost function
+
+% todo: packet classification is not like list, remove from examples below
+
+% todo: write in terms of universes, becasue the main body uses this language. Generalize from there
+
+% todo: write that the load balancer partitions the universes
+
+% todo: monotonically non-decreasing, rather than increasing!
+
+
+% todo: only a lower bound. Model is all self-adjusting data structures that have a monotonic cost function in terms of working set sizes. Why not an upper bound?
+
+
+
+%
+
+\section{Superlinear Scaling of Self-adjusting\\ Distributed Systems}
+\label{sec:arch-scaling}
+
+
+Scaling is defined as the ratio of the completion time of the baseline system with a single machine to the completion time of the system with $k$ machines, $S(k) = T(1) / T(k)$.
+Consider a single job $j$ consisting of the \emph{serial} part $s$ and the \emph{parallel} part $1-s$.
+Assuming fixed problem size, task independence and divisible work, Amdahl's law states that the completion time of the system with $k$ machines cannot scale linearly
+\begin{equation*}\label{eq:mtf-perf}
+  \frac{T(1)}{T(k)} \le \frac1{s + \frac{1-s}{k}} \enspace .
+\end{equation*}
+Superlinear scaling of the parallel part of the workload would occur if $S(k) = \frac1{s + \frac{1-s}{g(k)}}$ for some $g(k) > k$. Amdahl's law rules this out.
+
+
+We examine \emph{distributed self-adjusting list lookup}. Our architecture consists of a locality-boosting partitioning load-balancer (see Fig.~\ref{fig:locality-boosting-lb}) combined with a self-adjusting move-to-front list (see Fig.~\ref{fig:mtf-example}) implemented in the workers.
+
+
+
+
+When load balancers boost locality of the input stream, performance of distributed self-adjusting data structures improve, and we observe superlinear scaling for this particular architecture. 
+
+For some inputs, distributed self-adjusting list lookup can achieve \emph{initial} superlinear scaling. The scaling is initial in a sense it holds for small values of $k$.
+
+\begin{theorem}
+	\label{obs:list-k2}
+	In the distributed self-adjusting lookup, 
+	for infinitely many inputs $\sigma$, there exists  and a constant $k_0$ such that all $k \le k_0$ there exists a load balancer $f_k$ that achieves have locality boosting savings $r' = \Omega(k^2)$.
+\end{theorem}
+
+
+To rigorously show this claim, we formulate the following mathematical model.
+
+
+% The rationale for why this design achieves superlinear scaling is the following.
+% Then, superlinear speedup is merely a product of two simultaneous $k\times$ speedup factors: one $k\times$ speedup comes from the self-adjusting list getting progressively faster as we add new workers (recall the ``scaled size'' model from \S\ref{sec:backgound-dist-cache}), and another $k\times$ speedup because we extend the total compute capacity available to the system $k$ times. The effective speedup is then just the multiple of the two, yielding $k^2$ times speedup in total. Plugging into Amdahl's law we get the \emph{scaling law for distributed MTF lists on uniform input} (see Fig.~\ref{fig:amdahl}):
+% \begin{equation}\label{eq:mtf-perf}
+  % S_l(k) = \frac{T_l(1)}{T_l(k)} = \frac1{s + \frac{1-s}{k^2}} \enspace .
+% \end{equation}
+
+% We used this scaling law as the graphical illustration for superlinear scaling in Fig.~\ref{fig:amdahl}. 
+% For small values of $k$ we obtain $O(k^2)$ scaling, despite that uniform request distribution is the worst case for self-adjustments. This hints at a great future potential for networking workloads that typically exhibit highly skewed request distributions~\cite{832484}.
+
+
+
+\subsection{The model}
+\label{sec:model}
+
+\paragraph{Architecture.}
+
+Consider $k$ identical parallel machines $M_1, M_2, M_3, \ldots, M_k$, each having its own isolated memory and running an instance of a self-adjusting list $D$. A stream of requests $\sigma$ arrives to the load balancer that partitions the stream into $k$ streams $\sigma(M_1), \sigma(M_2), \ldots, \sigma(M_k)$ and dispatches them to the machines.
+
+The load balancer is \emph{sticky}, i.e., it dispatches the requests to machines based solely on the request itself, and not on the state of the system.
+Each request from $\sigma$ belongs to a universe $\mathcal{U}$. 
+The load balancer is a function $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ that partitions the universe $\mathcal{U}$ into $k$ subsets $\mathcal{U}_1, \mathcal{U}_2, \ldots, \mathcal{U}_k$ (often referred to as affinity domains).
+
+\paragraph{Cost model.}
+
+The time needed for the system to process a request $\sigma_t$ at time $t$ is the sum of computing the assignment of $\sigma_t$ (denoted $T(f(\sigma_t))$) and the time to schedule and process the request by $D$ at machine $M_f(\sigma_t)$ (denoted $T(D(\sigma_t)$).
+The time $T(D(\sigma_t))$ depends on the internal state of the self-adjusting data structure $D$ at machine $f(\sigma_t)$.
+Self-adjusting data structures change their internal state over time, hence for two identical requests coming at different times, the time to process them may differ.
+The time required to process a request is often a function of the working set size of the data structure $D$. 
+
+
+The schedule finishes when all requests from $\sigma$ are processed. Some machines may be idle throughout execution, but the system is not allowed to reassign the requests to other machines.
+We are interested in minimizing the completion time of the schedule.
+
+% crucially, it's not only this:
+% \[
+%     \min \sum_t T(f(\sigma_t)) + T(D(\sigma_t)) \enspace .
+% \]
+% but more general schedule with gaps, but no reassignment
+
+For the case of lists, past research give us tools to measure the cost exactly. In particular, work of Albers relates the cost of any algorithm for list lookup to runs of input sequences.
+In our distributed model, this cost is submodular TODO
+
+
+
+\paragraph*{Benchmark.}
+Our benchmark $T(1)$ is a single self-adjusting data structure $D$ that runs on a single machine $M_1$
+and processes the entire stream $\sigma$, with a trivial load balancer $f_1(\cdot) = M_1$.
+
+A single self-adjusting data structure is the most natural baseline choice for the considered setting. But it differs from the baseline in Amdahl's law --- that would be a single machine simulating a non-trivial load balancer $f_k$ and $k$ independent machines to decrease the problem size. Another difference from the Amdahl's law assumptions is that the problem size is not fixed. The problem size at a machine, $T(f(\sigma_t))$, depends on the internal state of the self-adjusting data structure $D$ at time $t$ and machine $M_f(\sigma_t)$.
+
+
+
+The definitions of $s$ and $T(1)$ are natural.
+In similar fashion to Amdahl's law, we define $s$ as the serial fraction of the workload, where in our case only the load balancing is serial (total serial work is $\sum \sum_t T(f(\sigma_t))$).
+
+
+\subsection{Characterizing the gains.}
+
+We aim to show the following: for any input $\sigma$, self-adjusting distributed lists can scale by
+\begin{equation*}\label{eq:mtf-perf}
+  \frac{T(1)}{T(k)} \le \frac1{s + \frac{1-s}{k \cdot \ell}} \enspace ,
+\end{equation*}
+for some value $\ell$ that depends on how well the load balancer $f_k$ reduces the input $\sigma$.
+We dedicate the rest of this section to the definition of $\ell$ and the proof of the theorem.
+% We refer to the Appendix for formal definitions, cf. the proof of Theorem~\ref{thm:superlinear}.
+% The upper bound on scaling holds for all self-adjusting systems adhering to our architecture, which includes caching as a special case.
+
+
+
+
+% \paragraph{Consequences of the scaling law.}
+% Can we e.g. achieve quadratic scaling, i.e., $\ell = k$? 
+% Our theorem has implications that (informally) quadratic speedup is impossible to achieve for all $k$:
+% \begin{equation*}\label{eq:mtf-perf}
+%   \frac{T(1)}{T(k)} \neq \frac1{s + \frac{1-s}{k^2}} \enspace ,
+% \end{equation*}
+% The $r$ cannot grow indefinitely with $k$, and eventually the effects of load balancing ,,dry up". For each input sequence there exists a large enough value of $k$ so that adding machines no longer increases $\ell$ (details in Observation~\ref{obs:initial}). Hence, superlinear scaling is an initial phenomenon, and it cannot continue forever.
+
+
+
+
+
+% Before we state the theorem formally, we need to provide the formal definition of $\ell$.
+The value of $\ell$ depends on the input $\sigma$ and the load balancer $f_k$. Hence, $\ell$ indirectly relies on $k$ through $f_k$ (these are tied together in our architecture). Furthermore, for technical reasons, $\ell$ depends on the serial portion of the workload $s$.
+To define $\ell$, we need to relate the input $\sigma$ with the load balancer $f_k$.
+
+
+
+\paragraph*{Load balancer isolates working sets.}
+A working set for an item $\sigma_t$ request at time $t$ is defined as the set of distinct items requested since the last request to the item $\sigma_t$.
+Recall that the load balancer partitions the stream into $k$ streams $\sigma(M_1), \sigma(M_2), \ldots, \sigma(M_k)$ and dispatches them to the machines.
+These streams may have reduced working set sizes at the machines in comparison to the working set sizes of the original stream $\sigma$.
+Precisely, a load balancer $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ partitions the universe $\mathcal{U}$ into $k$ subsets $\mathcal{U}_1, \mathcal{U}_2, \ldots, \mathcal{U}_k$, and the working set for machine $i$ at the time $x = \sigma_t$ is requested is $W_t(x, t, \sigma(M_i)) = W_t(x, t, \sigma) \cap \mathcal{U}_i$.
+
+With the list we have an associated cost function:
+\[
+	\textsf{cost}(x, t, \sigma) = |W_t(x)|+1 \enspace ,
+\]
+where $W_t(x)$ is the number of distinct requests to items other than $x$ since the last request to $x$.
+This is also known as the working set property of LRU.
+% (TODO: cite)
+
+
+
+% \paragraph*{Visualize the cost savings with a complete weighted graph.}
+% TODO
+
+% \paragraph*{Defining $\ell$: from an additive to a multiplicative law.}
+In total, we observe cost savings from load balancing for the stream $\sigma$, data structure $D$ characterized by a function $g$, and a load balancer $f_k$. We denote them as
+\[
+	r = \sum_{t} g(|W_t(x)|) - \sum_{t} g(|W_t(x)| \cap \mathcal{U}_i) \enspace .
+\]
+Then, the total work decreases\footnote{A strict deviation from the assumptions of Amdahl's law, where workload is fixed} by $r$ for the stream $\sigma$. Let $r'$ be a normalized value of $r$ with respect to the total non-serial work of the system. 
+
+
+\begin{equation*}
+  S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s - r'}{k}} \enspace ,
+\end{equation*}
+By setting $\ell = \frac{(1-s)\cdot k}{1-s-r'}$, we obtain the following theorem.
+
+\begin{theorem}
+	\label{thm:superlinear}
+	% Assume that a self-adjusting data structure $D$ whose cost function depends on its working set size with a cost function $g_D$ that is monotonically increasing. 
+
+	For parallel lists, scaling can be up to
+	Then, for any number of machines $k$, the scaling of the distributed is 
+	\begin{equation*}
+	  S(k) = \frac{T(1)}{T(k)} = \frac1{s + \frac{1-s}{k \cdot \ell}} \enspace ,
+	\end{equation*}
+	for values of $k<k_0$, where $k_0$ depends on an input sequence $\sigma$.
+\end{theorem}
+
+\begin{proof}
+	Consider an input $\sigma$ that requests selected $k$ items of the universe in a round-robin fashion and repeats an arbitrarily large number of times $m$.
+	The baseline $T(1)$ finishes the schedule in time $T(1) = 1$.
+
+Consider $k$ machines. We construct a load balancer $f_k$.
+First, we construct an auxiliary graph $G$ of $k$ vertices, where each vertex represents a machine. The graph is weighted, and each edge $(M_i, M_j)$ has the cost that is saved by isolating affinity domains between these two machines. For the special case of $\sigma$, this graph is a complete graph with equal weights.
+Consider an ideal load balancer $f_k$ that isolates the affinity domains of all items from $\sigma$ by an arbitrary $k$-cut (components of size $k$)\cite{Frieze97, Mahajan95}. The total savings per each machine amount to $m\cdot(k-1)$.
+Then, the distributed system pays $1$ for handling each request in the list lookup model, as opposed to $\Omega(k)$ of the baseline (all items are in the working set, and the function $g_D$ is linear).
+
+\end{proof}
+
+Next, we show how large the scaling factor $\ell$ can be.
+
+\begin{theorem}
+	% restate k2 for lists
+\end{theorem}
+
+baseline is T(1) = 1.
+The total work is s + (1-s - (1-s)*(1/k) )/k
+
+you divide each list k times in size, that's right
+
+
+
+
+
+
+
+
+
+
+
+\subsection{Prev}
 
 
 Superlinear scaling is achieved whenever $\ell > 1$.
@@ -196,22 +521,16 @@ We observe that after $k = |\mathcal{U}|$, all affinity domains are singletons, 
 \section{Initial Superlinear Scaling}
 
 Finally, a positive result.
-For some inputs, distributed self-adjusting list lookup can achieve \emph{initial} superlinear scaling.
-
-\begin{observation}
-	\label{obs:list-k2}
-	In the distributed self-adjusting lookup, 
-	for infinitely many inputs $\sigma$, there exists  and a constant $k_0$ such that all $k \le k_0$ there exists a load balancer $f_k$ that achieves have locality boosting savings $r' = \Omega(k^2)$.
-\end{observation}
 
 \begin{proof}
-	Consider an input $\sigma$ that requests selected $k$ items of the universe in a round-robin fashion and repeats an arbitrarily large number of times $m$.
-	The baseline $T(1)$ finishes the schedule in time $T(1) = 1$.
 
-Consider $k$ machines. We construct a load balancer $f_k$.
-First, we construct an auxiliary graph $G$ of $k$ vertices, where each vertex represents a machine. The graph is weighted, and each edge $(M_i, M_j)$ has the cost that is saved by isolating affinity domains between these two machines. For the special case of $\sigma$, this graph is a complete graph with equal weights.
-Consider an ideal load balancer $f_k$ that isolates the affinity domains of all items from $\sigma$ by an arbitrary $k$-cut (components of size $k$)\cite{Frieze97, Mahajan95}. The total savings per each machine amount to $m\cdot(k-1)$.
-Then, the distributed system pays $1$ for handling each request in the list lookup model, as opposed to $\Omega(k)$ of the baseline (all items are in the working set, and the function $g_D$ is linear).
+
+
+
+
+
+
+
 
 
 TODO. explicitly show scaling by definition
