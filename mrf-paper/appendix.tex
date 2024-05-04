@@ -240,9 +240,17 @@ It should however be obvious that the streams that scale $q$ well with $k$ need 
 
 
 \subsection{On the choice of a load balancer}
-The primary role of the load balancer is to boost locality of the input stream.
+
+The primary role of the load balancer is to boost locality of the input stream (that is to improve $\ell$).
+We link prior work to give algorithms for constructing load balancers that achieve close to optimal $\ell$.
+
+
+\paragraph*{Graph of runs.}
 An optimal load balancer is a function $f_k$ that isolates the working sets of the input stream $\sigma$ the most. Formally, we construct a graph of runs of the input sequence. 
+TODO: link to work of Albers to explain the graph of runs
 TODO draw
+
+
 
 \paragraph*{Offline algorithms.}
 The optimal $k$-cut is an NP-hard problem.
