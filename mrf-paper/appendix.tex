@@ -120,6 +120,7 @@ This gives us speedup
 In our running example of uniform input, $q$ scales perfectly linearly with $k$, $q=k$, and $\ell$ also scales up to factor of $k$. 
 We dedicate the next two sections to partitioning the speedup into these two dimensions and independently analyzing them.
 
+
 % We dedicate the rest of this section to the definition of $\ell$ and the proof of the theorem.
 % We refer to the Appendix for formal definitions, cf. the proof of Theorem~\ref{thm:superlinear}.
 % The upper bound on scaling holds for all self-adjusting systems adhering to our architecture, which includes caching as a special case.
@@ -213,8 +214,7 @@ Recall that our objective is not to minimize the total work, but to minimize the
 Fix a reduced parallel workload from the previous section of total size $(1-s)/\ell$, and let's look at its components.
 We are interested in minimizing the the completion time of the last machine. 
 
-The most important definition:
-The ratio of the total work to the completion time of the last machine is $q$.
+We define as $q$ the ratio of the total work to the completion time of the last machine.
 
 Some request streams and load balancer pairs are better at achieving $q$ close to its theoretical limit $k$ (given by Amdahl's law). Our uniform example achieves perfect $q=k$, since all jobs are the same size and all machines process the same number of jobs. On the other hand, unparallelizable streams such as a repeated request to a single item have $q=1$, because they use only one machine in our architecture\footnote{To remedy that, we could look into load balancers that distribute jobs to multiple machines (generalizations of functions $f_k$, to functions from $\mathcal{U}$ to sets of machines). This goes beyond the scope of this paper. See RSS+ paper.}.
 A general rule of thumb is: the better the workload can be parallelizable, the larger the $q$. Parallelizable workload can heteregenous, for example a single machine $M_1$ can process a majority of the stream $\sigma$ if the stream $\sigma_{M_1}$ is local, while the rest of the machines process longer jobs to finish at the same time as $M_1$.
@@ -241,7 +241,7 @@ It should however be obvious that the streams that scale $q$ well with $k$ need 
 
 % Which input sequences can scale?
 
-
+\begin{comment}
 \subsection{On the choice of a load balancer}
 
 The primary role of the load balancer is to boost locality of the input stream (that is to improve $\ell$).
@@ -288,7 +288,7 @@ This gives us a scaling law (an impossibility result similar to Amdahl's law) fo
 \subsection{Consequences}
 \paragraph*{Initial phenomenon}
 
-The maximum possible multiplicative $z$ achievable is fixed for each input sequence $\sigma$. 
+The maximum possible multiplicative $\ell$ achievable is fixed for each input sequence $\sigma$. 
 This happens always when $k$ is large enough so the load balancer $f_k$ isolates all working sets, but for many inputs $\sigma$, the improvements can dry up even for smaller $k$ (the more local the sequences are, the more effective the load balancer can be).
 As a corollary, the system can still scale with the parameter $k$ due to additional resources, but the savings from load balancing do not increase indefinitely with $k$.
 \begin{observation}
@@ -303,6 +303,8 @@ As a corollary, the system can still scale with the parameter $k$ due to additio
 
 % For splay trees, scaling can be even better, since the cost function is only upper bounded in terms the working set size.
 
+
+\begin{comment}
 \newpage
 \newpage
 \newpage
@@ -928,3 +930,5 @@ Then, the analysis of Albers shows that the system cannot improve more than a co
 %%% mode: latex
 %%% TeX-master: "distributed_mrf"
 %%% End:
+
+\end{comment}
