@@ -1,6 +1,6 @@
 \appendix
 
-\section{Superlinear Scaling of Self-adjusting\\ Distributed Systems}
+\section{Superlinear Scaling of Self-adjusting\\ Distributed Systems (a positive result)}
 \label{sec:arch-scaling}
 
 
@@ -167,20 +167,101 @@ Precisely, a load balancer $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ partition
 % TODO
 
 % \paragraph*{Defining $\ell$: from an additive to a multiplicative law.}
-In total, we observe cost savings from load balancing for the stream $\sigma$, data structure $D$ characterized by a function $g$, and a load balancer $f_k$. We denote them as
-\[
-	r = \sum_{t} g(|W_t(x)|) - \sum_{t} g(|W_t(x)| \cap \mathcal{U}_i) \enspace .
-\]
-Then, the total work decreases\footnote{A strict deviation from the assumptions of Amdahl's law, where workload is fixed} by $r$ for the stream $\sigma$.
 
+The cost for the parallel workload of the baseline is 
+\[
+	T(1) = \sum_{t} g(|W_t(x)|)\enspace .
+\]
+
+
+The cost of the the parallel workload for the distributed system is as follows.
+In total, we observe cost savings from load balancing for the stream $\sigma$, data structure $D$ characterized by a function $g$, and a load balancer $f_k$.
+\[
+	T(k) = \sum_{t} g(|W_t(x)| \cap \mathcal{U}_{f_k(\sigma_t)}) \enspace .
+\]
+Note the total work decreases\footnote{A strict deviation from the assumptions of Amdahl's law, where workload is fixed} by $r$ for the stream $\sigma$.
+
+The speedup ratio is then 
+\[
+	1/z = \frac{\sum_{t} g(|W_t(x)| \cap \mathcal{U}_{f_k(\sigma_t)})}{\sum_{t} g(|W_t(x)|)}  \enspace .
+\]
 
 \subsection{Conditions for superlinear scaling}
 
-sum of working sets ratio so that g(k) increases more than linearly
+Superlinear scaling is defined as follows.
+  \begin{displaymath}
+    S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{h(k)}} \enspace ,
+  \end{displaymath}
+for a function $h(k) > k$.
 
-\subsection{Initial phenomenon}
+The speedup of the distributed system according to our architecture is then
+ \begin{displaymath}
+    S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{scalability(f_k, \sigma)\cdot z}} \enspace ,
+  \end{displaymath}
+  where $scalability(f_k, \sigma)$ is the ability to parallelize the workload of the stream $\sigma$ with the load balancer $f_k$, and $z$ is defined in the previous subsection.
+  
+A simple load balancer considered in our model is a fixed function $f_k$, and it is restricted in $scalability$. It can very well deal with the uniform input, because this workload paralellizes well. But this load balancer cannot scale with $k$ on an input that consists of a repeated request to a single item.
+\footnote{rss+}
 
-\maciek{finished here}
+
+For some input sequences $\sigma$, $scalability(f_k, \sigma) \cdot z$ combined may achieve superlinear scaling for some initial values of $k$, while $z$ isolates working sets with increased $k$.
+
+
+Which input sequences can scale?
+
+
+\subsection{On the choice of a load balancer}
+The primary role of the load balancer is to boost locality of the input stream.
+An optimal load balancer is a function $f_k$ that isolates the working sets of the input stream $\sigma$ the most. Formally, we construct a graph of runs of the input sequence. 
+TODO draw
+
+\paragraph*{Offline algorithms.}
+The optimal $k$-cut is an NP-hard problem.
+Cite maxcut.
+If the cuts are balanced (a natural choice), then the best approximation algorithm to compute $k$-cut such graph was given by Racke.
+
+\paragraph*{Online algorithms.}
+It is often unrealistic to know the entire input sequence in advance.
+Cite maxcut online % https://www.lamsade.dauphine.fr/~mlampis/papers/maxdicut.pdf
+
+But this algorithm needs to know the entire input sequence in advance. If the algorithm does not know the input sequence in advance and needs to compute it online, if we additionally can change $f_k$ over time (reassign the workers to another affinity domain $\mathcal{U_i}$) then the problem is known as online graph partitioning.
+
+
+% The load balancer must additionally be efficiently computable, as otherwise the serial part $s$ of the workload increases.
+
+% Each optimization problem imposes its own challenges in designing load balancers. Some problems are easy, e.g. if the problem is simply a list lookup and the universe is hashable, we can solve the problem by perfect hashing.
+% But other problems, such as packet classification, are generalizations of list lookup. For example, in packet classification the universe of requests is much larger than the universe of items, and multiple requests match to the same item. This makes designing a hash function for the load balancer much harder.
+
+% sum of working sets ratio so that g(k) increases more than linearly
+
+\section{Limits of scaling for self-adjusting distributed systems (a negative result)}
+
+\subsection{Amdah's law for self-adjusting distributed systems}
+
+For Move-to-Front lists and LRU caches, the cost function $g$ is both upper and lower bounded as a function of the working set size. Hence, our analysis of scaling is tight.
+This gives us a scaling law (an impossibility result similar to Amdahl's law) for self-adjusting distributed systems of our architecture.
+ \begin{displaymath}
+    S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{k \cdot z}} \enspace .
+  \end{displaymath}
+ The proof of this theorem is a direct consequence of the Amdahl's law to the reduced workload: the reduced parallel workload $(1-s)/z$ can be executed at most $k$ times faster.
+ 
+\subsection{Consequences}
+\paragraph*{Initial phenomenon}
+
+The maximum possible multiplicative $z$ achievable is fixed for each input sequence $\sigma$. 
+This happens always when $k$ is large enough so the load balancer $f_k$ isolates all working sets, but for many inputs $\sigma$, the improvements can dry up even for smaller $k$ (the more local the sequences are, the more effective the load balancer can be).
+As a corollary, the system can still scale with the parameter $k$ due to additional resources, but the savings from load balancing do not increase indefinitely with $k$.
+\begin{observation}
+	For each input sequence $\sigma$, there exists a constant $K$ such that for all $k > K$, for each load balancer $f_k$, the savings $r$ are fixed do not increase with $k$.
+\end{observation}
+
+
+ \paragraph*{LRU caches and superlinear scaling}
+\begin{observation}
+ There are consequences of this theorem. For example the LRU algorithm for caching cannot scale superlinearly indefinitely. Hence, the observed phenomenon in the literature is only an initial phenomenon due to the combined effect of increased number of machines and the load balancer.
+\end{observation}
+
+% For splay trees, scaling can be even better, since the cost function is only upper bounded in terms the working set size.
 
 \newpage
 \newpage
