@@ -117,6 +117,9 @@ This gives us speedup
   \frac{T(1)}{T(k)} \le \frac1{s + \frac{1-s}{q \cdot \ell}} \enspace 
 \end{equation*}
 
+In our running example of uniform input, $q$ scales perfectly linearly with $k$, $q=k$, and $\ell$ also scales up to factor of $k$. 
+We dedicate the next two sections to partitioning the speedup into these two dimensions and independently analyzing them.
+
 % We dedicate the rest of this section to the definition of $\ell$ and the proof of the theorem.
 % We refer to the Appendix for formal definitions, cf. the proof of Theorem~\ref{thm:superlinear}.
 % The upper bound on scaling holds for all self-adjusting systems adhering to our architecture, which includes caching as a special case.
