@@ -8,7 +8,7 @@ To achieve superlinear scaling we need a self-adjusting algorithm in the first p
 Second, underlying packet classification there is an infamously difficult theoretical problem \cite{10.1145/2619239.2626294,10.1006/jagm.1996.0063, PacutVAPRS2022, 10.1145/2619239.2626294, 10.1145/1851182.1851208, 10.1145/863955.863980, gupta2001algorithms}, % , 10.1145/3359989.3365431},
 and achieving superlinear speedup on such a hard problem promises massive performance gain. Third, the Linux kernel network stack offers several flexible software and hardware based load balancers for dispatching packets to parallel classifier instances running on different CPU cores \cite{rss-linux}, which we will reuse to implement the locality-boosting load balancer component. And fourth, packet classifiers are very difficult to cache \cite{1354643} (recall, caches are the ``cheap'' way to obtain superlinear scaling), which calls for a true self-adjusting packet classifier. % algorithm that goes beyond caching. % \cite{10228937}.
 
-\subsection{The Linux packet classier}
+\subsection{The Linux packet classifier}
 \label{sec:sa-pack-class}
 
 A network firewall is a means to control incoming and outgoing network traffic based on user-defined packet classifier rules (see Fig.~\ref{fig:class-sample}). % This is useful to improve security, control access, filter and protect against ongoing attacks, and log\slash monitor network activity.
