@@ -327,7 +327,8 @@ This always happens when $k$ is large enough so the load balancer $f_k$ isolates
 As a corollary, the system can still scale with the parameter $k$ due to additional resources, but the savings from load balancing do not increase indefinitely with $k$.
 \begin{observation}
 	\label{obs:initial}
-	For each input sequence $\sigma$, there exists a constant $K$ such that for all $k > K$, for each load balancer $f_k$, the savings $r$ are fixed do not increase with $k$.
+	For each input sequence $\sigma$, there exists a constant $K$ such that for all $k > K$, for each load balancer $f_k$, the savings $\ell$ are fixed do not increase with $k$.
+	Combined with the fact that $q \le k$, means that superlinear scaling cannot continue with $k$ indefinitely.
 \end{observation}
 
 
