@@ -32,6 +32,7 @@ Superlinear scaling is defined as follows.
     S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{h(k)}} \enspace ,
   \end{displaymath}
 for a function $h(k) > k$.
+
 In this section, we analyze the scaling of self-adjusting distributed systems, and identify two independent dimensions of scaling: load balancer efficiency $\ell$ and parallelizability $q$.
 Our system scales as
 \begin{displaymath}
@@ -59,8 +60,8 @@ The load balancer is a function $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ from
 
 \paragraph{Cost model.}
 
-The time to process a request $\sigma_t$ at time $t$ includes both the computational overhear of the load balancer (denoted $T(f(\sigma_t))$) and the processing time by $D$ at machine $M_{f_k(\sigma_t)}$ (denoted $T(D(\sigma_t)$).
-Notably, the processing time of $D$ varies over time due to the self-adjusting nature of the data structure.
+The time to process a request $\sigma_t$ at time $t$ includes both the computational overhear of the load balancer (denoted $T(f_k(\sigma_t))$) and the processing time by $D$ at machine $M_{f_k(\sigma_t)}$ (denoted $T(g_D(\sigma_t)$).
+Notably, the processing time $g_D$ varies over time due to the self-adjusting nature of the data structure.
 The time required to process a request is often a function of the working set size of the data structure $D$; we elaborate soon. 
 
 
