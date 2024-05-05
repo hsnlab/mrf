@@ -23,16 +23,19 @@
 \begin{theorem}\label{thm:general-scaling-law}
   Consider a load balancer that dispatches inputs $\sigma$ taken from a universe $\mathcal{U}$ to $k$ identical parallel workers $W_1, W_2, \ldots, W_k$, each running an instance of a self-adjusting algorithm $D$, using a deterministic function $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ that partitions the input universe $\mathcal{U}$ into $k$ disjoint subsets $\mathcal{U}_1, \mathcal{U}_2, \ldots, \mathcal{U}_k$. We call an algorithm $D$ ``self-adjusting'' if the running time of $D$ is a submodular function of its input universe $\mathcal{U}$, that is, for any pair of input sequences $\sigma_1 \subseteq \mathcal{U}_1$ and $\sigma_2 \subseteq \mathcal{U}_2 \subset \mathcal{U}_1$ it holds that $T_D(\sigma_2) < T_D(\sigma_1)$, where $T_D$ is the running time of $D$ on input $\sigma$. Consider the speedup in the general form
   \begin{displaymath}
-    S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{k \cdot g(k)}} \enspace ,
+    S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{q \cdot \ell}} \enspace ,
   \end{displaymath}
-  where $g(k)$ is a general function characterizing superlinear speedup.  Then, there is a threshold $K$ so that:
+  where $\ell$ is defined
+as the ratio of the total work of the distributed system to the total work of the baseline, and $q$ is defined as the ratio of the total (reduced) work to the completion time of the last machine.  
+ 
+  Then, there is a threshold $K$ so that:
 \begin{description}\setlength\itemsep{0pt}%
 \item[Superlinear regime:] if $k < K$ then $g(k) > 1$ and $\frac{d S(k)}{d k} > 1$.
 \item[Sublinear regime:] if $k\ge K$ then $g(k) = 1$ and $\frac{d S(k)}{d k} \le 1$.
 \end{description}
 \end{theorem}
 
-This theorem follows from the Theorem~\ref{thm:superlinear} and Observation~\ref{obs:initial}.
+This theorem follow by combining our positive (Theorem~\ref{thm:superlinear}) and negative findings (Observation~\ref{obs:initial}).
 
 
 
@@ -102,8 +105,8 @@ Our benchmark $T(1)$ is a single self-adjusting data structure $D$ that runs on 
 and processes the entire stream $\sigma$, with a trivial load balancer $f_1(\cdot) = M_1$.
 A single self-adjusting data structure is the most natural baseline choice for self-adjusting data structures. 
 
-The definitions of $s$ and $T(1)$ are natural.
-In similar fashion to Amdahl's law, we define $s$ as the serial fraction of the workload, where in our case only the load balancing is serial (total serial work is $\sum \sum_t T(f(\sigma_t))$).
+% The definitions of $s$ and $T(1)$ are natural.
+% In similar fashion to Amdahl's law, we define $s$ as the serial fraction of the workload, where in our case only the load balancing is serial (total serial work is $\sum \sum_t T(f(\sigma_t))$).
 
 
 \subsection{Two dimensions of scalability effects.}
@@ -112,10 +115,12 @@ The load balancer $f_k$ partitions the input stream $\sigma$ into $k$ more local
 
 
 \begin{definition}
+	\label{def:ell}
 The value $\ell$ is defined as the ratio of the total work of the distributed system to the total work of the baseline.
 \end{definition}
 
 \begin{definition}
+	\label{def:q}
 The value $q$ is defined the ratio of the total (reduced) work to the completion time of the last machine.
 \end{definition}
 
@@ -135,7 +140,8 @@ This gives us speedup
 for $q$ and $\ell$ defined in Definition~\ref{def:q} and \ref{def:ell}, which depend on the input $\sigma$, load balancer $f_k$ and the cost function $g_D$.
 \end{theorem}
 
-The proof of the above theorem is a direct consequence of the definitions of $\ell$ and $q$ and our cost model. We leave the proof to the full version of the paper.
+The proof of the above theorem is a direct consequence of executing a reduced workload (reduced by a factor of $\ell$) on $k$ machines with the speedup $q$. 
+Note that $s$ is the serial fraction of the workload, which is common to $T(1)$ and $T(k)$.
 
 Our theorem applies to e.g. Move-to-Front lists and LRU caches, since their cost functions $g_\textsf{MTF}$ and $g_\textsf{LRU}$ are monotonically increasing in the working set size.
 
@@ -164,7 +170,9 @@ With each data structure $D$, there exists an associated cost function $g_D$
 where $W_t(x)$ is the number of distinct requests to items other than $x$ since the last request to $x$.
 With these assumptions, we still capture parallel extensions of LRU caches, Move-to-Front lists, splay trees. 
 
-We illustrate $g_D$ for Move-to-Front and LRU. In Move-to-Front the cost of accessing an item is linear: $g_\textsf{MTF}(x,t,\sigma) = |W_t(x)| + 1$.  LRU is the algorithm Move-to-Front casted into the cost model of caching\footnote{See~\cite{SleatorT85} for the relationship between caching algorithms and self-adjusting list algorithms.}. Precisely, the cost model for $g_\textsf{LRU}$ is non-linear: for a cache of size $B$, the cost is 1 if the working set size is $B+1$, and 0 otherwise.
+We illustrate $g_D$ for Move-to-Front and LRU. In Move-to-Front the cost of accessing an item is linear: $g_\textsf{MTF}(x,t,\sigma) = |W_t(x)| + 1$.  LRU is the algorithm Move-to-Front casted into the cost model of caching with a generalized cost function $g_\textsf{LRU}$ that is non-linear: for a cache of size $B$, the cost is 1 if the working set size is $B+1$, and 0 otherwise.
+We note that this generalized setting introduced by Sleator and Tarjan~\cite{SleatorT85} captures more general data structures than just lists and caching under a common characterization of $g_D$.
+
 
 
 
@@ -198,6 +206,12 @@ The speedup ratio in the dimension of $\ell$ is then
 Recall that our objective is not to minimize the total work, but to minimize the completion time of the schedule.
 Fix a reduced parallel workload from the previous section of total size $(1-s)/\ell$, and let's look at its components.
 We are interested in minimizing the completion time of the last machine. 
+The speedup ratio in the dimension of $q$ is given by
+\[
+	1/q = \frac{\sum_{t} g(|W_t(x)) \cap \mathcal{U}_{f_k(\sigma_t)|}}{\max_i \sum_{t} g(|W_t(x) \cap \mathcal{U}_{f_k(\sigma_t)}|)}  \enspace .
+\]
+
+
 
 Some request streams and load balancer pairs are better at achieving $q$ close to its theoretical limit $k$ (given by Amdahl's law). Our uniform example achieves perfect $q=k$, since all jobs are the same size and all machines process the same number of jobs. On the other hand, unparallelizable streams such as a repeated request to a single item have $q=1$, because they use only one machine in our architecture\footnote{To remedy that, we could look into load balancers that distribute jobs to multiple machines (generalizations of functions $f_k$, to functions from $\mathcal{U}$ to sets of machines). This goes beyond the scope of this paper. See RSS+ paper for reference~\cite{10.1145/3359989.3365412}.}.
 A general rule of thumb is: the better the workload can be parallelizable, the larger the $q$. Parallelizable workload can heteregeneous, for example a single machine $M_1$ can process a majority of the stream $\sigma$ if the stream $\sigma_{M_1}$ is local, while the rest of the machines process longer jobs to finish at the same time as $M_1$.
@@ -208,11 +222,6 @@ To maximize $q$, the load balancer needs to distribute the workload evenly among
 % 	?
 % 	Submodular
 % \end{observation}
-
-The speedup ratio in the dimension of $q$ is given by
-\[
-	1/q = \frac{\sum_{t} g(|W_t(x)) \cap \mathcal{U}_{f_k(\sigma_t)|}}{\max_i \sum_{t} g(|W_t(x) \cap \mathcal{U}_{f_k(\sigma_t)}|)}  \enspace .
-\]
 
 
 
