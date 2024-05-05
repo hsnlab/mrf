@@ -53,8 +53,7 @@ To rigorously show these claims, we formulate the following mathematical model.
 \paragraph{Architecture.}
 
 Consider $k$ identical parallel machines $M_1, M_2, M_3, \ldots, M_k$, each having its own isolated memory and running an instance of a self-adjusting list $D$.
-The stream of requests $\sigma$ arriving at a load balancer is partitioned into $k$ streams 
-streams $\sigma(M_1), \sigma(M_2), \ldots, \sigma(M_k)$ and dispatched to the machines.
+The stream of requests $\sigma$ arriving at a load balancer is partitioned into $k$ streams $\sigma(M_1), \sigma(M_2), \ldots, \sigma(M_k)$ and dispatched to the machines.
 The load balancer dispatches the requests to machines based solely on the request itself, and not on the state of the system.
 The load balancer is a function $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ from the universe of all items $\mathcal{U}$ to the machines, and this function partitions the universe $\mathcal{U}$ into $k$ subsets $\mathcal{U}_1, \mathcal{U}_2, \ldots, \mathcal{U}_k$ (often referred to as affinity domains).
 
@@ -62,7 +61,7 @@ The load balancer is a function $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ from
 
 The time to process a request $\sigma_t$ at time $t$ includes both the computational overhear of the load balancer (denoted $T(f(\sigma_t))$) and the processing time by $D$ at machine $M_{f_k(\sigma_t)}$ (denoted $T(D(\sigma_t)$).
 Notably, the processing time of $D$ varies over time due to the self-adjusting nature of the data structure.
-The time required to process a request is often a function of the working set size of the data structure $D$; we elaborate soonn. 
+The time required to process a request is often a function of the working set size of the data structure $D$; we elaborate soon. 
 
 
 \paragraph*{Objective.}
@@ -164,12 +163,12 @@ The speedup ratio in the dimension of $\ell$ is then
 
 Recall that our objective is not to minimize the total work, but to minimize the completion time of the schedule.
 Fix a reduced parallel workload from the previous section of total size $(1-s)/\ell$, and let's look at its components.
-We are interested in minimizing the the completion time of the last machine. 
+We are interested in minimizing the completion time of the last machine. 
 
 We define as $q$ the ratio of the total work to the completion time of the last machine.
 
 Some request streams and load balancer pairs are better at achieving $q$ close to its theoretical limit $k$ (given by Amdahl's law). Our uniform example achieves perfect $q=k$, since all jobs are the same size and all machines process the same number of jobs. On the other hand, unparallelizable streams such as a repeated request to a single item have $q=1$, because they use only one machine in our architecture\footnote{To remedy that, we could look into load balancers that distribute jobs to multiple machines (generalizations of functions $f_k$, to functions from $\mathcal{U}$ to sets of machines). This goes beyond the scope of this paper. See RSS+ paper.}.
-A general rule of thumb is: the better the workload can be parallelizable, the larger the $q$. Parallelizable workload can heteregenous, for example a single machine $M_1$ can process a majority of the stream $\sigma$ if the stream $\sigma_{M_1}$ is local, while the rest of the machines process longer jobs to finish at the same time as $M_1$.
+A general rule of thumb is: the better the workload can be parallelizable, the larger the $q$. Parallelizable workload can heteregeneous, for example a single machine $M_1$ can process a majority of the stream $\sigma$ if the stream $\sigma_{M_1}$ is local, while the rest of the machines process longer jobs to finish at the same time as $M_1$.
 It should however be obvious that the streams that scale $q$ well with $k$ need to have roughly equal workloads for each machine, and the only streams that can achieve that consist of requests to multiple affinity domains.
 
 One way to minimize $q$ is to distribute the workload evenly among the machines.
@@ -259,7 +258,7 @@ But it is unrealistic that the algorithm needs to know the entire input sequence
 \section{Impossibility of scaling for self-adjusting distributed systems (a negative result)}
 
 
-We finalize by sketching a scaling impossibility law, an equivalent of Amdahl's law for self-adjusting distributed systems. We draw conclusions that for each stream $\sigm$ the scaling can be only initial (cannot continue indefinitely with $k$), hence the superlinear scaling observed in practice is only an ephemeral phenomenon.
+We finalize by sketching a scaling impossibility law, an equivalent of Amdahl's law for self-adjusting distributed systems. We draw conclusions that for each stream $\sigma$ the scaling can be only initial (cannot continue indefinitely with $k$), hence the superlinear scaling observed in practice is only an ephemeral phenomenon.
 
 
 \begin{theorem}
@@ -282,7 +281,7 @@ For Move-to-Front lists and LRU caches, the cost function $\ell$ is both upper a
 \textbf{Initial phenomenon}
 
 The maximum possible multiplicative $\ell$ achievable is fixed for each input sequence $\sigma$. 
-This happens always when $k$ is large enough so the load balancer $f_k$ isolates all working sets, but for many inputs $\sigma$, the improvements can dry up even for smaller $k$ (the more local the sequences are, the more effective the load balancer can be).
+This always happens when $k$ is large enough so the load balancer $f_k$ isolates all working sets, but for many inputs $\sigma$, the improvements can dry up even for smaller $k$ (the more local the sequences are, the more effective the load balancer can be).
 As a corollary, the system can still scale with the parameter $k$ due to additional resources, but the savings from load balancing do not increase indefinitely with $k$.
 \begin{observation}
 	For each input sequence $\sigma$, there exists a constant $K$ such that for all $k > K$, for each load balancer $f_k$, the savings $r$ are fixed do not increase with $k$.
