@@ -13,6 +13,9 @@
 
 
 
+\section{Main body section 3.3}
+
+TODO
 
 
 
@@ -195,29 +198,19 @@ Another difference from the Amdahl's law assumptions is that the problem size is
 
 \paragraph*{On the choice of a load balancer}
 
-The primary role of the load balancer is to boost locality of the input stream (that is to improve $\ell$).
-We link prior work to give algorithms for constructing load balancers that achieve close to optimal $\ell$.
+There are many constraints for the load balancer, e.g. it should be efficiently computable and should parallelize the workload well (measured by the parameter $q$).
+Now, we focus solely on the locality-boosting aspect of the load balancer.
+% The primary role of the load balancer is to boost locality of the input stream (that is to improve $\ell$).
+We can visualize the saving from load balancing with help of a weighted complete graph, where each edge weight represents the saving by isolating the affinity domains of the two machines.
+The optimal load balancer uses the heaviest cut in such a graph.
 
 
-An optimal load balancer is a function $f_k$ that isolates the working sets of the input stream $\sigma$ the most. Formally, we construct a graph of runs of the input sequence. 
-TODO: link to work of Albers to explain the graph of runs
-TODO draw
+First, we consider load balancers that remain fixed over time, and we additionally assume that the input stream is known in advance.
+The optimal $k$-cut is known as \emph{maximum $k$-cut}, and is known to be NP-hard problem~\cite{Frieze97,Mahajan95}.
+If the cuts are balanced (a natural choice), then the problem is known as \emph{maximum $k$-section}~\cite{Andersson99} (from the perspective of maximizing the cut) and \emph{minimum graph $k$-balanced partitioning}~\cite{AndreevR06}  (from the perspective of minimizing the non-cut edges).
 
-
-\begin{enumerate}
-	\item 
-\textbf{Offline algorithms.}
-The optimal $k$-cut is an NP-hard problem.
-Cite maxcut.
-If the cuts are balanced (a natural choice), then the best approximation algorithm to compute $k$-cut such graph was given by Racke.
-
-\textbf{Online algorithms.}
-It is often unrealistic to know the entire input sequence in advance.
-Cite maxcut online % https://www.lamsade.dauphine.fr/~mlampis/papers/maxdicut.pdf
-But it is unrealistic that the algorithm needs to know the entire input sequence in advance. If the algorithm does not know the input sequence in advance and needs to compute it online, if we additionally can change $f_k$ over time (reassign the workers to another affinity domain $\mathcal{U_i}$) then the problem is known as online graph partitioning.
-
-
-\end{enumerate}
+It is often unrealistic to know the entire input sequence in advance, and online variants of the problem are studied, where additionally the load balancer can change the assignment of the requests to the machines over time.
+Then, the problems in this area are known as online $k$-cut~\cite{Bar-NoyL12} and online graph partitioning~\cite{AvinBLPS20}.
 
 
 
