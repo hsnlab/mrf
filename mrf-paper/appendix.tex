@@ -9,13 +9,9 @@
 
 % todo: write about submodularity of the cost function
 
-% todo: packet classification is not like list, remove from examples below
 
-% todo: write in terms of universes, becasue the main body uses this language. Generalize from there
 
-% todo: write that the load balancer partitions the universes
 
-% todo: monotonically non-decreasing, rather than increasing!
 
 
 
@@ -27,11 +23,11 @@
 
 Scaling in distributed systems refers to the improvement in performance achieved by adding more machines to a system, defined as the ratio of the completion time of the baseline system with a single machine to the completion time of the system with $k$ machines, $S(k) = T(1) / T(k)$.
 
-Superlinear scaling is defined as follows.
-  \begin{displaymath}
-    S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{h(k)}} \enspace ,
-  \end{displaymath}
-for a function $h(k) > k$.
+% Superlinear scaling is defined as follows.
+%   \begin{displaymath}
+%     S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{h(k)}} \enspace ,
+%   \end{displaymath}
+% for a function $h(k) > k$.
 
 In this section, we analyze the scaling of self-adjusting distributed systems, and identify two independent dimensions of scaling: load balancer efficiency $\ell$ and parallelizability $q$.
 Our system scales as
@@ -40,6 +36,7 @@ Our system scales as
 \end{displaymath}
 for some values of $q$ and $\ell$ that we formally define later.
 The factor of $\ell$ arises due to the total work reduction by the load balancer, and the factor of $q$ arises due to the improved time to complete the schedule on $k$ machines.
+For $q \cdot \ell > k$, the system scales superlinearly.
 
 
 We dedicate the rest of this section to explaining $\ell$ and $q$.
@@ -146,7 +143,7 @@ The cost for the parallel workload of the baseline is
 The cost of the parallel workload for the distributed system is as follows.
 In total, we observe cost savings from load balancing for the stream $\sigma$, data structure $D$ characterized by a function $g$, and a load balancer $f_k$.
 \[
-	T(k) = \sum_{t} g(|W_t(x)| \cap \mathcal{U}_{f_k(\sigma_t)}) \enspace .
+	T(k) = \sum_{t} g(|W_t(x) \cap \mathcal{U}_{f_k(\sigma_t)}|) \enspace .
 \]
 Note the total work decreases\footnote{A strict deviation from the assumptions of Amdahl's law, where workload is fixed} by $r$ for the stream $\sigma$.
 
@@ -156,7 +153,7 @@ Note the total work decreases\footnote{A strict deviation from the assumptions o
 
 The speedup ratio in the dimension of $\ell$ is then 
 \[
-	1/\ell = \frac{\sum_{t} g(|W_t(x)| \cap \mathcal{U}_{f_k(\sigma_t)})}{\sum_{t} g(|W_t(x)|)}  \enspace .
+	1/\ell = \frac{\sum_{t} g(|W_t(x) \cap \mathcal{U}_{f_k(\sigma_t)})|}{\sum_{t} g(|W_t(x)|)}  \enspace .
 \]
 
 
@@ -263,11 +260,12 @@ We finalize by sketching a scaling impossibility law, an equivalent of Amdahl's 
 
 
 \begin{theorem}
-Assume that the cost of a data structure $D$ is lower-bounded in terms of the working set size. 
+Assume that the cost of a data structure $D$ is lower-bounded in terms of the working set size as a monotonically non-decreasing function $g_D$. 
 Then, our distributed self-adjusting system cannot scale better than
  \begin{displaymath}
-    S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{k \cdot \ell}} \enspace .
+    S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{k \cdot \ell}} \enspace ,
   \end{displaymath}
+  where $\ell$ depends on $g_D$, $\sigma$ and $f_k$.
 \end{theorem}
 
 The proof of this theorem is a direct consequence of the Amdahl's law to the reduced workload: the reduced parallel workload $(1-s)/\ell$ can be executed at most $k$ times faster.
@@ -397,7 +395,6 @@ This result warrants that superlinear growth in distributed self-adjusting syste
 
 % todo: write about submodularity of the cost function
 
-% todo: packet classification is not like list, remove from examples below
 
 % todo: write in terms of universes, becasue the main body uses this language. Generalize from there
 
