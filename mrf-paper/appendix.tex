@@ -208,7 +208,7 @@ Fix a reduced parallel workload from the previous section of total size $(1-s)/\
 We are interested in minimizing the completion time of the last machine. 
 The speedup ratio in the dimension of $q$ is given by
 \[
-	1/q = \frac{\sum_{t} g(|W_t(x)) \cap \mathcal{U}_{f_k(\sigma_t)|}}{\max_i \sum_{t : f_k(\sigma_t) = i} g(|W_t(x) \cap \mathcal{U}_{f_k(\sigma_t)}|)}  \enspace .
+	1/q = \frac{\sum_{t} g(|W_t(x)) \cap \mathcal{U}_{f_k(\sigma_t)|}}{k \cdot \max_i \sum_{t : f_k(\sigma_t) = i} g(|W_t(x) \cap \mathcal{U}_{f_k(\sigma_t)}|)}  \enspace .
 \]
 
 
