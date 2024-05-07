@@ -143,12 +143,15 @@ For small values of $k$ we obtain $O(k^2)$ scaling. As $k$ grows sufficiently la
   \label{fig:dist-self-adjusting-eval}
 \end{figure*}
 
-In general, superlinear speedup emerges as the superposition of two related speedup factors. First, by splitting the input into multiple input streams of improved locality, the locality-boosting load balancer reduces the ``effective size'' of the workload the workers will have to process. Denote by $\ell(k)$ the ``workload reduction'' attainable on the given input this way with $k$ workers. Second. there is a ``parallelizability'' gain, denote this by $q(k)$, that is obtained by the self-adjusting workers processing the reduced workloads.  In the Appendix we present a formal definition of these terms and prove the below general \emph{scaling law for distributed self-adjusting systems}:
+In general, superlinear speedup emerges as the superposition of two related speedup factors. First, by splitting the input into multiple input streams of improved locality, the locality-boosting load balancer reduces the ``effective size'' of the workload the workers will have to process. Denote by $\ell(k)$ the ``workload reduction'' attainable on the given input this way with $k$ workers. Second. there is a ``parallelizability'' gain, denote this by $q(k)$, that is obtained by the self-adjusting workers processing the reduced workloads.  In the Appendix we present a formal definition of these terms and characterize the below general \emph{scaling law for distributed self-adjusting systems}:
 \begin{displaymath}
     S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{q(k) \cdot \ell(k)}} \enspace .
 \end{displaymath}
+If $q(k) \cdot \ell(k) > k$ then we say we achieve superlinear scaling.
 
-Our formal characterization describes the cases when superlinear scaling is attainable (positive results) and when it is not (negative results). In general, whenever superlinear scaling is attained the speedup profile always comprises to scaling regimes. In an initial \emph{superlinear scaling regime} we have $q(k) \cdot \ell(k) > k$, with both the effective size reduction and parallelizability gain contributing to faster-than-linear speedup. Eventually, superlinear growth peters out and the system falls back to a \emph{sublinear scaling regime} with $q(k) \cdot \ell(k) \le k$.
+Our formal characterization in the Appendix describes the cases when superlinear scaling may be attainable (positive results) and when it cannot (negative results). In general, whenever superlinear scaling is attained for some $k$, depends on whether we have the right combination of the input stream and the load balancer.  However, even if an input sequence can scale superlinearly for some values of $k$, superlinear scaling cannot continue for all $k$. Eventually, superlinear growth peters out and the system falls back to sublinear scaling. Nonetheless, even if superlinear is only an ephemeral phenomenon, it can bring a significant performance boost.
+
+% In an initial \emph{superlinear scaling regime} we have $q(k) \cdot \ell(k) > k$, with both the effective size reduction and parallelizability gain contributing to faster-than-linear speedup. Eventually, superlinear growth peters out and the system falls back to a \emph{sublinear scaling regime} with $q(k) \cdot \ell(k) \le k$.
 
 \subsection{Simulations}
 \label{sec:sims}
