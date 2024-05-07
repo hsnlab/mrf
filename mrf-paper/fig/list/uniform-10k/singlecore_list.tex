@@ -23,22 +23,22 @@
       },
       % no markers
       ]
-      \addplot[SelfAdjustingSimMark] table[
+      \addplot[SelfAdjustingSimMark,mark size=2pt] table[
       x=thread,
       y expr=\thisrowno{4}/1000000
       ]{fig/list/uniform-10/singlecore_mtf_modulo_uniform.txt};
       % \addlegendentry{Move-to-front/Local LB}
-      \addplot[StaticSimMark] table[
+      \addplot[StaticSimMark,mark size=3pt] table[
       x=thread,
       y expr=\thisrowno{4}/1000000,each nth point={3}
       ]{fig/list/uniform-10/singlecore_linkedlist_modulo_uniform.txt};
       % \addlegendentry{Linked-list/Local LB}
-      \addplot[SelfAdjustingSimMark,mark=pentagon*] table[
+      \addplot[SelfAdjustingSimMark,mark=pentagon*,mark size=3pt] table[
       x=thread,
       y expr=\thisrowno{4}/1000000,each nth point={3}
       ]{fig/list/uniform-10/singlecore_mtf_roundrobin_uniform.txt};
       % \addlegendentry{Move-to-front/Non-local LB}
-      \addplot[StaticSimMark,mark=square] table[
+      \addplot[StaticSimMark,mark=square,mark size=3pt] table[
       x=thread,
       y expr=\thisrowno{4}/1000000,each nth point={3}
       ]{fig/list/uniform-10/singlecore_linkedlist_roundrobin_uniform.txt};

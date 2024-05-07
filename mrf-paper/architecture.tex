@@ -1,7 +1,8 @@
+% !TEX ROOT = ./distributed_mrf.tex
 \section{Distributed self-adjusting systems}
 \label{sec:architecture}
 
-Next we present a general distributed systems architecture, which, as we show theoretically and empirically later, produces faster-than-linear scaling in several disparate problem domains. Our main observation is that, whenever genuinely observed, superlinear scaling assumes two critical components: a policy to dispatch jobs to workers in a way to increase the locality of reference in the per-worker input streams, plus an algorithm that can adaptively exploit the structure in the input to process it more efficiently. Our architecture is purely a software technique in that it does not require the addition of new cache space to a system. Nonetheless, it contains distributed caching as a special case and hence automatically takes advantage of additional fast memory, if available.
+We now present a general distributed systems architecture, which, as we show theoretically and empirically later, produces faster-than-linear scaling in several disparate problem domains. Our main observation is that, whenever genuinely observed, superlinear scaling assumes two critical components: a policy to dispatch jobs to workers in a way to increase the locality of reference in the per-worker input streams, plus an algorithm that can adaptively exploit the structure in the input to process it more efficiently. Our architecture is purely a software technique in that it does not require the addition of new cache space to a system. Nonetheless, it contains distributed caching as a special case and hence automatically takes advantage of additional fast memory, if available.
 
 \subsection{Locality-boosting load balancing}
 \label{sec:lb-lb}
@@ -44,7 +45,7 @@ One of the most widely used self-adjusting data structures is the \emph{move-to-
 
 \begin{figure}
   \centering
-  \includegraphics[width=.75\linewidth]{fig/mtf.pdf}
+  \includegraphics[width=.9\linewidth]{fig/mtf.pdf}
   \caption{A self-adjusting list containing nodes A, B, C and D serves the request to C and moves C to the front of the list to speed up future accesses to C.}
   \label{fig:mtf-example}
 \end{figure}
@@ -127,10 +128,14 @@ For small values of $k$ we obtain $O(k^2)$ scaling. As $k$ grows sufficiently la
 
 \begin{figure*}[t]
   % \begin{tabularx}{\textwidth}{D *{2}{s}}
+    % \hspace{28pt}
+    \centering
+    \input{fig/sim-legend.tex}
+    % \\
   \renewcommand{\arraystretch}{0.01}%
   \begin{tabular}{m{.3\textwidth} m{.31\textwidth} m{.31\textwidth}}%
   % \begin{tabular}{ccc}
-    \hspace{28pt}\input{fig/sim-legend.tex}\\
+  % \\
     \multirow{-505}{*}{\subcaptionbox{List lookup/uniform input\label{fig:multicore-list-uniform}}{\input{fig/list/uniform-100k/multicore_list.tex}}}%
     & \hspace{18pt}\subcaptionbox{List lookup/Zipf input\label{fig:multicore-list-zipf}}{\input{fig/list/zipf-100k/multicore_list.tex}}
     & \hspace{8pt}\subcaptionbox{List lookup/uniform/single-core\label{fig:singlecore-list-uniform}}{\input{fig/list/uniform-10k/singlecore_list.tex}}
@@ -156,7 +161,7 @@ Our formal characterization in the Appendix describes the cases when superlinear
 \subsection{Simulations}
 \label{sec:sims}
 
-Next we present a series of simulation studies to conform that locality-boosting load balancing combined with self-adjusting workers (but only this combination) yields faster-than-linear scaling over a broad selection of load balancing policies, self-adjusting algorithms, and input distributions.
+Next, we present a series of simulation studies to confirm that locality-boosting load balancing combined with self-adjusting workers (but only this combination) yields faster-than-linear scaling over a broad selection of load balancing policies, self-adjusting algorithms, and input distributions.
 
 Our simulator was written in Go, using lightweight threads (goroutines) managed by the Go runtime to run a given number of workers in parallel, a home-grown implementation of static and MTF lists, and standard Go modules for LRU caches \cite{golang-lru}, static balanced trees \cite{golang-btree} and splay trees \cite{golang-splay}. In order to make tree lookup CPU bounded we used an ``expensive'' order underneath the tree, where every comparison operation costs a configurable $w$ number of extra cycles. The simulator creates the specified combination of a load balancer, $k$ worker threads running the selected lookup algorithm, and a random input sequence with a given request distribution, and then performs a configurable number of lookup operations and measures the total execution time with nanosecond precision. To obtain a full picture, the total execution time includes the transient time needed to warm up the self-adjusting algorithms as well as the overhead of request generation, goroutine scheduling, and memory management. For the specification of the evaluation platform, refer to \S\ref{sec:sa-nf-tables-eval}.
 
