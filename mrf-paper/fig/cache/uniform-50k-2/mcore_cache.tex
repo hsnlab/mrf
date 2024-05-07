@@ -38,9 +38,9 @@
       },
       % no markers
       ]
-      \addplot[SelfAdjustingSimMark] table[x=thread,y=speedup]{fig/cache/uniform-50k-2/mcore_cache_modulo_uniform.txt};
+      \addplot[SelfAdjustingSimMark,mark size=2pt] table[x=thread,y=speedup]{fig/cache/uniform-50k-2/mcore_cache_modulo_uniform.txt};
       % \addlegendentry{Local LB}
-      \addplot[SelfAdjustingSimMark,mark=pentagon*] table[x=thread,y=speedup,each nth point={2}]{fig/cache/uniform-50k-2/mcore_cache_roundrobin_uniform.txt};
+      \addplot[SelfAdjustingSimMark,mark=pentagon*,mark size=3pt] table[x=thread,y=speedup,each nth point={2}]{fig/cache/uniform-50k-2/mcore_cache_roundrobin_uniform.txt};
       % \addlegendentry{Non-local LB}
       % \addplot[domain=1:25,black,dashed]{x};
       % \addlegendentry{Linear scaling}

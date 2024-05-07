@@ -1,3 +1,4 @@
+% !TEX ROOT = ../distributed_mrf.tex
 \input{fig/common.tex}
 %
 \begin{tikzpicture}
@@ -12,15 +13,15 @@
       draw=white!15!black,
       legend cell align=left,
       legend columns=2,
-      font=\footnotesize}
+      font=\small}
     ]
-    \addlegendimage{SelfAdjustingSimMark}
+    \addlegendimage{SelfAdjustingSimMark,mark size=3pt}
     \addlegendentry{Locality-boosting load balancer + Self-adjusting algorithm}
-    \addlegendimage{StaticSimMark}
+    \addlegendimage{StaticSimMark,mark size=3pt}
     \addlegendentry{Locality-boosting load balancer + Static algorithm}
-    \addlegendimage{SelfAdjustingSimMark,mark=pentagon*}
+    \addlegendimage{SelfAdjustingSimMark,mark=pentagon*,mark size=3.3pt}
     \addlegendentry{Roundrobin load balancer + Self-adjusting algorithm}
-    \addlegendimage{StaticSimMark,mark=square}
+    \addlegendimage{StaticSimMark,mark=square,mark size=3pt}
     \addlegendentry{Roundrobin load balancer + Static algorithm}
   \end{axis}
 \end{tikzpicture}
