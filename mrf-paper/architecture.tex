@@ -152,9 +152,9 @@ In general, superlinear speedup emerges as the superposition of two related spee
 \begin{displaymath}
     S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{q(k) \cdot \ell(k)}} \enspace .
 \end{displaymath}
-If $q(k) \cdot \ell(k) > k$ then we say we achieve superlinear scaling.
+If $q(k) \cdot \ell(k) > k$, then we say we achieve superlinear scaling.
 
-Our formal characterization in the Appendix describes the cases when superlinear scaling may be attainable (positive results) and when it cannot (negative results). In general, whenever superlinear scaling is attained for some $k$, depends on whether we have the right combination of the input stream and the load balancer.  However, even if an input sequence can scale superlinearly for some values of $k$, superlinear scaling cannot continue for all $k$. Eventually, superlinear growth peters out and the system falls back to sublinear scaling. Nonetheless, even if superlinear is only an ephemeral phenomenon, it can bring a significant performance boost.
+Our formal characterization in the Appendix describes the cases when superlinear scaling may be attainable (positive results) and when it cannot (negative results). In general, the attainment of superlinear scaling for some $k$ depends on whether we have the right combination of the input stream and the load balancer. However, even if an input sequence can scale superlinearly for certain values of $k$, it cannot sustain superlinear scaling for all $k$. Eventually, superlinear growth peters out and the system falls back to sublinear scaling. Nonetheless, even if superlinear is only an ephemeral phenomenon, it can bring a significant performance boost.
 
 % In an initial \emph{superlinear scaling regime} we have $q(k) \cdot \ell(k) > k$, with both the effective size reduction and parallelizability gain contributing to faster-than-linear speedup. Eventually, superlinear growth peters out and the system falls back to a \emph{sublinear scaling regime} with $q(k) \cdot \ell(k) \le k$.
 
