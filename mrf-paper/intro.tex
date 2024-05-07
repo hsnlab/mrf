@@ -15,17 +15,14 @@ The maximum speedup, measured as the ratio of the wall clock times of sequential
 
 \begin{figure}[t]
   \centering
-  % \includegraphics[width=0.8\linewidth]{fig/usl.png}
   \begin{small}
-  \input{fig/usl.tex}
-\end{small}
-  \caption{Linear scaling, Amdahl's law and the proposed superlinear scaling, for $s=0.01$, where $s$ is the fraction of the execution time inevitably spent in the sequential part of the code. Our proposed scaling law suggests that superlinear scaling is feasible for specific workloads accompanied by a right combination of a load balancer and a self-adjusting data structure.
-    The inset shows the asymptotics depicting the saturation of the superlinear scaling of the system.
-    }
-  \label{fig:amdahl}
+    \input{fig/usl.tex}
+  \end{small}
+  \caption{Linear scaling, Amdahl's law and the proposed superlinear scaling, for $s=0.01$, where $s$ is the fraction of the execution time inevitably spent in the sequential part of the code. Our proposed scaling law suggests that superlinear scaling is feasible for specific workloads accompanied by a right combination of a load balancer and a self-adjusting data structure.  The inset shows the asymptotics depicting the saturation of the superlinear scaling of the system.}
+    \label{fig:amdahl}
 \end{figure}
 
-Inherent to Amdahl's law is that no system can scale faster than linear: doubling parallel resources will yield at most two times the performance. Curiously, there have been several reports on faster-than-linear (\emph{superlinear}) scaling experimentally observed in, e.g., database systems \cite{scalability-analyzed, 10.5555/1012889.1012894}, distributed caching \cite{271208, dobb-2}, SDN analytics \cite{sdn-analytitcs}, high-performance computing \cite{556383, 7733347, 6483679}, multi-robot systems \cite{10.1007/978-3-319-77610-1},  parallel search in information retrieval systems \cite{dobb-1, dobb-2}, and large-scale network simulations \cite{10.1145/3627703.3629574} (see full taxonomies in \cite{7733347, 80148}).
+Inherent to Amdahl's law is that no system can scale faster than linear: doubling parallel resources will yield at most two times the performance. Curiously, there have been several reports on faster-than-linear (\emph{superlinear}) scaling experimentally observed in, e.g., database systems \cite{scalability-analyzed, 10.5555/1012889.1012894}, distributed caching \cite{271208, dobb-2}, SDN analytics \cite{sdn-analytitcs}, high-performance computing \cite{556383, 7733347, 6483679}, multi-robot systems \cite{10.1007/978-3-319-77610-1}, information retrieval systems \cite{dobb-1, dobb-2}, and large-scale network simulations \cite{10.1145/3627703.3629574} (see full taxonomies in \cite{7733347, 80148}).
 % There seem to be two ways to achieve such superlinear speedup \cite{7733347, 80148}: do disproportionately less work in each worker as we scale the system \cite{7733347}, or add more resources per thread \cite{80148}.
 % One typical context in which superlinear growth often emerges is distributed caching \cite{271208, 10.5555/1012889.1012894, dobb-2}: the more CPU cores the more (unshared) L1 cache space available to the application, which tends to make memory-bound\slash cache-bound code disproportionately faster \cite{80148} (see an analysis in \S\ref{sec:background}).  
 Many authors argue, however, that superlinear scaling is merely a~byproduct of running memory-\slash cache-bound applications on a ``bigger machine'' \cite{80148}, others are concerned that it is hard to generalize beyond a specific set use cases \cite{7733347, 80148}, and some outright dismiss faster-than-linear scaling all together \cite{gunther-hotsos, 10.1016/0167-8191(86)90024-4}, concluding that \emph{``superlinearity, although alluring, is as illusory as perpetual motion''} \cite{10.1145/2773212.2789974}.

@@ -32,7 +32,7 @@ The \nftables kernel engine adds a virtual machine to the Linux kernel that uses
       2 & TCP & 10.10.10.0/24    & 23.0.0.45  & 443 & DROP\\
       3 & UDP & 192.168.178.0/24 & 23.0.0.45  & 53  & DROP\\
       4 & TCP & 10.10.10.10/32   & 23.0.0.45  & ANY & ACCEPT\\
-      5 & IP  & 192.168.0.0/16   & 23.0.0.0/8 &     & ACCEPT\\
+      5 & IP  & 192.168.0.0/16   & 23.0.0.0/8 & ANY & ACCEPT\\
     \end{tabular}
   \end{small}%
   \caption{Sample firewall rule set. Source ports do not matter.}
@@ -43,7 +43,7 @@ One way to make \nftables self-adjusting would be to replace the static linked l
 
 Consider the example in Fig.~\ref{fig:class-sample} and suppose that, initially, rules are ordered priority-wise in the list: $\langle1, 2, 3, 4, 5\rangle$. Suppose that a packet with the IP 5-tuple (192.168.0.1, 23.0.0.45, UDP, 1, 3478) enters the classifier, where the fields in the 5-tuple are IP source and destination address, protocol, and source and destination port, respectively. Rules are inspected in linear order until rule 5 is found as the first match, at which point the lookup terminates with the verdict ACCEPT. Now, a naive application of MTF would move rule 5 to the front of list, resulting in the order $\langle5, 1, 2, 3, 4\rangle$. Suppose another packet with the 5-tuple (192.168.178.1, 23.0.0.45, UDP, 1, 53) is to be processed next: this will immediately match rule 5 at the front of the list yielding the verdict ACCEPT, despite that, if matched in priority order, rule 3 would be the correct match and the verdict should be DROP. % To maintain correctness, the furthest we can move rule 5 towards the front of the list is the position immediately after its dependency, rule 3.
 
-We say that rule $u$ is \emph{dependent} on another rule $v$ if they have overlapping match criteria in all fields, $v$ has a higher priority than $u$, and $u$ and $v$ define different actions. Such a dependency means that $u$ is not allowed to be moved before $v$ in the list, otherwise some packets may be erroneously classified. For instance, in the example of Table~\ref{fig:class-sample} rule 5 is dependent on rule 3, which is in turn dependent on rule 1, implying the dependency chain $5\to 3\to 1$. Similarly, rule $4$ is dependent on rule $2$. % Rule dependencies define a Directed Acyclic Graph (DAG) in the graph whose nodes are the set of rules, where there is an edge $(u, v)$ from $u$ to $v$ if $u$ is dependent on $v$ (see Fig.~\ref{fig:class-dep}).
+We say that rule $u$ is \emph{dependent} on another rule $v$ if they have overlapping match criteria in all fields, $v$ has a higher priority than $u$, and $u$ and $v$ define different actions. Such a dependency means that $u$ is not allowed to be moved before $v$ in the list, otherwise some packets may be erroneously classified. For instance, in the example of Fig.~\ref{fig:class-sample} rule 5 is dependent on rule 3, which is in turn dependent on rule 1, implying the dependency chain $5\to 3\to 1$. Similarly, rule $4$ is dependent on rule $2$. % Rule dependencies define a Directed Acyclic Graph (DAG) in the graph whose nodes are the set of rules, where there is an edge $(u, v)$ from $u$ to $v$ if $u$ is dependent on $v$ (see Fig.~\ref{fig:class-dep}).
 
 % \begin{figure}[t]
 %   \centering
@@ -90,7 +90,7 @@ A dependency-aware variant of the MTF heuristics, called the \emph{Move-recursiv
 
 Going back to our earlier example, after rule $5$ is hit in the list $\langle1, 2, 3, 4, 5\rangle$ MRF moves it immediately after the direct dependency $3$ along the dependency chain $5\to 3\to 1$, $3$ is moved to the position after $1$, and the recursion ends resulting the order $\langle1, 3, 2, 5, 4\rangle$. If $5$ was hit again, the lookup time would be only $4$ instead of $5$. Then, $5$ would be moved forward again, yielding the order $\langle1, 3, 5, 2, 4\rangle$ and a lookup time of $3$. Note that dependency chains can be moved by MRF independently from each other: e.g., if $4$ was hit first then we would obtain $\langle2, 1, 4, 3, 5\rangle$ in the first iteration and eventually $\langle2, 4, 1, 3, 5\rangle$, with lookup time for $4$ dropping from $4$ to $2$.
 
-We created a comprehensive self-adjusting packet classifier implementation on top of \nftables using the dependency-aware MRF algorithm \cite{10228937}. Our implementation can run multiple MRF instances in parallel, each maintaining its own local rule order in a private per-CPU array of pointers that index into a shared static rule list. Apart from lockless list reordering, this also enables lockless rule addition\slash deletion: every time the rule list is updated we simply allocate a new pointer array at each CPU and update the list head atomically.
+We created a comprehensive self-adjusting packet classifier implementation on top of \nftables using the dependency-aware MRF algorithm \cite{10228937}. Our implementation can run multiple MRF instances in parallel, each maintaining its own local rule order in a private per-CPU pointer array that indexes into a shared static rule list. Apart from lockless list reordering, this also enables lockless rule addition\slash deletion: every time the rule list is updated we simply allocate a new pointer array at each CPU and update the list head atomically.
 
 The original MRF algorithm uses recursion (see Alg.~\ref{alg:mrf}), which may be expensive in the Linux kernel due to the overhead of maintaining the function call stack. To avoid this overhead, we defined an iterative version of the algorithm. When a rule is to be moved forward, we first check whether it can be swapped with the preceding rule. This is done by checking whether the two rules overlap using a range-based representation, which we extract from the rule's bytecode in the \nftables virtual machine. If there is an overlap then the rule cannot be moved forward so we restart the process, this time trying to move the blocking dependency forward. Otherwise, the two rules are independent so they are immediately swapped and the iteration moves to the subsequent preceding rule. Reordering terminates when we reach the first position. A more efficient implementation would be to precompute dependencies on rule insertion\slash deletion and run the MRF algorithm using the cached dependencies; implementing this optimization is for further study. %. This, however, would complicate code and make insertions more expensive. % , and may even end up being slower since recursion in the kernel can be costly due to the overhead of a potentially deep call stack.
 
@@ -152,7 +152,7 @@ We conducted several experiments with the distributed self-adjusting packet clas
     \label{fig:rule-size}
   }
   }
-  \caption{Scaling on ClassBench 3 rulesets generated from different seeds, containing 5000 rules each (panel (a), (b) and (c)), and synthetic rule set with uniform traffic and different rule sizes (panel (d)). Upper row shows relative speedup and the bottom row shows absolute throughput (packet rate in million packets per sec, mpps). Note the different scales on the $y$ axes.}
+  \caption{Scaling on 3 ClassBench rulesets generated from different seeds, containing 5000 rules each (panel (a), (b) and (c)), and synthetic rule set with uniform traffic and different rule sizes (panel (d)). Upper row shows relative speedup and the bottom row shows absolute throughput (packet rate in million packets per sec, mpps). Note the different scales on the $y$ axes.}
   \label{fig:classbench}
 \end{figure*}
 
@@ -187,14 +187,14 @@ Fig.~\ref{fig:rule-size} shows the speedup obtained using the self-adjusting cla
     \textbf{Prio} & \textbf{Proto} & \textbf{Src IP} & \textbf{Dst IP} & \textbf{Dst Port} & \textbf{Action}\\
     \hline
     1 & UDP & A.B.C.D   & E.F.G.H  & 1  & ACCEPT\\
-    2 & UDP & A.B.C.D   & E.F.G.H  & 2  & DROP\\
+    2 & UDP & A.B.C.D   & E.F.G.H  & 2  & ACCEPT\\
     ... & ... & ...   & ...  & ...  & ...\\
   \end{tabular}
   \addtolength{\tabcolsep}{1pt}
 \end{small}
 
 \noindent %
-The source IP and the destination IP address are the same in each rule, and each action was set to accept. We obtained 3 rule sets this way, containing roughly $2$k, $5$k, and $10$k rules, respectively (the real size is a close prime to minimize periodicity in the scaling profiles). Note that rules are independent and each rule matches exactly one flow, which represents the optimistic case for the self-adjusting classifier (see later for the pessimistic settings). We generates a matching packet trace containing one flow per rule.
+The source IP and the destination IP address are the same in each rule, and each action was set to accept. We obtained 3 rule sets this way, containing roughly $2$k, $5$k, and $10$k rules, respectively (the real size is a close prime to minimize periodicity in the scaling profiles). Note that rules are independent and each rule matches exactly one flow, which represents the optimistic case for the self-adjusting classifier (see later for the pessimistic settings). We generated a matching packet trace containing one flow per rule.
 
 The main takeaway is that \emph{superlinear speedup appears independently of the classifier size}, to the point that for 10k rules we see $>800\times$ speedup on 32 cores. Again, the raw performance plot casts a complete picture: the larger the rule set the greater the superlinear speedup but the smaller the absolute packet rate. Nevertheless, superlinear scaling robustly appears in terms of the raw performance as well.
 % Since our goal here is to observe superlinear scaling rather than to find the fastest possible packet classifier, for the rest of the evaluations we will stick to presenting only the speedup plots.
@@ -225,13 +225,13 @@ The main takeaway is that \emph{superlinear speedup appears independently of the
     \input{fig/locality-boosting.tex}
     \label{fig:locality-boosting}
   }
-  \caption{Microbenchmarks: (a) mean packet delay on the rule set generated from the \texttt{acl1} Classbench speed (5k rules, uniform traffic); (b) raw packet rate for 4 synthetic rule sets with increasingly long dependency chains; (c) speedup for 4 packet traces with increasingly more active flows per (independent rules); and (d) speedup with different RSS hash functions (same rules).}
+  \caption{Microbenchmarks: (a) mean packet delay on the rule set generated from the \texttt{acl1} Classbench speed (5k rules, uniform traffic); (b) raw packet rate for 4 synthetic rule sets with increasingly long dependency chains; (c) speedup for 4 packet traces with increasingly more active flows (independent rules); and (d) speedup with different RSS hash functions (same rules).}
   \label{fig:microbenchmark}
 \end{figure*}
 
 \noindent%
 \textbf{Rule dependencies.} %
-Next we turn to controlled microbenchmarks over synthetic input, which we fine-tuned to highlight the effect of some specific characteristic of the classifier workload on scaling. The main factor affecting speedup is workers' active rule set sizes, which determines the extent to which self-adjustment can arrange recently hit rules to the front of the rule list (see \S\ref{sec:sa-sa-pack-class}). Rule-dependencies have a crucial role here, since for every rule with nonzero dependencies not just the rule but all its dependencies will also become active, bloating the active rule sets.
+Next we turn to controlled microbenchmarks over synthetic input, which we fine-tune to highlight the effect of some specific characteristic of the classifier workload on scaling. The main factor affecting speedup is workers' active rule set sizes, which determines the extent to which self-adjustment can arrange recently hit rules to the front of the rule list (see \S\ref{sec:sa-rss}). Rule-dependencies have a crucial role here, since for every rule with nonzero dependencies not just the rule but all its dependencies will also become active, bloating the active rule sets.
 
 We created 3 synthetic rule sets with increasingly long dependency chains as follows. For every rule in the synthetic rule set we add an extra $d$ overlapping rules by varying the subnet prefix length in the source IP address filter between \texttt{/32} (most specific, highest priority) and \texttt{/0} (least specific, lowest priority). This creates for every rule a chain of $d$ increasingly more specific dependencies.
 
@@ -260,7 +260,7 @@ We also found rule-dependencies to be behind the slow scaling on the \texttt{fw1
 
 \noindent
 \textbf{Flow diversity.} %
-In this microbenchmark we vary the number of flows in the input packet trace per each rule. We used the same synthetic rule set as previously, but we removed the dependencies ($n=2$k). We generated 4 traces containing $1$, $5$, $50$, and $500$ uniformly distributed flows per rule, respectively. The results in Fig.~\ref{fig:active-flow-size} confirm that increasing flow diversity has negative impact on scaling: \emph{the more flows per rule the less visible the superlinear speedup}. With a modest flow diversity (1--50 per rule) we observe $400$--$46\times$ speedup on 32 cores. However, for $500$ flows the superlinear trend disappears and scaling degrades to linear ($32\times$ speedup on 32 cores).  We traced back the reason to the 5-tuple RSS load balancer. Recall, an optimal load balancing policy would dispatch all flows matching the same rule to the same worker, perfectly eliminating rule duplication at workers (see \S\ref{sec:sa-rss}). However, the RSS-based 5-tuple hash only ``imperfectly'' partitions the rule set: manually verifying the classifier statistics reveals that for $500$ flows per rule essentially every rule appears at every worker, completely removing the speedup contribution of self-adjustment, producing the linear speedup we identify in Fig.~\ref{fig:active-flow-size}.
+In this microbenchmark we vary the number of flows in the input packet trace per each rule. We used the same synthetic rule set as previously, but we removed the dependencies. We generated 4 traces containing $1$, $5$, $50$, and $500$ uniformly distributed flows per rule, respectively. The results in Fig.~\ref{fig:active-flow-size} confirm that increasing flow diversity has negative impact on scaling: \emph{the more flows per rule the less visible the superlinear speedup}. With a modest flow diversity (1--50 per rule) we observe $46$--$400\times$ speedup on 32 cores. However, for $500$ flows the superlinear trend disappears and scaling degrades to linear ($32\times$ speedup on 32 cores).  We traced back the reason to the 5-tuple RSS load balancer. Recall, an optimal load balancing policy would dispatch all flows matching the same rule to the same worker, perfectly eliminating rule duplication at workers (see \S\ref{sec:sa-rss}). However, the RSS-based 5-tuple hash only ``imperfectly'' partitions the rule set: manually verifying the classifier statistics reveals that for $500$ flows per rule essentially every rule appears at every worker, completely removing the speedup contribution of self-adjustment. % , producing the linear speedup we identify in Fig.~\ref{fig:active-flow-size}.
 
 \noindent%
 \textbf{Locality boosting.} %

@@ -149,7 +149,7 @@ For small values of $k$, we obtain $O(k^2)$ scaling. As $k$ grows sufficiently l
   \label{fig:dist-self-adjusting-eval}
 \end{figure*}
 
-In general, superlinear speedup emerges as the superposition of two related speedup factors. First, by splitting the input into multiple input streams of improved locality, the locality-boosting load balancer reduces the ``effective size'' of the workload the workers will have to process. Denote by $\ell(k)$ the ``workload reduction'' attainable on the given input this way with $k$ workers. Second. there is a ``parallelizability'' gain, denote this by $q(k)$, that is obtained by the self-adjusting workers processing the reduced workloads.  In the Appendix we present a formal definition of these terms and characterize the below general \emph{scaling law for distributed self-adjusting systems}:
+In general, superlinear speedup emerges as the superposition of two related speedup factors. First, by splitting the input into multiple input streams of improved locality, the locality-boosting load balancer reduces the ``effective size'' of the workload the workers will have to process. Denote by $\ell(k)$ the ``workload reduction'' attainable on the given input this way with $k$ workers. Second. there is a ``parallelizability'' gain, denote this by $q(k)$, that is obtained by the self-adjusting workers processing the reduced workloads.  In the Appendix we present a formal definition of these terms and define the below general \emph{scaling law for distributed self-adjusting systems}:
 \begin{displaymath}
     S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{q(k) \cdot \ell(k)}} \enspace .
 \end{displaymath}
