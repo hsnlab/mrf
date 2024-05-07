@@ -107,7 +107,7 @@ Then, superlinear speedup is merely a product of two simultaneous $k\times$ spee
 where $s$ denotes the fraction of execution time spent in the sequential part of the code.
 
 % We used this scaling law as the graphical illustration for superlinear scaling in Fig.~\ref{fig:amdahl}. 
-For small values of $k$ we obtain $O(k^2)$ scaling. As $k$ grows sufficiently large, say, when $k=m$, the workers' input reduces to a singleton ($\sfrac{m}{k}=1$). From this point the distributed MTF list reduces into a simple parallel hash table and superlinear speedup degrades into an ``ordinary'' Amdahl's scaling profile until speedup eventually blocks on a serial bottleneck (e.g., the sequential load balancer).  For anything between, the system adaptively finds the best combination of an MTF list and a hash-table, producing a quadratic scaling.
+For small values of $k$, we obtain $O(k^2)$ scaling. As $k$ grows sufficiently large, say, when $k=m$, the workers' input reduces to a singleton ($\sfrac{m}{k}=1$). From this point the distributed MTF list reduces into a simple parallel hash table and superlinear speedup degrades into an ``ordinary'' Amdahl's scaling profile until speedup eventually blocks on a serial bottleneck (e.g., the sequential load balancer).  For anything between, the system adaptively finds the best combination of an MTF list and a hash-table, producing a quadratic scaling.
 
 % The next theorem generalizes the superlinear scaling characterization from  MTF lists and simple uniform requests to an arbitrary distributed self-adjusting system processing an arbitrary input stream.
 % \begin{theorem}\label{thm:general-scaling-law}
@@ -159,7 +159,7 @@ Our formal characterization in the Appendix describes the cases when superlinear
 
 % In an initial \emph{superlinear scaling regime} we have $q(k) \cdot \ell(k) > k$, with both the effective size reduction and parallelizability gain contributing to faster-than-linear speedup. Eventually, superlinear growth peters out and the system falls back to a \emph{sublinear scaling regime} with $q(k) \cdot \ell(k) \le k$.
 
-\subsection{Simulations}
+\subsection{Empirical evidence for superlinear scaling}
 \label{sec:sims}
 
 Next, we present a series of simulation studies to confirm that locality-boosting load balancing combined with self-adjusting workers (but only this combination) yields faster-than-linear scaling over a broad selection of load balancing policies, self-adjusting algorithms, and input distributions.

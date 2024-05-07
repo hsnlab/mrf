@@ -2,7 +2,7 @@
 \section{Case study: Achieving superlinear scaling\\ in the Linux kernel}\label{sec:case-study}
 
 We present a case study for systematically applying the distributed self-adjusting systems architecture to a common networking problem: software packet classification \cite{gupta2001algorithms}. The goal is to demonstrate the general engineering methodology by assembling \emph{existing} techniques into a distributed self-adjusting scheme and understand when, and to what extent, superlinear scaling emerges. We consider it a success if we can robustly reproduce faster-than-linear growth on some realistic workloads. It is a stated \emph{nongoal} to conceive novel algorithms, let alone produce the fastest software packet classifier. % (that award undeniably goes to DPDK \texttt{rte\_acl} \cite{rte-acl})
-Yet, our self-adjusting firewall will prove several times faster than the default Linux kernel implementation on a wide range of workloads.
+Yet, our self-adjusting firewall implemented in the Linux kernel will prove several times faster than the default Linux kernel implementation on a wide range of workloads.
 
 To achieve superlinear scaling we need a self-adjusting algorithm in the first place (plus a locality-boosting load balancer). From the many potential use cases % for which a self-adjusting algorithm exists
 \cite{SleatorT85Splay, BentleyCL93, HesterH85, HesterH85, BentleySTW86, Avin0020, ParkM12} we eventually chose packet classification for the following reasons.  First, the default Linux firewall implementation, \nftables, uses a static doubly linked list to evaluate classifier rules, which makes it an appealing candidate for applying the move-to-front (MTF) heuristics (but see ramifications related to handling rule-dependencies below). % which will buy us the non-self-adjusting baseline for free.
@@ -94,7 +94,7 @@ We created a comprehensive self-adjusting packet classifier implementation on to
 
 The original MRF algorithm uses recursion (see Alg.~\ref{alg:mrf}), which may be expensive in the Linux kernel due to the overhead of maintaining the function call stack. To avoid this overhead, we defined an iterative version of the algorithm. When a rule is to be moved forward, we first check whether it can be swapped with the preceding rule. This is done by checking whether the two rules overlap using a range-based representation, which we extract from the rule's bytecode in the \nftables virtual machine. If there is an overlap then the rule cannot be moved forward so we restart the process, this time trying to move the blocking dependency forward. Otherwise, the two rules are independent so they are immediately swapped and the iteration moves to the subsequent preceding rule. Reordering terminates when we reach the first position. A more efficient implementation would be to precompute dependencies on rule insertion\slash deletion and run the MRF algorithm using the cached dependencies; implementing this optimization is for further study. %. This, however, would complicate code and make insertions more expensive. % , and may even end up being slower since recursion in the kernel can be costly due to the overhead of a potentially deep call stack.
 
-\subsection{Locality-boosting load balancing}
+\subsection{Locality-boosting load balancing for\\ packet classification}
 \label{sec:sa-rss}
 
 The other ingredient that we need to achieve faster-than-linear scaling is a locality-boosting load balancer.  An ideal load balancer would partition the rule set into disjoint per-worker subsets. This would minimize the size of the \emph{active rule set} at workers, which is defined as the set of rules for which a particular worker receives packets during a time window. The smaller the active rule set the fewer rules the classifier has to search through for each packet and the larger the contribution of self-adjustment to superlinear speedup. Contrarily, the larger the active rule set the more rules compete for the first positions in the list, which reduces the room for self-adjustment to reduce lookup time and erodes superlinear scaling.
@@ -130,6 +130,8 @@ We conducted several experiments with the distributed self-adjusting packet clas
 
 \begin{figure*}[t]
   \centering
+
+  \resizebox{0.9\textwidth}{!}{%
   \subfloat[][acl1]{
     \input{fig/classbench-acl1.tex}
     \label{fig:classbench-acl1}
@@ -148,6 +150,7 @@ We conducted several experiments with the distributed self-adjusting packet clas
   \subfloat[][Synthetic traffic]{
     \input{fig/rule-size.tex}
     \label{fig:rule-size}
+  }
   }
   \caption{Scaling on ClassBench 3 rulesets generated from different seeds, containing 5000 rules each (panel (a), (b) and (c)), and synthetic rule set with uniform traffic and different rule sizes (panel (d)). Upper row shows relative speedup and the bottom row shows absolute throughput (packet rate in million packets per sec, mpps). Note the different scales on the $y$ axes.}
   \label{fig:classbench}
