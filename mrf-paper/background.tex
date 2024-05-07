@@ -42,7 +42,7 @@ Here, the term $\frac{1-s}{k}$ establishes that the perfectly parallel part of t
 % is because of the greater amount of cache memory in the
 % parallel execution compared to the sequential [5].
 
-\subsection{Distributed caching}
+\subsection{Distributed caching defies Amdahl's law}
 \label{sec:backgound-dist-cache}
 
 Critical to Amdahl's law is the assumption that the size of the individual sub-problems assigned to the workers remains constant as we scale the system (see also ``Gustafson's law'' \cite{10.1145/42411.42415}). Under this ``fixed size'' assumption \cite{556383}, faster-than-linear scaling is impossible \cite{10.1016/0167-8191(86)90024-4}. However, when this assumption fails, say, when the per-worker problem size gets progressively smaller or execution gets gradually faster as we add more parallel workers (``scaled size'' model \cite{556383}), superlinear scaling is sometimes observed \cite{scalability-analyzed, sdn-analytitcs, 6483679, 10.1007/978-3-319-77610-1, dobb-1, dobb-2}. Note that in the majority of the literature any function growing faster than $f(x) = x$ is considered ``superlinear'', despite that, e.g., $f(x) = 3x$ is, mathematically, linear. Some authors distinguish these functions using the term ``superunitary'' \cite{80148}. In line with the literature we will use the former terminology below.
@@ -58,7 +58,7 @@ The most prominent example for the scaled size model is \emph{distributed cachin
   \begin{small}
     \input{fig/cache/cache_analysis.tex}
 \end{small}
-\caption{Scaling laws for distributed caching: hash-based load balancing, lower envelope (round robin load balancing) and upper envelope (perfect cache hit rate with $k$ caches). Parameters: $s=0.1$, $\delta=0.1$ and $\rho=10$.}
+\caption{Scaling laws for distributed caching: hash-based load balancing, lower envelope (round robin load balancing) and upper envelope (perfect cache hit rate with $k$ caches). }
   \label{fig:dcache-analysis}
 \end{figure}
 
@@ -66,13 +66,14 @@ The most prominent example for the scaled size model is \emph{distributed cachin
 
 % assumption for the analysis? ``I think equation 2 should be explained much better. It is not at all obvious (not sure even correct) that hit rate scales linearly with threads (I think only true is delta << 1). What is $\rho$ exactly the ratio of (fetching time in the event of miss) / (fetching time in the event of a catch hit)?''
 
-It is instructive to quantify superlinear speedup in this context using a simple model. Suppose a source emits uniformly distributed random requests for $m$ items and requests are distributed among $k$ workers, each using a separate cache of size $c$, by hashing on the request id.  Initially, the cache hit rate for a single worker that processes all $m$ possible requests is $\sfrac{c}{m}=\delta$. Adding $k$ workers effectively partitions the requests into $k$ random buckets so that each worker will perceive uniformly distributed requests for only $\sfrac{m}{k}$ items, which improves the cache hit rate at each worker to $\frac{c}{\sfrac{m}{k}} = k\delta$ ($k\delta \le 1$). This puts the lookup time of the system of $k$ parallel caches to
+It is instructive to quantify superlinear speedup in this context using a simple model. Suppose a source emits uniformly distributed random requests for $m$ items and requests are distributed among $k$ workers, each using a separate cache of size $c$, by hashing on the request id.  Initially, the cache hit rate for a single worker that processes all $m$ possible requests is $\delta := \sfrac{c}{m}$. Adding $k$ workers effectively partitions the requests into $k$ random buckets so that each worker will perceive uniformly distributed requests for only $\sfrac{m}{k}$ items, which improves the cache hit rate at each worker to $\frac{c}{\sfrac{m}{k}} = k\delta$ ($k\delta \le 1$). This puts the lookup time of the system of $k$ parallel caches to
 \begin{align}\label{eq:dist-cache}
   T_c(k) = \begin{cases} s + \frac{1-s}{k}(k\delta + (1-k\delta)\rho) & \text{if } k\delta \le 1\\s + \frac{(1-s)}{k} & \text{otherwise}\end{cases} \enspace ,
 \end{align}
-where $\rho$ is the penalty for a cache miss event.
+where $\rho$ is the penalty for a cache miss event, $\delta$ is the cache hit rate for a single worker, and $s$ denotes the fraction of execution time spent in the sequential part of the code.
 
-The speedup $S_c(k)=\frac{T_c(1)}{T_c(k)}$ is depicted in Fig.\ref{fig:dcache-analysis}. The lower envelope of the scaling profile is given by Amdahl's law for the system with random or round robin load-balancing. % ($\frac{T_c(1)}{s + \frac{1-s}{k}(\delta + (1-\delta)\rho)}$).
+
+The speedup $S_c(k)=\frac{T_c(1)}{T_c(k)}$ for the parameters $s=0.1$, $\delta=0.1$ and $\rho=10$ is depicted in Fig.\ref{fig:dcache-analysis}. The lower envelope of the scaling profile is given by Amdahl's law for the system with random or round robin load-balancing. % ($\frac{T_c(1)}{s + \frac{1-s}{k}(\delta + (1-\delta)\rho)}$).
 As $k$ grows the scaling profile progresses over a superlinear curve to an elevated Amdahl's law profile, representative of a system serving \emph{all} requests from fast memory. % ($\frac{T_c(1)}{s + \frac{1-s}{k}}$).
 Note that this occurs \emph{only} if request dispatching is chosen carefully to partition the item space. Modulo hashing assigns the same item to the same worker deterministically, so that workers process only a subset of the items that may have a greater chance to fit into the cache. In contrast, a random or a round robin load balancer may assign any item to any worker, which defeats the purpose of improving workers' cache hit rate. % and destroys superlinear scaling all together. % (see empirical evidence in the next Section).
 

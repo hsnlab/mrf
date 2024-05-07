@@ -19,7 +19,9 @@ The maximum speedup, measured as the ratio of the wall clock times of sequential
   \begin{small}
   \input{fig/usl.tex}
 \end{small}
-  \caption{Linear scaling, Amdahl's law and the superlinear scaling ($s=0.01$). The inset shows the asymptotics.\vk{$s$ need to be explained here.}}
+  \caption{Linear scaling, Amdahl's law and the proposed superlinear scaling, for $s=0.01$, where $s$ is the fraction of the execution time inevitably spent in the sequential part of the code. Our proposed scaling law suggests that superlinear scaling is feasible for specific workloads accompanied by a right combination of a load balancer and a self-adjusting data structure.
+    The inset shows the asymptotics depicting the saturation of the superlinear scaling of the system.
+    }
   \label{fig:amdahl}
 \end{figure}
 

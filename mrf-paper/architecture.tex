@@ -1,5 +1,5 @@
 % !TEX ROOT = ./distributed_mrf.tex
-\section{Distributed self-adjusting systems}
+\section{Beyond Amdahl's law:\\Distributed self-adjusting systems}
 \label{sec:architecture}
 
 We now present a general distributed systems architecture, which, as we show theoretically and empirically later, produces faster-than-linear scaling in several disparate problem domains. Our main observation is that, whenever genuinely observed, superlinear scaling assumes two critical components: a policy to dispatch jobs to workers in a way to increase the locality of reference in the per-worker input streams, plus an algorithm that can adaptively exploit the structure in the input to process it more efficiently. Our architecture is purely a software technique in that it does not require the addition of new cache space to a system. Nonetheless, it contains distributed caching as a special case and hence automatically takes advantage of additional fast memory, if available.
@@ -102,8 +102,9 @@ Now suppose we move from 1 worker to $k$ parallel workers where $k \le m$. This 
 
 Then, superlinear speedup is merely a product of two simultaneous $k\times$ speedup factors: one $k\times$ factor comes from the self-adjusting list getting progressively faster as we add new workers (recall the ``scaled size'' model from \S\ref{sec:backgound-dist-cache}), and another $k\times$ speedup because we scale the total compute capacity available to the system $k$ times. The effective speedup is then just the multiple of the two, yielding $k^2$ times speedup in total. Plugging into Amdahl's law we get the \emph{scaling law for distributed MTF lists on uniform input} (see Fig.~\ref{fig:amdahl}):
 \begin{equation}\label{eq:mtf-perf}
-  S_l(k) = \frac{T_l(1)}{T_l(k)} = \frac1{s + \frac{1-s}{k^2}} \qquad k \le m \enspace .
+  S_l(k) = \frac{T_l(1)}{T_l(k)} = \frac1{s + \frac{1-s}{k^2}} \qquad k \le m \enspace ,
 \end{equation}
+where $s$ denotes the fraction of execution time spent in the sequential part of the code.
 
 % We used this scaling law as the graphical illustration for superlinear scaling in Fig.~\ref{fig:amdahl}. 
 For small values of $k$ we obtain $O(k^2)$ scaling. As $k$ grows sufficiently large, say, when $k=m$, the workers' input reduces to a singleton ($\sfrac{m}{k}=1$). From this point the distributed MTF list reduces into a simple parallel hash table and superlinear speedup degrades into an ``ordinary'' Amdahl's scaling profile until speedup eventually blocks on a serial bottleneck (e.g., the sequential load balancer).  For anything between, the system adaptively finds the best combination of an MTF list and a hash-table, producing a quadratic scaling.

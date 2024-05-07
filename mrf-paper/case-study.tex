@@ -1,5 +1,5 @@
 % !TEX ROOT = ./distributed_mrf.tex
-\section{Achieving superlinear scaling in the \\Linux kernel: A case study}\label{sec:case-study}
+\section{Case study: Achieving superlinear scaling\\ in the Linux kernel}\label{sec:case-study}
 
 We present a case study for systematically applying the distributed self-adjusting systems architecture to a common networking problem: software packet classification \cite{gupta2001algorithms}. The goal is to demonstrate the general engineering methodology by assembling \emph{existing} techniques into a distributed self-adjusting scheme and understand when, and to what extent, superlinear scaling emerges. We consider it a success if we can robustly reproduce faster-than-linear growth on some realistic workloads. It is a stated \emph{nongoal} to conceive novel algorithms, let alone produce the fastest software packet classifier. % (that award undeniably goes to DPDK \texttt{rte\_acl} \cite{rte-acl})
 Yet, our self-adjusting firewall will prove several times faster than the default Linux kernel implementation on a wide range of workloads.
