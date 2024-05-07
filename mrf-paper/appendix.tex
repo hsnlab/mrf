@@ -1,7 +1,7 @@
 \appendix
 
-\section{Superlinear Scaling of Self-adjusting\\ Distributed Systems (a positive result)}
-\label{sec:app:arch-scaling}
+\newpage
+\section{Analytical findings}
 
 Scaling in distributed systems refers to the improvement in performance achieved by adding more machines to a system, defined as the ratio of the completion time of the baseline system with a single machine to the completion time of the system with $k$ machines, $S(k) = T(1) / T(k)$.
 
@@ -11,29 +11,31 @@ Scaling in distributed systems refers to the improvement in performance achieved
 %   \end{displaymath}
 % for a function $h(k) > k$.
 
-We claim that our system scales along two dimensions: load balancer efficiency $\ell$ and parallelizability $q$.
+We claim that our system scales along two dimensions: load balancer efficiency $\ell(k)$ and parallelizability $q(k)$.
 % In this section, we analyze the scaling of self-adjusting distributed systems, and identify two independent dimensions of scaling: load balancer efficiency $\ell$ and parallelizability $q$.
 % Our system can scale by
 \begin{displaymath}
-    S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{q \cdot \ell}} \enspace ,
+    S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{q(k) \cdot \ell(k)}} \enspace ,
 \end{displaymath}
-for some values of $q$ and $\ell$ that we formally define later in this section.
-If $q \cdot \ell > k$, we say that our system scales superlinearly.
-
-In the rest of this section, we formally define our model and define self-adjusting data structures.
-Then, we formulate the Theorem~\ref{thm:superlinear} that characterizes the scaling of our system.
-
-
-% The factor of $\ell$ arises due to the total work reduction by the load balancer, and the factor of $q$ arises due to the improved time to complete the schedule on $k$ machines.
+for some values of $q(k)$ and $\ell(k)$ that depend on the input $\sigma$ and the load balancer.
+The value $\ell(k)$ captures the reduction in the total work of the system by using a load balancer, and $q(k)$ captures how well the reduced workload can be parallelized on $k$ machines.
+% See Theorem~\ref{thm:superlinear} for the precise statement.
+If $q(k) \cdot \ell(k) > k$, we say that our system \emph{scales superlinearly}.
 
 
-We dedicate the rest of this section to explaining $\ell$ and $q$.
-The paralellization factor $q$ can be at most $k$ (reaching $q=k$ for uniform input). The workload reduction factor $\ell$ depends on the input sequence $\sigma$ and the load balancer $f_k$, but the workload cannot be reduced indefinitely with growth of $k$. Hence, our conclusion is that the system can scale superlinearly only for small values of $k$. 
+We draw the following conclusions from our analysis.
+\begin{enumerate}
+	\item The system can scale superlinearly for certain input streams combined with the right load balancer.
+		The uniform input example is just one such example.
+	\item On the contrary, some other input streams cannot even achieve linear scaling with any load balancer.
+	\item The paralellization factor $q(k)$ can be at most $k$ (reaching $q(k)=k$ for uniform input).
+	\item The workload reduction factor $\ell(k)$ depends on the input sequence $\sigma$ and the load balancer.
+	\item The workload reduction factor $\ell(k)$ cannot be reduced indefinitely with growth of $k$. Hence, the system can scale superlinearly only for small values of $k$. 
+\end{enumerate} 
 
-To rigorously show these claims, we formulate the following mathematical model.
+Our analysis holds for a wide range of self-adjusting data structures (including LRU caches).
 
-
-\subsection{The model}
+\section{The model}
 \label{sec:app:model}
 
 \paragraph{Architecture.}
@@ -47,7 +49,17 @@ The load balancer is a function $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ from
 
 The time to process a request $\sigma_t$ at time $t$ includes both the computational overhead of the load balancer (denoted $T(f_k(\sigma_t))$) and the processing time by $D$ at machine $M_{f_k(\sigma_t)}$ (denoted $T(g_D(\sigma_t)$).
 Notably, the processing time $g_D$ varies over time due to the self-adjusting nature of the data structure.
-The time required to process a request is often a function of the working set size of the data structure $D$; we elaborate soon. 
+
+Self-adjusting data structures often achieve some variant of \emph{working set property} that links the input history to the cost of processing a request.
+In our work, the working set for an item $\sigma_t$ request at time $t$ is defined as the set of distinct items requested since the last request to the item $\sigma_t$.
+With each data structure $D$, there exists an associated cost function $g_D$ 
+\[
+	\textsf{cost}(x, t, \sigma) \le g_D(|W_t(x)|) \enspace ,
+\]
+where $W_t(x)$ is the number of distinct requests to items other than $x$ since the last request to $x$.
+With these assumptions, we capture e.g. LRU caches, Move-to-Front lists, splay trees and more. 
+
+
 
 
 \paragraph*{Objective.}
@@ -69,50 +81,27 @@ A single self-adjusting data structure is the most natural baseline choice for s
 % In similar fashion to Amdahl's law, we define $s$ as the serial fraction of the workload, where in our case only the load balancing is serial (total serial work is $\sum \sum_t T(f(\sigma_t))$).
 
 
-\subsection{Two dimensions of scalability effects}
+\section{Superlinear Scaling of Self-adjusting\\ Distributed Systems (a positive result)}
+\label{sec:app:arch-scaling}
 
-The load balancer $f_k$ partitions the input stream $\sigma$ into $k$ more local streams $\sigma(M_1), \sigma(M_2), \ldots, \sigma(M_k)$, and reduces the sum of machine's workloads by a factor of $\ell$. The workload is then executed on $k$ machines, with the objective to reduce the schedule completion time, which brings speedup of the factor of $q$, $q\le k$.
-
-
-\begin{definition}
-	\label{def:ell}
-The value $\ell$ is defined as the ratio of the total work of the distributed system to the total work of the baseline.
-\end{definition}
-
-\begin{definition}
-	\label{def:q}
-The value $q$ is defined the ratio of the total (reduced) work to the completion time of the last machine.
-\end{definition}
-
-Then, the speedup of the distributed system is given by the following theorem.
-
-\begin{theorem}
-	\label{thm:superlinear}
-	Consider a data structure $D$ with a cost that is upper-bounded by a non-decreasing function $g_D$ of the working set size.
-
-	Consider a load balancer that dispatches inputs $\sigma$ taken from a universe $\mathcal{U}$ to $k$ identical parallel workers $W_1, W_2, \ldots, W_k$, each running an instance of a self-adjusting algorithm $D$, using a deterministic function $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ that partitions the input universe $\mathcal{U}$ into $k$ disjoint subsets $\mathcal{U}_1, \mathcal{U}_2, \ldots, \mathcal{U}_k$. 
-For an input $\sigma$, self-adjusting distributed systems can scale with $k$ in two dimensions: 
-load balancer efficiency $\ell$ and parallelizability $q$.
-This gives us speedup
-\begin{equation*}\label{eq:mtf-perf}
-  \frac{T(1)}{T(k)} \le \frac1{s + \frac{1-s}{q \cdot \ell}} \enspace ,
-\end{equation*}
-for $q$ and $\ell$ defined in Definition~\ref{def:q} and \ref{def:ell}, which depend on the input $\sigma$, load balancer $f_k$ and the cost function $g_D$.
-\end{theorem}
-
-The proof of the above theorem is a direct consequence of executing a reduced workload (reduced by a factor of $\ell$) on $k$ machines with the speedup $q$. 
-Note that $s$ is the serial fraction of the workload, which is common to $T(1)$ and $T(k)$.
-
-Our theorem applies to e.g. Move-to-Front lists and LRU caches, since their cost functions $g_\textsf{MTF}$ and $g_\textsf{LRU}$ are monotonically increasing in the working set size.
-
-We dedicate the next two subsections to partitioning the speedup into these two dimensions and independently analyzing them.
+% Even if the observed scaling is superlinear, it is only an initial phenomenon, and the system cannot scale indefinitely with $k$ by using a load balancer.
 
 
+% The factor of $\ell$ arises due to the total work reduction by the load balancer, and the factor of $q$ arises due to the improved time to complete the schedule on $k$ machines.
 
-\subsubsection{Study of $\ell$: how workload is reduced}
+% We dedicate the rest of this section to explaining $\ell$ and $q$.
+% To rigorously show these claims, we formulate the following mathematical model.
 
-The value of $\ell$ depends on the input $\sigma$ and the load balancer $f_k$. Hence, $\ell$ indirectly relies on $k$ through $f_k$ (these are tied together in our architecture). Furthermore, for technical reasons, $\ell$ depends on the serial portion of the workload $s$.
-To estimate $\ell$ for a given stream $\sigma$, we need to relate  $\sigma$ with the load balancer $f_k$ for the given data structure $D$.
+
+% \subsection{Two dimensions of scalability effects}
+
+The load balancer $f_k$ partitions the input stream $\sigma$ into $k$ more local streams $\sigma(M_1), \sigma(M_2), \ldots, \sigma(M_k)$, and reduces the sum of machine's workloads by a factor of $\ell(k)$. The workload is then executed on $k$ machines, with the objective to reduce the schedule completion time, which brings speedup of the factor of $q(k)$, $q(k)\le k$.
+
+
+\subsection{Study of $\ell(k)$: how workload is reduced}
+
+The value of $\ell(k)$ depends on the input $\sigma$ and the load balancer $f_k$. Hence, $\ell(k)$ indirectly relies on $k$ through $f_k$ (these are tied together in our architecture). Furthermore, for technical reasons, $\ell(k)$ depends on the serial portion of the workload $s$.
+To estimate $\ell(k)$ for a given stream $\sigma$, we need to relate  $\sigma$ with the load balancer $f_k$ for the given data structure $D$.
 
 
 
@@ -129,6 +118,7 @@ With each data structure $D$, there exists an associated cost function $g_D$
 \]
 where $W_t(x)$ is the number of distinct requests to items other than $x$ since the last request to $x$.
 With these assumptions, we still capture parallel extensions of LRU caches, Move-to-Front lists, splay trees. 
+
 
 We illustrate $g_D$ for Move-to-Front and LRU. In Move-to-Front the cost of accessing an item is linear: $g_\textsf{MTF}(x,t,\sigma) = |W_t(x)| + 1$.  LRU is the algorithm Move-to-Front casted into the cost model of caching with a generalized cost function $g_\textsf{LRU}$ that is non-linear: for a cache of size $B$, the cost is 1 if the working set size is $B+1$, and 0 otherwise.
 We note that this generalized setting introduced by Sleator and Tarjan~\cite{SleatorT85} captures more general data structures than just lists and caching under a common characterization of $g_D$.
@@ -154,34 +144,72 @@ In total, we observe cost savings from load balancing for the stream $\sigma$, d
 \]
 Note the total work decreases\footnote{A strict deviation from the assumptions of Amdahl's law, where workload is fixed. See Section~\ref{sec:app:disc} for a discussion on our assumptions.} by $r$ for the stream $\sigma$.
 
-The speedup ratio in the dimension of $\ell$ is then 
+The speedup ratio in the dimension of $\ell(k)$ is then 
 \[
-	1/\ell = \frac{\sum_{t} g(|W_t(x) \cap \mathcal{U}_{f_k(\sigma_t)})|}{\sum_{t} g(|W_t(x)|)}  \enspace .
+	1/\ell(k) = \frac{\sum_{t} g(|W_t(x) \cap \mathcal{U}_{f_k(\sigma_t)})|}{\sum_{t} g(|W_t(x)|)}  \enspace .
 \]
 
 
 
-\subsubsection{The study of $q$: how parallelizable the reduced workload is}
+\subsection{The study of $q(k)$: how parallelizable the reduced workload is}
 
 Recall that our objective is not to minimize the total work, but to minimize the completion time of the schedule.
-Fix a reduced parallel workload from the previous section of total size $(1-s)/\ell$, and let's look at its components.
+Fix a reduced parallel workload from the previous section of total size $(1-s)/\ell(k)$, and let's look at its components.
 We are interested in minimizing the completion time of the last machine. 
-The speedup ratio in the dimension of $q$ is given by
+The speedup ratio in the dimension of $q(k)$ is given by
 \[
-	1/q = \frac{\sum_{t} g(|W_t(x)) \cap \mathcal{U}_{f_k(\sigma_t)|}}{\max_i \sum_{t : f_k(\sigma_t) = i} g(|W_t(x) \cap \mathcal{U}_{f_k(\sigma_t)}|)}  \enspace .
+	1/q(k) = \frac{\sum_{t} g(|W_t(x)) \cap \mathcal{U}_{f_k(\sigma_t)|}}{\max_i \sum_{t : f_k(\sigma_t) = i} g(|W_t(x) \cap \mathcal{U}_{f_k(\sigma_t)}|)}  \enspace .
 \]
 
 
 
-Some request streams and load balancer pairs are better at achieving $q$ close to its theoretical limit $k$ (given by Amdahl's law). Our uniform input example achieves perfect parellelization of $q=k$, since all jobs are the same size and all machines process the same number of jobs. On the other hand, some unparallelizable streams such as a repeated request to a single item have $q=1$, because they use only one machine in our architecture\footnote{To remedy that, we could look into load balancers that distribute jobs to multiple machines (generalizations of functions $f_k$, to functions from $\mathcal{U}$ to sets of machines). This goes beyond the scope of this paper. See RSS+ paper for reference~\cite{10.1145/3359989.3365412}.}.
+Some request streams and load balancer pairs are better at achieving $q(k)$ close to its theoretical limit $k$ (given by Amdahl's law). Our uniform input example achieves perfect parellelization of $q=k$, since all jobs are the same size and all machines process the same number of jobs. On the other hand, some unparallelizable streams such as a repeated request to a single item have $q=1$, because they use only one machine in our architecture\footnote{To remedy that, we could look into load balancers that distribute jobs to multiple machines (generalizations of functions $f_k$, to functions from $\mathcal{U}$ to sets of machines). This goes beyond the scope of this paper. See RSS+ paper for reference~\cite{10.1145/3359989.3365412}.}.
 Heterogeneous workload can also be parallelizable, for example a single machine $M_1$ can process a majority of the stream $\sigma$ if the stream $\sigma_{M_1}$ is local, while the rest of the machines process longer jobs to finish at the same time as $M_1$.
-It should however be obvious that the streams that achieve good parallelization $q$ need to have roughly equal workloads for each machine, and the only streams that can achieve that consist of requests to multiple affinity domains.
-To maximize $q$, the load balancer needs to distribute the workload evenly among the machines.
+It should however be obvious that the streams that achieve good parallelization $q(k)$ need to have roughly equal workloads for each machine, and the only streams that can achieve that consist of requests to multiple affinity domains.
+To maximize $q(k)$, the load balancer needs to distribute the workload evenly among the machines.
 
 % \begin{observation}
 % 	?
 % 	Submodular
 % \end{observation}
+
+
+\subsection{Characterizing the speedup}
+
+\begin{definition}
+	\label{def:ell}
+Fix any stream $\sigma$ and load balancer $f_k$. The value $\ell(k)$ is defined as the ratio of the total parallel work of the distributed system to the total parallel work of the baseline.
+\end{definition}
+
+\begin{definition}
+	\label{def:q}
+Fix any stream $\sigma$ and load balancer $f_k$. 
+The value $q(k)$ is defined the ratio of the total reduced parallel work $(1-s)\cdot\ell(k)$ to the completion time of the last machine.
+\end{definition}
+
+Then, the speedup of the distributed system is given by the following theorem.
+
+\begin{theorem}
+	\label{thm:superlinear}
+	Consider a data structure $D$ with a cost that is upper-bounded by a non-decreasing function $g_D$ of the working set size.
+
+	Consider a load balancer that dispatches inputs $\sigma$ taken from a universe $\mathcal{U}$ to $k$ identical parallel workers $W_1, W_2, \ldots, W_k$, each running an instance of a self-adjusting algorithm $D$, using a deterministic function $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ that partitions the input universe $\mathcal{U}$ into $k$ disjoint subsets $\mathcal{U}_1, \mathcal{U}_2, \ldots, \mathcal{U}_k$. 
+For an input $\sigma$, self-adjusting distributed systems scaling with $k$ is characterized in two dimensions: 
+load balancer efficiency $\ell(k)$ and parallelizability $q(k)$.
+This gives us speedup
+\begin{equation*}\label{eq:mtf-perf}
+  \frac{T(1)}{T(k)} \le \frac1{s + \frac{1-s}{q(k) \cdot \ell(k)}} \enspace ,
+\end{equation*}
+for $q(k)$ and $\ell(k)$ defined in Definition~\ref{def:q} and \ref{def:ell}, which depend on the input $\sigma$, load balancer $f_k$ and the cost function $g_D$.
+\end{theorem}
+
+The proof of the above theorem is a direct consequence of executing a reduced workload (reduced by a factor of $\ell(k)$) on $k$ machines with the parallelization $q(k)$. 
+Note that $s$ is the serial fraction of the workload, which is common to $T(1)$ and $T(k)$.
+
+Our theorem applies to e.g. Move-to-Front lists and LRU caches, since their cost functions $g_\textsf{MTF}$ and $g_\textsf{LRU}$ are monotonically increasing in the working set size.
+
+We dedicate the next two subsections to partitioning the speedup into these two dimensions and independently analyzing them.
+
 
 
 
@@ -202,25 +230,7 @@ We deviate from these assumptions, (1) the problem size at the machines can decr
 In particular, our problem size is not fixed, but rather the total work decreases for $k$ machines in comparison to the work accomplished by the baseline.
 % The problem size at a machine, $T(f(\sigma_t))$, depends on the internal state of the self-adjusting data structure $D$ at time $t$ and machine $M_f(\sigma_t)$.
 
-
-
-
-\paragraph*{On the choice of a load balancer.}
-There are many constraints for the load balancer, e.g. it should be efficiently computable and should parallelize the workload well (measured by the parameter $q$).
-Now, we focus solely on the locality-boosting aspect of the load balancer, how well the workload is reduced by cutting affinity domains with $f_k$.
-% The primary role of the load balancer is to boost locality of the input stream (that is to improve $\ell$).
-We can visualize the saving from load balancing with help of a weighted complete graph, where each edge weight represents the saved cost by isolating the affinity domains of the two machines.
-For each input stream, the costs of a self-adjusting data structure can be decomposed into the sum of costs accounted to pairs of nodes, see the work of Albers and Lauer for details~\cite{AlbersL16}.
-The optimal load balancer uses the heaviest cut in such a graph.
-
-
-First, we consider load balancers that remain fixed over time, and we additionally assume that the input stream is known in advance.
-The optimal $k$-cut is known as \emph{maximum $k$-cut}, and is known to be NP-hard problem~\cite{Frieze97,Mahajan95}.
-If the cuts are balanced (a natural choice), then the problem is known as \emph{maximum $k$-section}~\cite{Andersson99} (from the perspective of maximizing the cut) and \emph{minimum graph $k$-balanced partitioning}~\cite{AndreevR06}  (from the perspective of minimizing the non-cut edges).
-In the former model, we have a polynomial time algorithm that achieves a constant-factor approximation~\cite{Andersson99}, and in the latter model, we have a polylogarithmic approximation~\cite{AndreevR06}.
-
-It is often unrealistic to know the entire input sequence in advance, and online variants of the problem are studied, where additionally the load balancer can change the assignment of the requests to the machines over time.
-We refer to online variants of the above problems: online $k$-cut~\cite{Bar-NoyL12} and online graph partitioning~\cite{AvinBLPS20}.
+One may ask why our perspective is useful. In our eyes, for systems consisting of self-adjusting data structures, the most natural benchmark is a single self-adjusting data structure. This perspective explains the superlinear scaling observed in practice for caching.
 
 
 
@@ -263,15 +273,16 @@ We finalize by sketching a scaling impossibility law, an equivalent of Amdahl's 
 
 
 \begin{theorem}
+	\label{thm:upper}
 Assume that the cost of a data structure $D$ is lower-bounded in terms of the working set size as a monotonically non-decreasing function $g_D$. 
 Then, our distributed self-adjusting system cannot scale better than
  \begin{displaymath}
-    S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{k \cdot \ell}} \enspace ,
+    S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{k \cdot \ell(k)}} \enspace ,
   \end{displaymath}
-  where $\ell$ depends on $g_D$, $\sigma$ and $f_k$.
+  where $\ell(k)$ depends on $g_D$, $\sigma$ and $f_k$.
 \end{theorem}
 
-The proof of this theorem is a direct consequence of the Amdahl's law to the reduced workload: the reduced parallel workload $(1-s)/\ell$ can be executed at most $k$ times faster.
+The proof of this theorem is a direct consequence of the Amdahl's law to the reduced workload: the reduced parallel workload $(1-s)/\ell(k)$ can be executed at most $k$ times faster.
 We leave the proof of to the full version of the paper.
  
 
@@ -282,19 +293,19 @@ There are two consequences of the above theorem.
 	\item 
 \textbf{Superlinearity is an initial-only phenomenon}
 
-The maximum possible multiplicative $\ell$ achievable is fixed for each input sequence $\sigma$. 
+The maximum possible multiplicative $\ell(k)$ achievable is fixed for each input sequence $\sigma$. 
 This always happens when $k$ is large enough so the load balancer $f_k$ isolates all working sets, but for many inputs $\sigma$, the improvements can dry up even for smaller $k$ (the more local the sequences are, the more effective the load balancer can be).
 As a corollary, the system can still scale with the parameter $k$ due to additional resources, but the savings from load balancing do not increase indefinitely with $k$.
 \begin{observation}
 	\label{obs:initial}
-	For each input sequence $\sigma$, there exists a constant $K$ such that for all $k > K$, for each load balancer $f_k$, the savings $\ell$ are fixed do not increase with $k$.
+	For each input sequence $\sigma$, there exists a constant $K$ such that for all $k > K$, for each load balancer $f_k$, the savings $\ell(k)$ are fixed do not increase with $k$.
 	Combined with the fact that $q \le k$, means that superlinear scaling cannot continue with $k$ indefinitely.
 \end{observation}
 
 
  \item \textbf{Tight analysis for LRU caches and MTF lists}
 
-For Move-to-Front lists and LRU caches, the cost function $\ell$ is both upper and lower bounded as a function of the working set size. Hence, our analysis of scaling is tight for these algorithms.
+For Move-to-Front lists and LRU caches, the cost function $\ell(k)$ is both upper and lower bounded as a function of the working set size. Hence, our analysis of scaling is tight for these algorithms.
 
 In particular, the LRU algorithm for caching cannot scale superlinearly indefinitely. Hence, the observed phenomenon in the literature is only an initial phenomenon due to the combined effect of increased number of machines and the load balancer.
 \end{enumerate}
@@ -346,6 +357,24 @@ In particular, the LRU algorithm for caching cannot scale superlinearly indefini
 % The total work is s + (1-s - (1-s)*(1/k) )/k
 
 % you divide each list k times in size, that's right
+
+
+\section{How to find good load balancers?}
+There are many constraints for the load balancer, e.g. it should be efficiently computable and should parallelize the workload well (measured by the parameter $q$).
+Now, we focus solely on the locality-boosting aspect of the load balancer, how well the workload is reduced by cutting affinity domains with $f_k$.
+% The primary role of the load balancer is to boost locality of the input stream (that is to improve $\ell$).
+We can visualize the saving from load balancing with help of a weighted complete graph, where each edge weight represents the saved cost by isolating the affinity domains of the two machines.
+For each input stream, the costs of a self-adjusting data structure can be decomposed into the sum of costs accounted to pairs of nodes, see the work of Albers and Lauer for details~\cite{AlbersL16}.
+The optimal load balancer uses the heaviest cut in such a graph.
+
+
+First, we consider load balancers that remain fixed over time, and we additionally assume that the input stream is known in advance.
+The optimal $k$-cut is known as \emph{maximum $k$-cut}, and is known to be NP-hard problem~\cite{Frieze97,Mahajan95}.
+If the cuts are balanced (a natural choice), then the problem is known as \emph{maximum $k$-section}~\cite{Andersson99} (from the perspective of maximizing the cut) and \emph{minimum graph $k$-balanced partitioning}~\cite{AndreevR06}  (from the perspective of minimizing the non-cut edges).
+In the former model, we have a polynomial time algorithm that achieves a constant-factor approximation~\cite{Andersson99}, and in the latter model, we have a polylogarithmic approximation~\cite{AndreevR06}.
+
+It is often unrealistic to know the entire input sequence in advance, and online variants of the problem are studied, where additionally the load balancer can change the assignment of the requests to the machines over time.
+We refer to online variants of the above problems: online $k$-cut~\cite{Bar-NoyL12} and online graph partitioning~\cite{AvinBLPS20}.
 
 
 
