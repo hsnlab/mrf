@@ -1,0 +1,338 @@
+NSDI '25 Spring Paper #619 Reviews and Comments
+===========================================================================
+Paper #619 Beyond Amdahl's Law: Achieving Superlinear Scaling with
+Distributed Self-adjusting Systems
+
+
+Review #619A
+===========================================================================
+
+Paper summary
+-------------
+This paper describes an approach to designing systems that exhibit super-linear scalability. The paper observes that to get superlinear scaling requires finding an approach that reduces the total work done by the system, since otherwise only linear scaling is possible. Self-adjusting algorithms and data structures, which are data structures that reorganize themselves in response to inputs, provide an opportunity for doing so: these structures generally reorganize themselves so that recurring inputs can be processed quickly. When using self-adjusting algorithms, adding instance (that is scaling) reduces the number of unique input values each instance observes, which improves the efficacy of self-adjusting algorithms, leading to super linear scaling. The authors evaluate this approach by scaling up the Linux firewall.
+
+Strengths
+---------
+* The paper makes an interesting observation, and applies it to an unusual domain (the Linux firewall).
+* Generally the core ideas are well presented, and well motivated.
+
+Weaknesses
+----------
+* The paper does not discuss nor evaluate the tradeoff entailed by this approach.
+* This is subjective, but I found the papers attempts to say this was breaking Amdahl to be tortured, and it made the paper's core insight harder to extract.
+
+Comments for authors
+--------------------
+I quiet enjoyed reading this paper. My main concern is that you do not really look at the tradeoffs that occur when using self-adjusting data structures: different accesses (even to the same value) can require very different access times and some reads can require rearranging the data structure leading to writes. This probably has a noticeable effect on tail-latency, jitter and any other performance metric where variance is a problem. Both tail-latency and jitter are common concerns for the types of scalable systems you target, and I was surprised to see no mention of how one deals with this. Furthermore, the evaluation only discusses throughput and mean delay, why not show delay distributions?
+
+As a secondary thing, I did not like how heavy handed the paper was with the "we are challenging Amdahl" line in the beginning (but this is subjective, and I recognize that others might like it). You are not challenging Amdahl, which is basically work conservation. Instead, you are saying that if scaling changes the workload you can scale better, which is fine. For me, the way the argument was presented made me less receptive to the ideas, and I think it loses some of the explanation for why self-adjusting algorithms are useful in this setting.
+
+Reviewer expertise
+------------------
+4. I know a lot about this area
+
+Writing quality
+---------------
+4. Well-written
+
+Experimental methodology
+------------------------
+3. Average
+
+Overall merit
+-------------
+3. Weak accept
+
+
+
+Review #619B
+===========================================================================
+
+Paper summary
+-------------
+When we implement computer systems, we typically expect a linear (or worse) speedup as we add more processing elements (Amdahl's law). However, surprisingly, in some cases, a super-linear speedup can be achieved. This paper argues distributed systems can be engineered to intentionally cause these superlinear speedups to happen. A use case for load balancing is studied, and an algorithm is proposed that achieves large gains beyond linear speedups.
+
+Strengths
+---------
+The paper studies a very fundamental problem and question that could have very wide ranging impacts. There are lessons in the paper that could have broad ramifications for the NSDI community. The paper could help to lead to interesting discussions at the conference.
+
+Weaknesses
+----------
+The actual contributions of the work seem small, or at least questionable in terms of novelty. Superlinear scaling is not really a myth and has been widely studied and characterized in the High Performance Computing field. There seem to be many prior works that seem to study how to leverage superlinear scaling and the novelty of the approaches in this paper seem unclear.
+
+Comments for authors
+--------------------
+I think there was one key confusion that I had regarding this paper. The paper seems to be making a case that previous work in this space has dismissed superlinear speedup "as use-case specific artifacts, elusive interplays between memory and CPU, or mere measurement errors". However, as far as I can tell, this does not seem to be the case. I looked at all the references of this paper pertaining to superlinear speedup, one by one, and as far as I can tell none of them dismiss superlinear speedup, and in fact do seem to report superlinear speedup as a real phenomenon. There are a particular two papers by Gunther (31,32) that the paper seems to pay some specific attention to. There are some quotes from Gunther's paper like "superlinearity, although alluring, is as illusory as perpetual motion”, which the authors seem to take to mean that Gunther's paper is making the claim that superlinearity is not real. While that quote taken in isolation sure seems to sound like that, if you read [32], [32] is clearly not saying that and that quote really seems to be taken out of context. Gunther's paper in fact reports (sections 2 and 3) that superlinearity is in fact a real phenomenon, that in fact their experiments with Hadoop directly demonstrate it. [32]'s thesis is in fact quite different than what is stated in this submission, namely, Gunter et al are referring to "superlinearity without tradeoffs" as being illusory. [32]'s figure 1 makes this clear -- one might think that with superlinearity performance continues to grow beyond f(x)=x without bound, but they do not observe that when you actually investigate (figures 2 and 3 in [32]), that there are "payback regions" that occur where performance begins to come back to linear, and even go sublinear, as the number of workers continues to increase. I see nothing in this submission that seems contrary to that claim -- this submission also notes several cases where there is superlinearity, but it is not clear if these payback regions eventually occur even in the results in this paper if the number of workers were to continue to increase (in fact, if you look at several of the results of this paper, for example Figure 9, we do in fact see the results start to tail off, which seems to in fact match up with the observations in Gunther's paper -- and in fact bottom of first column of page 6 the authors of this paper also seem to indicate that superlinear speedup turns out to be "ephemeral" as well). I don't see anything in [32] even claiming this is always true for all use cases even, as the authors seem to be focusing on a particular use case, results for which don't seem to contradict at all with this paper. In general, the main thesis of this paper, that somehow the community's "conventional wisdom" is that doubling workers can only lead to a 2x improvement, that reports of superlinearity have been largely "dismissed" as artifacts, does not seem to be true at all, and in fact it seems there is a very vibrant research community that has developed around superlinearity with a number of research papers in the fields of HPC and software engineering (and even fields as diverse as social engineering and city planning) that not only acknowledge superlinearity as a real phenomenon but propose methodologies in system design to leverage it to achieve improved performance, which in general seems to overlap quite heavily with what might be considered to be the novelty within this work. 
+
+I think this was one key reason I have some concerns about accepting this paper, as unfortunately fixing this issue would involve some pretty major changes to the work. However, I also want to say that I see some really nice value in this work as well. In our community we sometimes accept "position papers" that are focused on making a case that the community should focus on some particular direction, or dispelling myths, or keeping some approach in mind, etc. These papers can be really powerful as they can lead to shifts in how our community thinks. I could see this paper doing that. I think many in our community may not be so familiar with the issue of superlinearity, while in fact leveraging it as a principle in system design may lead to better outcomes. I feel that this paper would lead to some nice debate in our community. Perhaps it could be accepted as a work that is more about "we should listen to prior work in the HPC domain on superlinearity when architecting systems" which I personally think would be a fine position. I do feel a bit on the fence about that being a valid reason for accepting though as many of those arguments are presented in papers in other fields, and summarizing such prior arguments (which is probably the proper way to write this paper, at least the "position" part of it) could arguably be more of the job of a literature survey sort of paper, which NSDI does not typically accept, and would also probably involve a fair bit of rewriting. 
+
+Regardless, I think another challenge arises is the novelty of the contributions further into the paper. I think there are some nice and interesting contributions, but also I am somewhat unsure how novel the observations or technical mechanisms are in this work. There are a number of prior works that propose methodologies for leveraging superlinearity (the authors cite a number of these, papers like "Superlinear Speedup in HPC Systems: why and when?" by Ristov, "C-FOREST: Parallel shortest path planning with superlinear speedup" by Otte, etc are examples of papers that demonstrate how to architect systems with superlinear speedup. Even for the specific case studied by this submission, there is Gunther's work, which also investigated web load balancing. While different in their designs the key approaches seem similar, by collecting data about the system's architecture, observing performance trends, and reallocating work across workers based on those observations to maximize speedup in the superlinear region. I don't want to say there is nothing novel about this submission, I do see several interesting ideas (MTF heuristics), and also the paper provides concrete implementations of their ideas in the Linux kernel and in a web load balancing system (I think these may be nice sources of novelty in the paper, though I wish they were more completely described), which leads to new observations. I had some difficulty determining how new these contributions were, and there wasn't evaluation against or even qualitative comparisons with these prior works. It would be helpful if the authors could in their related work section discuss more about what was novel in their more technical contributions. It was stated this work was the first to provide a shared methodology and design that works for multiple use cases, but this didn't seem to be true, as there are many, many use cases handled by prior work in this space.
+
+I also want to mention that I felt the paper was very well-written and clear. I think the authors also have a strong knack for clearly communicating motivation and excitement in their writing. I think it would be nice to find some way to accept this paper as reading it may get the community excited about this space and lead to some good debate at the conference.
+
+I have some more detailed/minor comments below (some of these are minor but I am listing them anyway in case they are helpful for refinement - also I may repeat the same point multiple times for clarity):
+
+After reading your introduction I didn't really get the intuition behind your techniques. In fact, I really didn't get the intuition behind "why" they worked until very late in the paper, and only after reading other papers in this space. I think it would help if you could give some intuition behind your key insights in the introduction (what is the secret sauce that makes your approach work). I also think your examples earlier on don't really communicate this very clearly. 
+
+In most of your figures it's not clear if you are actually showing superlinear scalability. Can you add the f(x)=x line? Most other works I saw in this space do this. I was wondering why you didn't.
+
+"The lower envelope of the scaling profile is given by Amdahl’s law" -- is it? That lowest line is less than f(x)=x. 
+
+I am unclear how you got the lines in figures 1 and 2. simulation? models?
+
+"which makes all state updates sequential" -- a bit unclear, are you talking about all states, or the states mentioned in the first half of this sentence? I get what your point is but may need some slight rewording to clarify.
+
+"much like perpetual motion" -- it would help if you could explain these contrasting viewpoints in more detail. Section 2 ends on raising this question and then never really answers it. Are 31,32 right? if not, why not?
+
+[32] claims something specific, that there is eventually a payback region, are you disagreeing with that? In general I don't see you how you challenge 32 at all, 32 literally says superlinearity itself is real in the short term, just there's a payback region.
+
+Overall, what is actually new about your work? The observation of superlinearity isn't new obviously. The key ideas behind how to make a system superlinear aren't new either and have been outlined in 31, 32, etc. The paper applies these observations specifically to web systems but that generalization seems quite straightforward. Perhaps I am just missing the novelty, it would help if you could more clearly state your contributions somewhere in the introduction or related work
+
+It would help if you could talk about things like prefetching - actions in advance don't really violate Amdahl's law.
+
+Figure 6 -- are these actually superlinear? Please plot the f(x)=x, otherwise we can't tell. 
+(taking a workload and artificially slowing it down for lower parallelism levels isn't violating Amdahl's law for example)
+
+It may help if you could add a limitations section where you talk about downsides and shortcomings of your approach. Examples: speedup doesnt last, there is a payback region (benefits decrease and then plateau); you make assumptions about hardware, eg that workloads fit in cache sizes, which may not generalize or even be present in some deployments; your beneits may not hold up consistently across different scenarios or hardware conditions; some of your results are in fact an artifact of measurement or experimental conditions (which is fine, but need to make it clear there is arguably something "illusory" about them, this is what prior work in this space is talking about), your approaches are at least somewhat algorithm-specific and don't generalize, etc. 
+
+Your results do indeed seem to plateau in Figure 9, and in fact even start reducing into payback. It would help if you could discuss this. Perhaps this is an opportunity for you to do some new contributions, do you have ways to delay this inflection point to be further out in these scenarios?
+
+"goes against the very laws of thermodynamics" -  I can't find this statement in either of the papers you cite by Gunther. Can you either point out this statement more specifically in the papers, or perhaps double check you are citing the paper correctly? This seems like a mis-citation to me, as Gunther's paper seems to indicate that superlinear scaleup is indeed real, just it has a payback region later (something that appears to not be directly discussed in your paper, so I am unclear specifically on what you disagree with in Gunther's paper).
+
+I am confused about some of the statements in the related work section because there is a lot of work out there that already shows superlinearity is a real phenomenon and how to leverage it. "ours is the first systematic methodology" - really? I see many applications to many use cases in the related work that appear to use a similar methodology. just because you have two of those use cases in the same paper isn't itself a contribution.  
+
+Where did the rule sets on page 11 come from? They do seem a bit simple. Do your results pertain to more complex/varied rule types?
+
+I didn't quite get the motivation for removing unroutable IP addresses. How would linux dropping packets distort your results?
+
+It would be helpful if you could give more details on your algorithms too. Like section 4.1 talks about how your algorithm works, and gives pseudocode for the original algorithm you build on, but doesn't actually state your algorithm other than giving the main idea. It may be better to give the pseudocode for your algorithm. Perhaps this could be a good addition as an appendix at least.
+
+"we show some clue" - this phrasing seems a bit awkward to me, reword?
+
+"appears only if the load balancer is indeed" - this seems like a bit of an overclaim (if it is indeed true a proof would help, but I suspect you mean to make a claim a bit weaker than that, as there may be other ways to achieve faster-than-linear growth that your results/approach simply did not uncover.
+
+There are some capitalization errors in the references (e.g., "nfv", "dec", "may")
+
+Reviewer expertise
+------------------
+3. I know the material, but am not an expert
+
+Writing quality
+---------------
+4. Well-written
+
+Experimental methodology
+------------------------
+3. Average
+
+Overall merit
+-------------
+3. Weak accept
+
+
+
+Review #619C
+===========================================================================
+
+Paper summary
+-------------
+This paper discussed how to efficiently utilize per-core L1 cache when using multiple CPU cores: 1) use key-based load-balancing upstream to improve locality for each core's workload, and 2) on each core, use data structures that will proactively move frequently-accessed item into L1 cache. 
+The authors also proposed a modification to Linux kernel nftables' firewall rule matching that moves recently-matched rules to the front of list, subject to dependencies requirements. Evaluation showed it indeed lead to better performance (presumably due to better cache hit).
+
+Strengths
+---------
++ Clear and detailed theoretical discussion on locality and hash-based parallelization
++ Algorithm and implementation contribution of dependency-based firewall rule reordering to improve locality
+
+Weaknesses
+----------
+- Only one implementation (nftables), quite low performance (<10Mpps, <1Mpps per core) compared with real-world high-performance CPU network processing code in DPDK/eBPF/vPP/etc.
+- Did not improve or address limitations of RSS; RSS is not a load "balancer"
+
+Comments for authors
+--------------------
+Thank you for submitting the nice paper to NSDI! I really enjoyed the discussion about how upstream routing at the load balancer level can help downstream worker's cache locality. Having said that, if I understand correctly, most improvement comes from larger total L1 cache size -- the "superlinear" scaling would not appear superlinear if 16-core performance is compared against a hypothetical single core with 16x larger L1 cache. Thus, I will rather frame this work as "how to efficiently use many small L1 caches across distributed cores".
+
+On a single core, this paper proposed using self-adjusting data structures like Splay tree / Move-to-Front list to more explicitly improve cache locality. Self-adjusting data structure indeed should yield better cache affinity and higher performance, compare to the "implicit", CPU-managed caching, which should still works quite well for simple key-value lookup applications you mentioned (e.g., memcached, FIB cache). Therefore, existing, commonly-used setup already benefit from the phenomenon you observed: RSS is commonly-used already, and a KV database already benefit from per-core L1 cache. So, which applications do not need any data structure modification? Which applications will benefit greatly from modifying their underlying data structure to be more cache friendly? This paper identified applicationgs traversing linked lists / balanced search trees are all good candidates. I hope the authors can identify more of these application bottlenecks, possibly with other accessing patterns, and optimize several different applications beside a firewall.
+
+The core technical contribution of this paper is a self-adjusting firewall rule list that automatically hoists recently-accessed firewall rules to the front of list, subject to dependency ordering requirements. This is indeed a very nice idea. My main concern of the paper is it only implemented and tested the idea in a very slow and inefficient setting: the paper reported only <1 Mpps per core and <10 Mpps across 32 cores when the ruleset was run inside the Linux kernel. This is quite far away from the CPU's top performance when only dedicated to processing packets, and there are many other overhead caused by the kernel network stack; thus, the improvements measured is, at best, quite noisy and might not reflect the actual reason for improvement in cache locality. At this speed, the current evaluation does not really distinguish the effect between L1/L2/L3 cache. I suspect the processing time is mostly due to looping around all the rules (and the inefficient pointer-chasing in linked list, instead of a flat list), and less so due to the 5k rule set (* ~80 bytes per rule) not entirely fitting into 96kb L1 cache.
+
+I suggest the authors instead implement and evaluate the self-adjusting list in a high-performance networking stack implementation that already pushes the CPU to its edge (15-20Mpps per core), for example, using DPDK or fd.io VPP. At the very least, please consider using XDP/eBPF which runs at 7-10Mpps per core. At this speed, the effect of L1 cache miss and L2 cache access becomes more meaningful. I also suggest the authors to report CPU performance counters, including cache miss counters, to corroborate the claims about cache locality in the macroscopic experiments.
+
+Finally, I was expecting this paper to touch upon how to improve upstream locality-boosting (hash-based) load balancing. NIC RSS is simply routing traffic based on hash function, it does not really perform any "balancing" of load: it is designed to guarantee flow affinity (to e.g., avoid intra-flow reordering). However, in many applications you mentioned, this affinity is not necessary. It is possible for heavy-hitter flows or hot spots (or just luck) to cause one or two cores be overloaded while other cores sit idle. This paper should discuss the scheduling aspect of locality-sensitive load balancing: how to optimally re-arrange an imbalanced hash-based flow partition, e.g., in a work-stealing scheduler design, so the shedded load from an overloaded core still achieves good locality in other cores.
+
+Reviewer expertise
+------------------
+3. I know the material, but am not an expert
+
+Writing quality
+---------------
+4. Well-written
+
+Experimental methodology
+------------------------
+2. Poor
+
+Overall merit
+-------------
+2. Weak reject
+
+
+
+Review #619D
+===========================================================================
+
+Paper summary
+-------------
+The paper claims that superlinear scaling can be achieved with a combination of self-adjusting algorithms and locality-boosting load balancing. A self-adjusting algorithm is one that dynamically changes its behavior based on the workload it observes (for instance, a cache tries to retain the working set, and a MTF list moves frequently-accessed items to the front of the list) and a locality-boosting load balancer divides up the work between multiple cores such that each core sees high locality (e.g., by handling only requests for items from a certain subset). The paper illustrates the impact of these principles using simple case studies, and then applies them to packet classification in the Linux kernel. Experiments with a prototype implementation show impressive speedups of several orders of magnitude.
+
+Strengths
+---------
++ Thought-provoking paper
++ Very impressive results
++ Well-written (however, see below!)
+
+Weaknesses
+----------
+- Overgeneralizes its findings 
+- Could cause a lot of confusion around scalability (e.g., by suggesting that Amdahl's Law is wrong)
+- Key points have previously appeared in papers from the 1990s
+
+Comments for authors
+--------------------
+I love the second half of this paper (Section 4 and after), but I have serious concerns about the first half, and generally about the way this work is positioned. If these were two separate papers, my vote would be Accept for the second half and Strong Reject for the first. 
+
+Let's start with the strong points. The second half of the paper has a very nice design for a packet classifier that achieves impressive speedup on multicore, using a smart application of MRF lists. This is great! As far as I can see, this is a smart, very practical idea that could yield performance benefits immediately. The underlying principles of the algorithm (self-adjusting algorithm plus locality-boosting load balancing) are also interesting and could have separate applications. This is a nice trick the paper taught me that I can add to my repertoire for future system-building. So far, so excellent!
+
+If only the paper didn't have Sections 1-3! This part of the paper can easily be read as saying that Amdahl's Law is wrong and that superlinear scalability is in fact possible. But this is wrong, and the (very subtle) reasons have been debated in the literature for quite some time. For instance, let's have a look at the algorithm in Section 3.3, which parallelizes MTF lists. This is a classic case of what [41] calls 'the sequential algorithm [being] constrainted to use an inferior method' - by 'parallelizing' MTF lists in this way, we actually end up with a larger and larger number of smaller and smaller lists, and the equivalent of a hash table for choosing between the lists. In the limit, and given enough memory, all we have is a hashtable, so we have moved from O(N) to O(1) lookup times. But this is true on a single core just as much as it is true on multiple cores! We could have had better performance on a single core by using a hash table instead of a list from the very beginning, so the 'superlinear speedup' actually comes from slowly phasing out a bad algorithm in favor of a better one. Absurdly, the paper even shows that at the end of Section 3.4, as evidence that 'superlinear speedups' can be achieved on a single CPU core! This is an incredibly confusing way of describing what is actually happening here - sure, we can have arbitrarily high speedups by comparing bad algorithms to better ones, but that's not very useful. Besides, the generic argument for Amdahl's Law is that, if superlinear speedup were possible, we could get a speedup on a single core as well, simply by simulating multiple cores on that core - and this argument directly applies here!
+
+The other case study (caching, in Section 2.2) contains a different but similarly serious mistake. [41] calls this 'superunitary speedup due to increasing cache size'. It is true that N cores - each with a local, fixed-size cache - will be able to process this workload more than N times faster than a single core with the same cache size - but not N times faster than a single core with a cache that is N times that size! So the real speedup comes from having a larger cache (and, it is true, from careful load balancing to use these caches effectively). I guess part of the problem here is that the paper muddies the waters between 'scalability' (a fundamental property of an algorithm) and 'speedup' (a comparison between two concrete implementations). Amdahl's Law is really about the former; it doesn't consider constants. And the speedup that is being observed here would appear to be a constant-size effect: as long as the working set doesn't fit into the cache (aggregated over the several cores), we will get massive speedups from adding more cache space, but once the working set _does_ fit into the cache, the benefits will be much smaller. The figures in the paper (especially Figures 2 and 6) obscure this by terminating the horizontal axis quite early; if the axis were continued far enough, my guess is that the (sub)linear scaling would reappear. I think what's really happening here is not that the algorithm somehow has superlinear 'scalability', but rather that it was massively slowed down at the beginning, due to resource limitations, and that this slowdown disappears once more resources (cache space) are added, allowing the algorithm to resume its presumably linear, 'real' scaling behavior.
+
+All this is still interesting, and I will say that the paper made me think really carefully about scalability, and helped me understand some of the subtle distinctions, which I am grateful for. But the question is whether I could, or should, have known all this already from the literature - [41] is from 1990, so more than 30 years old! Yes, I feel that the paper gave me a better understanding of some of the subtleties of scalability, but a) this is partly because I hadn't read some earlier papers I really should have read, and b) the actual lessons I think I learned are the exact opposite of what the paper hypothesizes - I still think Amdahl's Law is correct, I just appreciate the subtle impact of caches and efficient data structures and algorithms a lot more.
+
+So where does this leave us? I worry that, if the paper is accepted in its present form, it could cause a LOT of confusion. Yes, the firewall is nice, and if the paper had been entirely about that, it would have been an easy Accept. But do we really want generations of students waving this paper in front of their instructors and arguing that Amdahl's Law is wrong? I just don't think that the paper has shown this, and I don't think it is true either! The subtleties of scalability have been well-understood for decades (see, e.g., [41]), so the first half of this paper, as currently written, actually feels a step in the wrong direction. My recommendation would be to remove the confusing claims about 'scaling' and Amdahl's Law, and to instead focus on the firewall and the principles (self-adjusting data structures and locality-aware load balancing) that give it its impressive speedup.
+
+Reviewer expertise
+------------------
+4. I know a lot about this area
+
+Writing quality
+---------------
+4. Well-written
+
+Experimental methodology
+------------------------
+4. Good
+
+Overall merit
+-------------
+1. Reject
+
+
+
+Review #619E
+===========================================================================
+
+Paper summary
+-------------
+This paper characterizes a distributed system design pattern for horizontal scaling. The core idea is to combine a locality-boosting load balancer with self-adjusting data structures in worker nodes that take advantage of the locality. With the proper choice of load balancer and data structure, adding a worker node not only reduces the number of tasks that the rest of the nodes need to process, but also increases the locality in each node's task stream, allowing them to process each task quicker. The paper describes this phenomenon as "superlinear scaling" in terms of Amdahl's law. It provides background on Amdahl's law, locality-boosting load balancing, and self-adjusting data structures; presents a simulation-based analysis demonstrating the phenomena with several data structures; and finally refactors Linux's "nftables" firewall according to the proposed design pattern and benchmarks the resulting performance improvement.
+
+Strengths
+---------
++ Well written and easy to read.
++ Clearly summarizes an architectural principle / optimization that is worth considering in the design of performance oriented distributed systems.
+
+Weaknesses
+----------
+- Evaulation could do a better job of analyzing the generality of the proposed approach.
+
+Comments for authors
+--------------------
+I enjoyed reading this paper. It flowed well, was thought provoking, and did a good job of describing what seems like a useful design pattern. Although I liked the paper overall, I felt that the evaluation and case study did not go quite far enough in measuring the approach's generality. 
+
+- All of the applications evaluated in the paper seem to be fully parallelizable, i.e., `s = 0` in the Amdahl's law equation. But one of the main points of Amdahl's law is that s is typically _not_ 0, so it felt like the evaluation should have at least one experiment that varies s.
+
+- The design pattern calls for a "locality-boosting load balancer", which makes it seem like a general class of load balancing policies. However, the only locality boosting load balancer that is evaluated is static hashing. Is that the only option in practice?
+
+- nftables seems to use a simple data structure that can be optimized in many ways to significantly improve performance (for example, in the paper "Securing Linux with a Faster and Scalable IPtables"). Using nftables as the case study made it hard for me to extrapolate the extent to which the proposed design pattern would benefit systems with more optimized data structures. 
+
+- In the "Hadoop Superlinear Scalability" paper, the authors describe a "payback region" where, after observing superlinear scaling up to a certain point, the performance of the system started to degrade with the addition of more nodes. Does the proposed design pattern ever result in a payback region? Is 32 threads / cores enough to tell?
+
+Reviewer expertise
+------------------
+3. I know the material, but am not an expert
+
+Writing quality
+---------------
+4. Well-written
+
+Experimental methodology
+------------------------
+3. Average
+
+Overall merit
+-------------
+3. Weak accept
+
+
+
+Review #619F
+===========================================================================
+
+Paper summary
+-------------
+Targets achieving super linear scaling in a systematic way in contrast to the commonly observed sublinear scaling or diminishing results with parallelization; amdahl's law shows why no code can parallelize perfectly.
+Claims that it is the *high data locality* in input stream that cause super linear scaling and that dynamic, self-adjusting algorithms which can take advantage of this can systematically achieve this.
+Explains their intuition with load balancing policies like partitioning for systems like packet classification systems and show 70$\times$ higher throughput relative to the predicted sublinear scaling.
+Evaluate these ideas to existing Linux packet classifier on a real deployment with the use a hash-based load balancer, and show 5--25$\times$ higher throughput.
+
+Strengths
+---------
++ Very interesting analytical model for evaluating super linear scaling and contrasting it with Amdahl's law
++ Impressive performance results and
+
+Weaknesses
+----------
+Weak generalization of their strong claims:
++ Applies only to read-only workloads
++ Although they say caching is a subset of the systems discussed, caches support reads and writes while linux packet classification and their evaluation mainly focuses on data structures that follow write-once and support read-only workloads 
++ They have a single simple (niche) use case: show results for Move-To-Front lists or Move-Recursively-Front lists; Caches use more complex data structures with more serial code (eviction algorithms) and the authors mention that the results apply without presenting enough evidence for the same.
+
+Weak evaluation:
++ I think their evaluation assumes that the entire workload is known -- What is the window size used for delaying incoming traffic in order to improve spatial and temporal locality? Finding an ideal load balancing algorithm is NP-hard.
++ It is unclear if different partitioning schemes would produce similar super linear scaling with the same self-adjusting data structures.
++ They underline that the performance benefits are mainly from comparison against a single-core, single-threaded implementation and that super linear scaling does not show if they compare against a baseline with multiple threads (like two cores)
++ It is unclear if they perhaps re-ordered the input stream even with a single CPU core, would they observe the super linear scaling? And achieving perfect separation (Figure-b) is rather impossible and approximation algorithms that achieve close-to perfect separation have polynomial time complexity where I assume that the sequential code will become a bottleneck.
+
+Overall, the practicality of the results presented is unclear while the paper claims that as their main contribution
+
+Novelty is not one of their goals which I believe is a concern.
+
+Comments for authors
+--------------------
+Please find my detailed comments below:
+
+Figure-1: What is the workload, what is the system, its deployment setting, and how are you observing super linear scaling from increased locality in reference?
+- If the purpose of Figure-1 is to explain linear, sub-linear, and super-linear scaling (with simulated results) then it is not adding much to the existing text that already explains it really well. 
+- I would prefer seeing a microbenchmark result with a real system (with small but non-zero sequential component), synthetic or real workload traces, with increasing amount of locality of reference, to show that beyond a certain point super linear scaling is possible!
+- With simulation result, citing it at *In general, the greater the sequential portion compared to the parallelizable fraction of the code, the more the performance is lost compared to an ideal linear scaling*, seems misleading.
+
+"Cache bound systems on larger machines": Load balancing with proper worker implementation; but what is the bottleneck in the default system that does not achieve super linear scaling and how does the locality-enhancing system implementation alleviate this bottleneck?
+
+Application: Linux firewall implementation; but since the motivation is based on distributed caching systems why aren't the benefits of load balancing and self-adjusting algorithms shown in the context of distributed caches?
+
+Reviewer expertise
+------------------
+3. I know the material, but am not an expert
+
+Writing quality
+---------------
+2. Needs improvement
+
+Experimental methodology
+------------------------
+3. Average
+
+Overall merit
+-------------
+2. Weak reject
