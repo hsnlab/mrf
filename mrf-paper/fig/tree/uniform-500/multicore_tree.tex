@@ -4,8 +4,8 @@
   \begin{tikzpicture}
     \begin{axis}[
       width=165pt,
-      height=142pt,
-      xlabel={number of CPU cores},
+      height=120pt,
+      xlabel={\#CPU cores},
       x label style={at={(0.5,0.04)}},
       ylabel={Speedup},
       y label style={at={(0.1,0.5)}},
@@ -24,7 +24,7 @@
       % no markers
       ]
       % use TeX as calculator:
-      \addplot[SelfAdjustingSimMark,mark size=2pt] table[x=thread,y=speedup] {fig/tree/uniform-500/multicore_wsplay_modulo_uniform.txt};
+      \addplot[SelfAdjustingSimMark,mark size=2pt] table[x=thread,y=speedup,each nth point={3}] {fig/tree/uniform-500/multicore_wsplay_modulo_uniform.txt};
       % \addlegendentry{Splay-tree/Local LB}
       \addplot[StaticSimMark,mark size=3pt] table[x=thread,y=speedup,each nth point={3}] {fig/tree/uniform-500/multicore_wbtree_modulo_uniform.txt};
       % \addlegendentry{B-tree/Local LB}

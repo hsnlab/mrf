@@ -18,8 +18,8 @@
   \begin{tikzpicture}
     \begin{axis}[
       width=165pt,
-      height=142pt,
-      xlabel={number of CPU cores},
+      height=120pt,
+      xlabel={\#CPU cores},
       x label style={at={(0.5,0.04)}},
       ylabel={Speedup},
       % xlabel near ticks,
@@ -38,9 +38,9 @@
       },
       % no markers
       ]
-      \addplot[SelfAdjustingSimMark,mark size=2pt] table[x=thread,y=speedup]{fig/cache/uniform-50k-2/mcore_cache_modulo_uniform.txt};
+      \addplot[SelfAdjustingSimMark,mark size=2pt] table[x=thread,y=speedup,each nth point={3}]{fig/cache/uniform-50k-2/mcore_cache_modulo_uniform.txt};
       % \addlegendentry{Local LB}
-      \addplot[SelfAdjustingSimMark,mark=pentagon*,mark size=3pt] table[x=thread,y=speedup,each nth point={2}]{fig/cache/uniform-50k-2/mcore_cache_roundrobin_uniform.txt};
+      \addplot[SelfAdjustingSimMark,mark=pentagon*,mark size=3pt,each nth point={3}] table[x=thread,y=speedup,each nth point={2}]{fig/cache/uniform-50k-2/mcore_cache_roundrobin_uniform.txt};
       % \addlegendentry{Non-local LB}
       % \addplot[domain=1:25,black,dashed]{x};
       % \addlegendentry{Linear scaling}

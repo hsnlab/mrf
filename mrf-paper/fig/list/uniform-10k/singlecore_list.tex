@@ -4,10 +4,10 @@
   \begin{tikzpicture}
     \begin{axis}[
       width=165pt,
-      height=142pt,
-      xlabel={number of threads},
+      height=120pt,
+      xlabel={\#threads},
       x label style={at={(0.5,0.04)}},
-      ylabel={Goodput [million req/sec]},
+      ylabel={Goodput [Mrps]},
       % xlabel near ticks,
       % ylabel near ticks,
       y label style={at={(0.1,0.5)}},
@@ -23,7 +23,7 @@
       },
       % no markers
       ]
-      \addplot[SelfAdjustingSimMark,mark size=2pt] table[
+      \addplot[SelfAdjustingSimMark,mark size=2pt,each nth point={3}] table[
       x=thread,
       y expr=\thisrowno{4}/1000000
       ]{fig/list/uniform-10/singlecore_mtf_modulo_uniform.txt};

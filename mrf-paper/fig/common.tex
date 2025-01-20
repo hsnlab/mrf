@@ -7,7 +7,7 @@
     ylabel near ticks,
     ylabel shift = -2pt,
     width=137pt,
-    height=170pt,
+    height=140pt,
     legend pos = north west,
     legend cell align = left,
     legend image post style = {scale = .9},
@@ -29,12 +29,13 @@
     minor tick length = 1,
     label style = {font = \footnotesize},
     ylabel = {Throughput [Mpps]},
-    xlabel = {number of CPU cores},
+    xlabel = {\#CPU cores},
     xmin = 1, xmax = 32,
     ymin = 0,
   },
   SpeedupPlot/.style = {
     RatePlot,
+    height=140pt,
     ylabel={Speedup},
   },
   ClassBenchGroupPlot/.style = {
@@ -44,10 +45,12 @@
   },
   ClassBenchRatePlot/.style = {
     RatePlot,
+    height=140pt,
     ylabel=,
   },
   ClassBenchSpeedupPlot/.style = {
     SpeedupPlot,
+    height=140pt,
     ylabel=,
     xlabel=,
     xticklabels={},

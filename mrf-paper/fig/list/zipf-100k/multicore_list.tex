@@ -4,8 +4,8 @@
   \begin{tikzpicture}
     \begin{axis}[
       width=165pt,
-      height=142pt,
-      xlabel={number of CPU cores},
+      height=120pt,
+      xlabel={\#CPU cores},
       x label style={at={(0.5,0.04)}},
       ylabel={Speedup},
       % xlabel near ticks,
@@ -28,7 +28,7 @@
       % no markers
       ]
       % use TeX as calculator:
-      \addplot[SelfAdjustingSimMark,mark size=2pt] table[x=thread,y=speedup] {fig/list/zipf-100k/multicore_mtf_modulo_zipf.txt};
+      \addplot[SelfAdjustingSimMark,mark size=2pt] table[x=thread,y=speedup,each nth point={3}] {fig/list/zipf-100k/multicore_mtf_modulo_zipf.txt};
       % \addlegendentry{Move-to-front/Local LB}
       \addplot[StaticSimMark,mark size=3pt] table[x=thread,y=speedup,each nth point={3}] {fig/list/zipf-100k/multicore_linkedlist_modulo_zipf.txt};
       % \addlegendentry{Linked-list/Local LB}
