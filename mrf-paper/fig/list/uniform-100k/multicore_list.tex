@@ -24,7 +24,7 @@
       % no markers
       ]
       % use TeX as calculator:
-      \addplot[SelfAdjustingSimMark,mark size=2pt] table[x=thread,y=speedup] {fig/list/uniform-100k/multicore_mtf_modulo_uniform.txt};
+      \addplot[SelfAdjustingSimMark,mark size=2pt] table[x=thread,y=speedup,each nth point={3}] {fig/list/uniform-100k/multicore_mtf_modulo_uniform.txt};
       % \addlegendentry{Move-to-front/Local LB}
       \addplot[StaticSimMark,mark size=3pt] table[x=thread,y=speedup,each nth point={3}] {fig/list/uniform-100k/multicore_linkedlist_modulo_uniform.txt};
       % \addlegendentry{Linked-list/Local LB}

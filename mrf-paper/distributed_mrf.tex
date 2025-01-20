@@ -1,14 +1,13 @@
-%\documentclass{hotnets22}
-% \documentclass[sigconf,10pt]{acmart}
-\documentclass[letterpaper,twocolumn,10pt]{article}
-\usepackage{usenix-2020-09}
+\documentclass[sigconf,10pt]{acmart}
+%\documentclass[letterpaper,twocolumn,10pt]{article}
+% \usepackage{usenix-2020-09}
 \usepackage{amsmath}
 \usepackage{amsthm}
 
 \usepackage{xfrac}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
-\usepackage{times}  
+% \usepackage{times}  
 \usepackage{hyperref}
 % \usepackage{subfig}
 \usepackage{tikz}
@@ -33,24 +32,23 @@
 
 \newcolumntype{s}{>{\hsize=.3\hsize\linewidth=\hsize}X}
 \newcolumntype{D}{>{\hsize=.3\hsize\linewidth=\hsize}X}
-
 \newcommand{\wdImg}{\dimexpr \linewidth-2\tabcolsep} %width of the image
 
 \hypersetup{pdfstartview=FitH,pdfpagelayout=SinglePage}
 
-\setlength\paperheight {11in}
-\setlength\paperwidth {8.5in}
-\setlength{\textwidth}{7in}
-\setlength{\textheight}{9.25in}
-\setlength{\oddsidemargin}{-.25in}
-\setlength{\evensidemargin}{-.25in}
+% \setlength\paperheight {11in}
+% \setlength\paperwidth {8.5in}
+% \setlength{\textwidth}{7in}
+% \setlength{\textheight}{9.25in}
+% \setlength{\oddsidemargin}{-.25in}
+% \setlength{\evensidemargin}{-.25in}
 
 \newcommand{\rg}[1]{\textcolor{blue}{(\textbf{GR:} #1)}}
 \newcommand{\vk}[1]{\textcolor{green}{(\textbf{VA:} #1)}}
 
-\newtheorem{theorem}{Theorem}
-\newtheorem{definition}{Definition}
-\newtheorem{lemma}{Lemma}
+% \newtheorem{theorem}{Theorem}
+% \newtheorem{definition}{Definition}
+% \newtheorem{lemma}{Lemma}
 \newtheorem{observation}{Observation}
 
 % we have a big fig
@@ -63,6 +61,34 @@
 % \pagestyle{plain}
 % \settopmatter{printfolios=true}
 
+%% SIGCOMM
+% Copyright
+\renewcommand\footnotetextcopyrightpermission[1]{} % removes footnote with conference info
+\setcopyright{none}
+%\setcopyright{acmcopyright}
+%\setcopyright{acmlicensed}
+%\setcopyright{rightsretained}
+%\setcopyright{usgov}
+%\setcopyright{usgovmixed}
+%\setcopyright{cagov}
+%\setcopyright{cagovmixed}
+
+\settopmatter{printacmref=false, printccs=false, printfolios=true}
+
+% DOI
+\acmDOI{}
+
+% ISBN
+\acmISBN{}
+
+%Conference
+%\acmConference[Submitted for review to SIGCOMM]{}
+%\acmYear{2018}
+%\copyrightyear{}
+
+%% {} with no args suppresses printing of the price
+\acmPrice{}
+
 \begin{document}
 
 % \conferenceinfo{HotNets 2022} {}
@@ -72,18 +98,16 @@
 
 %%%%%%%%%%%% THIS IS WHERE WE PUT IN THE TITLE AND AUTHORS %%%%%%%%%%%%
 
-\title{Beyond Amdahl's Law: Achieving Superlinear Scaling with\\Distributed Self-adjusting Systems}
+\title{More Bang for the Buck: Superlinear Scaling with Distributed Self-adjusting Systems}
 
 \author{Paper \#619, 12 + 7 pages}
 % \author{Jonas Köppeler, Maciej Pacut, Tamás Lévai, Vamsi Addanki, Stefan Schmid, Gábor Rétvári}
 
-\maketitle
-
 \begin{abstract}
-  Conventional wisdom suggests that doubling the number of workers in a distributed system can result in at most 2x performance improvement, but most often less if the system does not provide perfect parallelism.  This common wisdom is codified by Amdahl's famous scaling law, asserting sublinear scaling and diminishing returns for parallelization. Curiously, faster-than-linear (superlinear) scaling has also been observed in several real systems, but most reports were dismissed as use-case specific artifacts, elusive interplays between memory and CPU, or mere measurement errors.
-
-  In this paper, we argue that superlinear scaling is not just an engineering curiosity, in that distributed systems can be systematically architected to achieve it. Our insight is that dispatching jobs to parallel workers so that the locality of reference in the per-worker input streams increases, and using self-adjusting algorithms so that workers can take advantage of the higher locality to dynamically improve their own performance, together yield superlinear scaling. Using various load balancing policies and self-adjusting algorithms from the literature, we report 100--3300x speedup when scaling distributed list lookup and tree search workloads to 48 CPU cores, up to 70x beyond what is predicted by Amdahl's law. By implementing an earlier self-adjusting packet classifier algorithm in the Linux kernel and combining it with a hash-based load balancer, we obtain 800x speedup for synthetic and 220x speedup for realistic firewall traces on 32 cores, resulting 5--25x times raw performance improvement compared to the default Linux packet classifier.
+  Conventional wisdom suggests that a linear increase of the number of workers in a distributed system can result in at most a linear performance improvement.  In this paper we show that distributed systems can be \emph{systematically} architected to achieve faster-than-linear (superlinear) scaling. Our insight is that dispatching jobs to parallel workers so that the locality of reference in the workers' input increases, and implementing the workers with a self-adjusting algorithm to take advantage of the higher locality, jointly yield superlinear scaling. We demonstrate the general applicability of our methodology in extensive simulations: scaling textbook self-adjusting algorithms we obtain 100--3,300x speedup using only 48 CPU cores (up to 70x beyond linear scaling). Then, we present two case studies. Using our architectural blueprint to scale a Memcached+PostgreSQL storage system we attain 35x speedup with 15 threads (2.3x above linear). Then we re-engineer the default Linux packet classifier to self-adjust with load, obtaining 800x speedup on synthetic traces and 220x speedup on real firewall traces with 32 CPU cores (5--25x times performance improvement compared to the vanilla Linux kernel).
 \end{abstract}
+
+\maketitle
 
 % \tableofcontents
 
@@ -95,7 +119,9 @@
 
 \input{architecture.tex}
 
-\input{case-study.tex}
+\input{case-study-1.tex}
+
+\input{case-study-2.tex}
 
 \input{related.tex}
 
@@ -112,3 +138,8 @@
 \input{appendix.tex}
 
 \end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

@@ -1,0 +1,114 @@
+%\documentclass{hotnets22}
+% \documentclass[sigconf,10pt]{acmart}
+\documentclass[letterpaper,twocolumn,10pt]{article}
+\usepackage{usenix-2020-09}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\usepackage{xfrac}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{times}  
+\usepackage{hyperref}
+% \usepackage{subfig}
+\usepackage{tikz}
+\usetikzlibrary{math}
+\usepackage{pgfplots}
+\usetikzlibrary{pgfplots.groupplots}
+\usepackage{pgfplotstable}
+\usepackage[subtle]{savetrees}
+
+% axis style, ticks, etc
+\pgfplotsset{every axis/.append style={
+                    label style={font=\footnotesize},
+                    tick label style={font=\footnotesize}  
+                    }}
+
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{xspace}
+
+\newcolumntype{s}{>{\hsize=.3\hsize\linewidth=\hsize}X}
+\newcolumntype{D}{>{\hsize=.3\hsize\linewidth=\hsize}X}
+
+\newcommand{\wdImg}{\dimexpr \linewidth-2\tabcolsep} %width of the image
+
+\hypersetup{pdfstartview=FitH,pdfpagelayout=SinglePage}
+
+\setlength\paperheight {11in}
+\setlength\paperwidth {8.5in}
+\setlength{\textwidth}{7in}
+\setlength{\textheight}{9.25in}
+\setlength{\oddsidemargin}{-.25in}
+\setlength{\evensidemargin}{-.25in}
+
+\newcommand{\rg}[1]{\textcolor{blue}{(\textbf{GR:} #1)}}
+\newcommand{\vk}[1]{\textcolor{green}{(\textbf{VA:} #1)}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{observation}{Observation}
+
+% we have a big fig
+\renewcommand{\floatpagefraction}{.8}%
+% \renewcommand{\topfraction}{.8}
+% \renewcommand{\bottomfraction}{.8}
+\newcommand{\nftables}{\texttt{nftables}\xspace} 
+
+% TODO: remove for the CR!
+% \pagestyle{plain}
+% \settopmatter{printfolios=true}
+
+\begin{document}
+
+% \conferenceinfo{HotNets 2022} {}
+% \CopyrightYear{2022}
+% \crdata{X}
+% \date{}
+
+%%%%%%%%%%%% THIS IS WHERE WE PUT IN THE TITLE AND AUTHORS %%%%%%%%%%%%
+
+\title{Beyond Amdahl's Law: Achieving Superlinear Scaling with\\Distributed Self-adjusting Systems}
+
+\author{Paper \#619, 12 + 7 pages}
+% \author{Jonas Köppeler, Maciej Pacut, Tamás Lévai, Vamsi Addanki, Stefan Schmid, Gábor Rétvári}
+
+\maketitle
+
+\begin{abstract}
+  Conventional wisdom suggests that doubling the number of workers in a distributed system can result in at most 2x performance improvement, but most often less if the system does not provide perfect parallelism.  This common wisdom is codified by Amdahl's famous scaling law, asserting sublinear scaling and diminishing returns for parallelization. Curiously, faster-than-linear (superlinear) scaling has also been observed in several real systems, but most reports were dismissed as use-case specific artifacts, elusive interplays between memory and CPU, or mere measurement errors.
+
+  In this paper, we argue that superlinear scaling is not just an engineering curiosity, in that distributed systems can be systematically architected to achieve it. Our insight is that dispatching jobs to parallel workers so that the locality of reference in the per-worker input streams increases, and using self-adjusting algorithms so that workers can take advantage of the higher locality to dynamically improve their own performance, together yield superlinear scaling. Using various load balancing policies and self-adjusting algorithms from the literature, we report 100--3300x speedup when scaling distributed list lookup and tree search workloads to 48 CPU cores, up to 70x beyond what is predicted by Amdahl's law. By implementing an earlier self-adjusting packet classifier algorithm in the Linux kernel and combining it with a hash-based load balancer, we obtain 800x speedup for synthetic and 220x speedup for realistic firewall traces on 32 cores, resulting 5--25x times raw performance improvement compared to the default Linux packet classifier.
+\end{abstract}
+
+% \tableofcontents
+
+% a unique combination of \emph{locality-boosting load balancing} to spread load among workers implemented using \emph{self-adjusting data structures}.
+  
+\input{intro.tex}
+
+\input{background.tex}
+
+\input{architecture.tex}
+
+\input{case-study.tex}
+
+\input{related.tex}
+
+\input{conclusions.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \input{ack.tex}
+
+\bibliographystyle{abbrv} 
+\begin{small}
+\bibliography{mrf}
+\end{small}
+
+\input{appendix.tex}
+
+\end{document}

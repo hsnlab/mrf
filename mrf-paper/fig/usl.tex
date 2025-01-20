@@ -1,8 +1,8 @@
 \begin{small}
   \begin{tikzpicture}[remember picture]
     \begin{axis}[
-      width=250pt,
-      height=170pt,
+      width=240pt,
+      height=160pt,
       xlabel={\#threads},
       ylabel={Speedup},
       xlabel near ticks,
@@ -28,9 +28,9 @@
       \addlegendentry{Amdahl's law}
 
       \addplot[domain=1:25,black,solid]{1/(0.01 + (1-0.01)/x^2)};
-      \addlegendentry{Proposed scaling law}
+      \addlegendentry{Superlinear scaling}
 
-      \coordinate (insetPosition) at (rel axis cs:.97,0.25);
+      \coordinate (insetPosition) at (rel axis cs:.98,0.23);
       % \addplot[domain=0:15,black,loosely dashed]{1/(0.4 + (1-0.4)/x)};
       % \addlegendentry{Amdahl's law ($\delta=0.4$)}
 

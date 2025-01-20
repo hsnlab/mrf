@@ -1,85 +1,35 @@
 % !TEX ROOT = ./distributed_mrf.tex
 \section{Background}\label{sec:background}
 
-First we review Amdahl's scaling law and then we show a typical pattern that seems to defy it: distributed caching. In the following, we will use the terms ``distributed'' and ``parallel'' interchangeably to connote that a system is scaled to run on multiple independent compute threads (``workers''), e.g., distributed to separate nodes, scaled to parallel CPUs located inside the same node, run in multiple datacenters, etc.
+\begin{figure}[t]
+  \centering
+  \begin{small}
+    \input{fig/usl.tex}
+  \end{small}
+  \caption{Linear scaling, Amdahl's law and superlinear scaling ($s=0.01$). The inset shows the asymptotics.}
+    \label{fig:amdahl}
+\end{figure}
 
-\subsection{Amdahl's law}
-\label{sec:amdahl-law}
+There is an extensive background on different scaling laws characterizing systems performance as the amount of computing and storage capacity available to the system is increase. In the following, we will use the terms ``distributed'' and ``parallel'' interchangeably to connote that a system is scaled to run on multiple independent compute threads (``workers''), e.g., distributed to separate nodes, scaled to parallel CPUs located inside the same node, run in multiple datacenters, etc.
 
-A cornerstone result in parallel computing, Amdahl's law \cite{10.1145/1465482.1465560} establishes a firm limit on the performance gain one can obtain by distributing a computation task over multiple processors. Given a partially parallel program, denote the fraction of execution time spent % by a single-threaded execution
-% by the processor 
-in the sequential part of the code by $s$, and the parallel fraction by $(1-s)$. Here, some code is ``sequential'' if it cannot benefit from the improvement of the parallel computing resources, like single-threaded code, critical sections guarded by exclusion locks, etc. Denote by $T(k)$ the runtime (in seconds) of the program when executed on $k$ processors, and let $S(k)=\frac{T(1)}{T(k)}$ denote the performance improvement relative to a single-threaded execution (i.e., the \emph{speedup}). Then, the following relation holds (see Fig.~\ref{fig:amdahl}):
+A cornerstone result in parallel computing, Amdahl's law \cite{10.1145/1465482.1465560} establishes a firm limit on the performance gain one can obtain by distributing a computation task over multiple processors. Given a partially parallel program, denote the fraction of execution time spent in the sequential part of the code by $s$, and the parallel fraction by $(1-s)$. Here, some code is ``sequential'' if it cannot benefit from the improvement of the parallel computing resources, like single-threaded code, critical sections guarded by exclusion locks, etc. Denote by $T(k)$ the runtime (in seconds) of the program when executed on $k$ processors, and let $S(k)=\frac{T(1)}{T(k)}$ denote the performance improvement relative to a single-threaded execution (i.e., the \emph{speedup}). Then, the following holds (see Fig.~\ref{fig:amdahl}):
 \begin{equation}\label{eq:amdahl}
 S(k) = \frac{T(1)}{T(k)} = \frac{1}{s + \frac{1-s}{k}} \enspace .
 \end{equation}
 
-Here, the term $\frac{1-s}{k}$ establishes that the perfectly parallel part of the program executes $k$ times faster on $k$ processors than on a single core. By Amdahl's law, \emph{(i)} no code can scale faster than linear (i.e., $\frac{d S(k)}{d k} \le 1$, with equality exactly when $s=0$), \emph{(ii)} throwing additional workers on a computation task yields diminishing returns ($\frac{d S(k)}{d k}$ is monotonically decreasing in $k$) and \emph{(iii)} the asymptotics is limited by the sequential part only ($\lim_{k\to \infty}S(k) = \frac1{s}$). 
+Here, $\frac{1-s}{k}$ establishes that the perfectly parallel part of the program executes $k$ times faster on $k$ processors than on a single core. By Amdahl's law, \emph{(i)} no code can scale faster than linear (i.e., $\frac{d S(k)}{d k} \le 1$, with equality exactly when $s=0$), \emph{(ii)} throwing additional workers on a computation task yields diminishing returns ($\frac{d S(k)}{d k}$ is monotonically decreasing in $k$) and \emph{(iii)} the asymptotics is limited by the sequential part only ($\lim_{k\to \infty}S(k) = \frac1{s}$). For different applications and extensions of this Amdahl's law, see \cite{4563876, 6280307,1580395,406581,6163449, 10.5555/1951599}.
 
-% \subsection{Superlinear speedup}
-% \label{sec:backgound-superlinear}
+Curiously, faster-than-linear scaling is often observed, e.g., in database systems \cite{scalability-analyzed, 10.5555/1012889.1012894}, distributed storage systems \cite{271208, dobb-2, icsoft20}, SDN analytics \cite{sdn-analytitcs}, high-performance computing applications \cite{556383, 7733347, 6483679}, multi-robot systems \cite{10.1007/978-3-319-77610-1}, information retrieval systems \cite{dobb-1, dobb-2}, and large-scale network simulations \cite{10.1145/3627703.3629574} (see full taxonomies in \cite{7733347, 80148}). % (Note that in the majority of the literature any function growing faster than $f(x) = x$ is considered ``superlinear'', despite that, e.g., $f(x) = 3x$ is, mathematically, linear. Some authors distinguish these functions using the term ``superunitary'' \cite{80148}. In line with the literature we will use the former terminology below.)
 
-% The uniting idea of both parallel computing and multi-robot systems is that having multi-
-% ple processors or robots working on a task decreases the processing time. Typically we desire
-% a linear speedup, that is, doubling the number of processing units halves the execution time.
-% Sometimes superlinear scalability is observed in parallel computing systems and more fre-
-% quently in multi-robot and swarm systems. Superlinearity means each individual processing
-% unit gets more efficient by increasing the system size—a desired and rather counterintuitive
-% phenomenon.
+One way to reconcile the empirical observations of superlinear scaling with general scaling laws is the scaled size model \cite{556383}. Indeed, critical to Amdahl's law is the assumption that the size of the individual sub-problems assigned to workers remains constant as we scale the underlying system \cite{10.1145/42411.42415}. Under this \emph{fixed size} assumption \cite{556383}, faster-than-linear scaling is impossible \cite{10.1016/0167-8191(86)90024-4}. However, when this assumption fails, say, when the per-worker problem size gets progressively smaller or execution gets gradually faster as we add more parallel workers (\emph{scaled size} model), superlinear scaling is often observed empirically \cite{scalability-analyzed, sdn-analytitcs, 6483679, 10.1007/978-3-319-77610-1, dobb-1, dobb-2}. What is missing currently is a \emph{generic design methodology to deliberately engineer distributed systems to adhere to this scaled size model}. Our main contribution in this paper is a systems architecture to achieve that. The power of the proposed \emph{distributed self-adjusting system architecture} is \emph{not} that it shows that superlinear scaling exists (this has been known for a while) nor that would defeat Amdahl's law (it does not, see \cite{80148, gunther-hotsos, 10.1016/0167-8191(86)90024-4,10.1145/2773212.2789974}. It is also a stated \emph{nongoal} to create the most efficient possible implementations (e.g., our Linux classifier will be easily surpassed by a highly optimized DPDK based implementation \cite{rte-acl} for understandable reasons \cite{10.1145/3452296.3472888}). Rather, our main contribution is that the distributed self-adjusting system architecture provides a simple mental model that allows us to re-engineer several commonly used distributed systems with surprisingly little effort to attain real and tangible performance improvement, often in the range of several orders of magnitude as evidenced by our case studies.
 
-% As superlinear speedups seem special, they were frequently discussed and studied [2, 3]. There
-% even exists a proof showing the impossibility of superlinear speedups but it assumes fixed problem
-% size [4]. Superlinear speedups are rather infrequently observed in parallel computing (e.g., cache-
-% size effects [5]) compared to rather frequent observations in multi-robot and swarm systems (e.g.,
-% inherently collaborative tasks [6]). When observed, superlinearity is often a discrete effect, such
-% as a workpackage happening to fit into the processors cache [5] or a robot group being able to
-% form a bucket brigade [7, 8]. Superlinear scalability has much potential that should be enough
-% motivation to investigate it across different domains and to understand how one can provoke it.
-
-% Many authors reported the existence of a superlinear
-% speedup, but most of them only mentioned it as a side effect
-% [4]. Besides reporting a superlinearity, other researchers briefly
-% presented that the reason for achieving a superlinear speedup
-% is because of the greater amount of cache memory in the
-% parallel execution compared to the sequential [5].
-
-\subsection{Distributed caching defies Amdahl's law}
-\label{sec:backgound-dist-cache}
-
-Critical to Amdahl's law is the assumption that the size of the individual sub-problems assigned to the workers remains constant as we scale the system (see also ``Gustafson's law'' \cite{10.1145/42411.42415}). Under this ``fixed size'' assumption \cite{556383}, faster-than-linear scaling is impossible \cite{10.1016/0167-8191(86)90024-4}. However, when this assumption fails, say, when the per-worker problem size gets progressively smaller or execution gets gradually faster as we add more parallel workers (``scaled size'' model \cite{556383}), superlinear scaling is sometimes observed \cite{scalability-analyzed, sdn-analytitcs, 6483679, 10.1007/978-3-319-77610-1, dobb-1, dobb-2}. Note that in the majority of the literature any function growing faster than $f(x) = x$ is considered ``superlinear'', despite that, e.g., $f(x) = 3x$ is, mathematically, linear. Some authors distinguish these functions using the term ``superunitary'' \cite{80148}. In line with the literature we will use the former terminology below.
-
-% there is an actual conclusion in `` SUPERLINEAR SPEEDUP IN HPC SYSTEMS: WHY AND WHEN?``: ``Mainly the superlinear speedup performance in persistent algorithms occurs due to the increased cache re- sources in the parallel computer architectures, the prefetching of shared variables in shared memory organization, or better scheduling in heterogeneous environments.''
-
-% is can happen, for instance, due intricate interplays between per-worker problem size and available memory in certain specific applications, like distributed matrix multiplication and factorization \cite{6483679, 80148, 7733347}. In other cases superlinearity emerges out of pure luck, say because the code happens to progressively spend more time in faster subroutines as it is being scaled \cite{556383} or a parallel search algorithm finishes faster on some specific input \cite{80148}. And there are cases when superlinearity is observed due to simple benchmarking errors \cite{gunther-hotsos,10.1145/2773212.2789974}. But genuine superlinearity is most often observed in the context of 
-
-The most prominent example for the scaled size model is \emph{distributed caching} \cite{scalability-analyzed, sdn-analytitcs, dobb-2} (for complete taxonomies see \cite{556383, 7733347, 80148}).  Most modern CPUs come with unshared Level-1 fast cache memory: the more CPU cores, the more fast memory is available for caching, which improves the cache-hit rate at the workers. This tends to speed up memory\slash cache-bound code disproportionately. Many distributed applications also contain a fast-path\slash cache; e.g., \texttt{memcached} is often used as a fast cache for a ``slow'' web service \cite{180324,10.5555/1012889.1012894}, popular keys are cached in the OS kernel for fast key-value store access \cite{179747, ghigoff2021bmc}, FIB caches maintain the most recent IP routes to sidestep longest prefix matching \cite{rottenstreich2016optimal}, hierarchical flow caches serve as a fast-path in programmable software switches \cite{188960}, etc. All these workloads may benefit from the caches becoming more efficient as the system is scaled and, potentially, show superlinear speedup on certain workloads. % We stress, however, that faster-than-linear speedup is strictly contingent on the way work is distributed across workers so that subproblem sizes indeed reduce, otherwise cache efficiency remains constant and superlinear growth vanishes (see later).
-
-\begin{figure}
-  \centering
-  \begin{small}
-    \input{fig/cache/cache_analysis.tex}
-\end{small}
-\caption{Scaling laws for distributed caching: hash-based load balancing, lower envelope (round robin load balancing) and upper envelope (perfect cache hit rate with $k$ caches). }
-  \label{fig:dcache-analysis}
-\end{figure}
-
-% refer to "Modeling Speedup (n) Greater than n" -> analysis
-
-% assumption for the analysis? ``I think equation 2 should be explained much better. It is not at all obvious (not sure even correct) that hit rate scales linearly with threads (I think only true is delta << 1). What is $\rho$ exactly the ratio of (fetching time in the event of miss) / (fetching time in the event of a catch hit)?''
-
-It is instructive to quantify superlinear speedup in this context using a simple model. Suppose a source emits uniformly distributed random requests for $m$ items and requests are distributed among $k$ workers, each using a separate cache of size $c$, by hashing on the request id.  Initially, the cache hit rate for a single worker that processes all $m$ possible requests is $\delta := \sfrac{c}{m}$. Adding $k$ workers effectively partitions the requests into $k$ random buckets so that each worker will perceive uniformly distributed requests for only $\sfrac{m}{k}$ items, which improves the cache hit rate at each worker to $\frac{c}{\sfrac{m}{k}} = k\delta$ ($k\delta \le 1$). This puts the lookup time of the system of $k$ parallel caches to
-\begin{align}\label{eq:dist-cache}
-  T_c(k) = \begin{cases} s + \frac{1-s}{k}(k\delta + (1-k\delta)\rho) & \text{if } k\delta \le 1\\s + \frac{(1-s)}{k} & \text{otherwise}\end{cases} \enspace ,
-\end{align}
-where $\rho$ is the penalty for a cache miss event, $\delta$ is the cache hit rate for a single worker, and $s$ denotes the fraction of execution time spent in the sequential part of the code.
+% Many authors argue, however, that superlinear scaling is merely a~byproduct of running memory-\slash cache-bound applications on a ``bigger machine'' \cite{80148}, others are concerned that it is hard to generalize beyond a specific set use cases \cite{7733347, 80148}, and some outright dismiss faster-than-linear scaling all together \cite{gunther-hotsos, 10.1016/0167-8191(86)90024-4}, concluding that \emph{``superlinearity, although alluring, is as illusory as perpetual motion''} \cite{10.1145/2773212.2789974}.
 
 
-The speedup $S_c(k)=\frac{T_c(1)}{T_c(k)}$ for the parameters $s=0.1$, $\delta=0.1$ and $\rho=10$ is depicted in Fig.\ref{fig:dcache-analysis}. The lower envelope of the scaling profile is given by Amdahl's law for the system with random or round robin load-balancing. % ($\frac{T_c(1)}{s + \frac{1-s}{k}(\delta + (1-\delta)\rho)}$).
-As $k$ grows the scaling profile progresses over a superlinear curve to an elevated Amdahl's law profile, representative of a system serving \emph{all} requests from fast memory. % ($\frac{T_c(1)}{s + \frac{1-s}{k}}$).
-Note that this occurs \emph{only} if request dispatching is chosen carefully to partition the item space. Modulo hashing assigns the same item to the same worker deterministically, so that workers process only a subset of the items that may have a greater chance to fit into the cache. In contrast, a random or a round robin load balancer may assign any item to any worker, which defeats the purpose of improving workers' cache hit rate. % and destroys superlinear scaling all together. % (see empirical evidence in the next Section).
+% Currently the only general methodology to achieve faster-than-linear scaling seems to require deploying additional fast caches. Moving an application to a ``bigger machine'' \cite{dobb-2}, however, is not always feasible due to, e.g., physical or financial constraints.  In some cases caching cannot be used at all (e.g., for inherently stateful computations or complex database queries) or it introduces more overhead than it saves (e.g., for predominantly uniform input or rapidly changing data).  Moreover, caching comes with certain extra complexity and often cache invalidation and eviction policies and data consistency mechanisms are too costly to implement in a massively distributed setting \cite{271208}. Apart from caching, however, currently the only way to achieve faster-than-linear scaling is to rely on piecemeal problem-specific techniques, comprehensive domain knowledge, and pure luck \cite{7733347, 80148}. And even then, some compellingly argue that superlinear growth itself is a performance illusion, which goes against the very laws of nature much like perpetual motion \cite{gunther-hotsos, 10.1145/2773212.2789974}
 
-Currently the only general methodology to achieve faster-than-linear scaling seems to require deploying additional fast caches. Moving an application to a ``bigger machine'' \cite{dobb-2}, however, is not always feasible due to, e.g., physical or financial constraints.  In some cases caching cannot be used at all (e.g., for inherently stateful computations or complex database queries) or it introduces more overhead than it saves (e.g., for predominantly uniform input or rapidly changing data).  Moreover, caching comes with certain extra complexity and often cache invalidation and eviction policies and data consistency mechanisms are too costly to implement in a massively distributed setting \cite{271208}. Apart from caching, however, currently the only way to achieve faster-than-linear scaling is to rely on piecemeal problem-specific techniques, comprehensive domain knowledge, and pure luck \cite{7733347, 80148}. And even then, some compellingly argue that superlinear growth itself is a performance illusion, which goes against the very laws of nature much like perpetual motion \cite{gunther-hotsos, 10.1145/2773212.2789974}
+% Many authors argue, however, that superlinear scaling is merely a~byproduct of running memory-\slash cache-bound applications on a ``bigger machine'' \cite{80148}, others are concerned that it is hard to generalize beyond a specific set use cases \cite{7733347, 80148}, and some outright dismiss faster-than-linear scaling all together \cite{gunther-hotsos, 10.1016/0167-8191(86)90024-4}, concluding that \emph{``superlinearity, although alluring, is as illusory as perpetual motion''} \cite{10.1145/2773212.2789974}.
 
-% there is an actual conclusion in `` SUPERLINEAR SPEEDUP IN HPC SYSTEMS: WHY AND WHEN?``: ``Mainly the superlinear speedup performance in persistent algorithms occurs due to the increased cache re- sources in the parallel computer architectures, the prefetching of shared variables in shared memory organization, or better scheduling in heterogeneous environments.''
 
 %%% Local Variables:
 %%% mode: latex
