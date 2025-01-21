@@ -1,7 +1,4 @@
-\appendix
-
-\newpage
-\section{Analytical findings}
+\section{Analysis}\label{sec:analytical-findings}
 
 Scaling in distributed systems refers to the improvement in performance achieved by adding more machines to a system, defined as the ratio of the completion time of the baseline system with a single machine to the completion time of the system with $k$ machines, $S(k) = T(1) / T(k)$.
 
@@ -35,7 +32,7 @@ We draw the following conclusions from our analysis.
 
 Our analysis holds for a wide range of self-adjusting data structures (including LRU caches).
 
-\section{The model}
+\subsection{The model}
 \label{sec:app:model}
 
 \paragraph{Architecture.}
@@ -81,7 +78,7 @@ A single self-adjusting data structure is the most natural baseline choice for s
 % In similar fashion to Amdahl's law, we define $s$ as the serial fraction of the workload, where in our case only the load balancing is serial (total serial work is $\sum \sum_t T(f(\sigma_t))$).
 
 
-\section{Superlinear Scaling of Self-adjusting\\ Distributed Systems (a positive result)}
+\subsection{Superlinear Scaling of Self-adjusting\\ Distributed Systems (a positive result)}
 \label{sec:app:arch-scaling}
 
 % Even if the observed scaling is superlinear, it is only an initial phenomenon, and the system cannot scale indefinitely with $k$ by using a load balancer.
@@ -266,7 +263,7 @@ One may ask why our perspective is useful. In our eyes, for systems consisting o
 
 
 
-\section{Impossibility of scaling for self-adjusting distributed systems (a negative result)}
+\subsection{Impossibility of scaling for self-adjusting distributed systems (a negative result)}
 
 
 We finalize by sketching a scaling impossibility law, an equivalent of Amdahl's law for self-adjusting distributed systems. We draw conclusions that for each stream $\sigma$ the scaling can be only initial (cannot continue indefinitely with $k$), hence the superlinear scaling observed in practice is only an ephemeral phenomenon.
@@ -359,7 +356,7 @@ In particular, the LRU algorithm for caching cannot scale superlinearly indefini
 % you divide each list k times in size, that's right
 
 
-\section{How to find good load balancers?}
+\subsection{How to find good load balancers?}
 There are many constraints for the load balancer, e.g. it should be efficiently computable and should parallelize the workload well (measured by the parameter $q$).
 Now, we focus solely on the locality-boosting aspect of the load balancer, how well the workload is reduced by cutting affinity domains with $f_k$.
 % The primary role of the load balancer is to boost locality of the input stream (that is to improve $\ell$).
@@ -384,7 +381,7 @@ We refer to online variants of the above problems: online $k$-cut~\cite{Bar-NoyL
 
 
 
-% \section{Main body section: Superlinear scaling}
+% \subsection{Main body section: Superlinear scaling}
 % \label{sec:app:arch-scaling}
 
 % So how can locality-boosting load balancing and self-adjusting algorithms, when used together in a distributed system, produce superlinear scaling? First, we present a demonstration on a particular instantiation of the architecture, \emph{distributed self-adjusting list lookup}, and then we provide a formal claim characterizing superlinear growth in general distributed self-adjusting systems.
@@ -444,7 +441,7 @@ We refer to online variants of the above problems: online $k$-cut~\cite{Bar-NoyL
 
 % %
 
-% \section{Superlinear Scaling of Self-adjusting\\ Distributed Systems}
+% \subsection{Superlinear Scaling of Self-adjusting\\ Distributed Systems}
 % \label{sec:app:arch-scaling}
 
 
