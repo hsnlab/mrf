@@ -9,7 +9,7 @@
     %yticklabels={0,500,1k},
     ]
 
-    \addplot[BenchMarkI] coordinates {
+    \addplot[BenchMarkI,each nth point={2}] coordinates {
       (1, 0.01432306060732)
       (2, 0.059162148988868)
       (3, 0.13193207878781)
@@ -76,7 +76,7 @@
    };
    \addlegendentry{1 dep}
 
-   \addplot[BenchMarkII] coordinates {
+   \addplot[BenchMarkII,each nth point={2}] coordinates {
       (1, 0.0091880606378169)
       (2, 0.038677671594591)
       (3, 0.090054163770251)
@@ -143,7 +143,7 @@
     };
    \addlegendentry{2 deps}
 
-   \addplot[BenchMarkIII] coordinates {
+   \addplot[BenchMarkIII,each nth point={2}] coordinates {
       (1, 0.0043353391054645)
       (2, 0.01775575796888)
       (3, 0.0422427516707)
@@ -210,7 +210,7 @@
     };
     \addlegendentry{4 deps}
 
-    \addplot[BenchMarkIV] coordinates {
+    \addplot[BenchMarkIV,each nth point={2}] coordinates {
       (1, 0.0024208582935417)
       (2, 0.0097716161590097)
       (3, 0.022814986034354)

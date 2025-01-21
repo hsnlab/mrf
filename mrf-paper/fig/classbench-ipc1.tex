@@ -4,9 +4,9 @@
 
  \begin{groupplot}[ClassBenchGroupPlot]
 
-  \nextgroupplot[ClassBenchSpeedupPlot]
+  \nextgroupplot[ClassBenchSpeedupPlot,ytick distance={25},]
 
-  \addplot[StaticMark] coordinates {
+  \addplot[StaticMark,each nth point={2}] coordinates {
      (1, 1.00000)
      (2, 1.99904)
      (3, 2.89529)
@@ -73,7 +73,7 @@
     };
     \addlegendentry{Static}
 
-  \addplot[SelfAdjustingMark] coordinates {
+  \addplot[SelfAdjustingMark,each nth point={2}] coordinates {
      (1, 1.00000)
      (2, 2.20256)
      (3, 3.66848)
@@ -141,9 +141,9 @@
     \addlegendentry{Self-adjusting}
 
 
-  \nextgroupplot[ClassBenchRatePlot]
+  \nextgroupplot[ClassBenchRatePlot,ytick distance={.25},]
 
-    \addplot[StaticMark] coordinates {
+    \addplot[StaticMark,each nth point={2}] coordinates {
       (1, 0.031744111665511)
       (2, 0.06345764248803)
       (3, 0.091908519541636)
@@ -210,7 +210,7 @@
     };
     %\addlegendentry{Static}
 
-    \addplot[SelfAdjustingMark] coordinates {
+    \addplot[SelfAdjustingMark,each nth point={2}] coordinates {
       (1, 0.018889987135068)
       (2, 0.041606239750658)
       (3, 0.069297553101307)

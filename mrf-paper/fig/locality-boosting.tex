@@ -8,7 +8,7 @@
     %xmax=23,
    ]
 
-   \addplot[BenchMarkI] coordinates {
+   \addplot[BenchMarkI,each nth point={2}] coordinates {
      (1, 1.00000)
      (2, 3.95142)
      (3, 8.68203)
@@ -75,7 +75,7 @@
     };
     \addlegendentry{dstUDP hash}
 
-    \addplot[BenchMarkII] coordinates {
+    \addplot[BenchMarkII,each nth point={2}] coordinates {
            (1, 1.00000)
      (2, 1.98130)
      (3, 3.00769)
@@ -142,7 +142,7 @@
    };
    \addlegendentry{5-tuple hash}
 
-   \addplot[BenchMarkIII] coordinates {
+   \addplot[BenchMarkIII,each nth point={2}] coordinates {
      (1, 1.00000)
      (2, 1.01296)
      (3, 1.01953)

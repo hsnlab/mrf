@@ -13,7 +13,7 @@
   },
   ]
 
-  \addplot[StaticMark] coordinates {
+  \addplot[StaticMark,each nth point={2}] coordinates {
     (1, 11.5246859)
     (2, 13.0414406)
     (3, 12.0516008)
@@ -80,7 +80,7 @@
   };
   \addlegendentry{Static}
 
-  \addplot[SelfAdjustingMark] coordinates {
+  \addplot[SelfAdjustingMark,each nth point={2}] coordinates {
     (1, 13.7504560)
     (2, 12.8632773)
     (3, 10.5175126)

@@ -6,7 +6,7 @@
 
   \nextgroupplot[ClassBenchSpeedupPlot,ylabel=Speedup]
 
-  \addplot[StaticMark] coordinates {
+  \addplot[StaticMark,each nth point={2}] coordinates {
      (1, 1.00000)
      (2, 2.01275)
      (3, 2.99326)
@@ -73,7 +73,7 @@
     };
     \addlegendentry{Static}
 
-  \addplot[SelfAdjustingMark] coordinates {
+  \addplot[SelfAdjustingMark,each nth point={2}] coordinates {
      (1, 1.00000)
      (2, 2.78880)
      (3, 5.34148)
@@ -143,7 +143,7 @@
 
   \nextgroupplot[ClassBenchRatePlot,ylabel={Throughput [Mpps]}]
 
-    \addplot[StaticMark] coordinates {
+    \addplot[StaticMark,each nth point={2}] coordinates {
       (1, 0.046539629713245)
       (2, 0.093672584131231)
       (3, 0.1393051523559)
@@ -210,7 +210,7 @@
     };
     %\addlegendentry{Static}
 
-    \addplot[SelfAdjustingMark] coordinates {
+    \addplot[SelfAdjustingMark,each nth point={2}] coordinates {
       (1, 0.032711671064758)
       (2, 0.091226367386569)
       (3, 0.17472861741391)
