@@ -4,8 +4,9 @@
   \begin{axis}[
     SpeedupPlot,
     legend cell align = right,
-    ylabel=,
-    %xmax=23,
+    ylabel={},
+    % xmax=23,
+    ytick distance = {88},
    ]
 
    \addplot[BenchMarkI,each nth point={2}] coordinates {
@@ -211,3 +212,8 @@
 
   \end{axis}
 \end{tikzpicture}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../distributed_mrf.tex"
+%%% End:

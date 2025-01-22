@@ -7,6 +7,9 @@
     y label style={at={(-0.1,0.5)}},
     %ytick={0, 500, 1000},
     %yticklabels={0,500,1k},
+    ytick distance={2.5},
+    ylabel near ticks,
+    ylabel shift = -4pt,
     ]
 
     \addplot[BenchMarkI,each nth point={2}] coordinates {
@@ -279,3 +282,8 @@
 
   \end{axis}
 \end{tikzpicture}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../distributed_mrf.tex"
+%%% End:

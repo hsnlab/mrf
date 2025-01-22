@@ -4,7 +4,11 @@
 
  \begin{groupplot}[ClassBenchGroupPlot]
 
-  \nextgroupplot[ClassBenchSpeedupPlot,ylabel=Speedup]
+   \nextgroupplot[
+   ClassBenchSpeedupPlot,
+   ylabel=Speedup,
+   ytick distance={57},
+   ]
 
   \addplot[StaticMark,each nth point={2}] coordinates {
      (1, 1.00000)
@@ -141,7 +145,11 @@
     \addlegendentry{Self-adjusting}
 
 
-  \nextgroupplot[ClassBenchRatePlot,ylabel={Throughput [Mpps]}]
+    \nextgroupplot[
+    ClassBenchRatePlot,
+    ylabel={Throughput [Mpps]},
+    ytick distance={1.86},
+    ]
 
     \addplot[StaticMark,each nth point={2}] coordinates {
       (1, 0.046539629713245)
@@ -283,3 +291,8 @@
   % \input{fig/classbench-acl1-inset.tex}
 
 \end{tikzpicture}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../distributed_mrf.tex"
+%%% End:
