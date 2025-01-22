@@ -1,0 +1,110 @@
+\input{fig/common.tex}
+
+\begin{tikzpicture}
+  \begin{groupplot}[DistCacheGroupPlot]
+
+    \nextgroupplot[
+    SpeedupPlot,
+    legend cell align = right,
+    ytick distance = {-10},
+    xmin = 1, xmax = 15,
+    ymin = 0, ymax = 39,
+    xlabel = {\#threads},
+    width=165pt,
+    ytick={10,20,30},
+    ]
+
+    \addplot[BenchMarkI] coordinates {
+      ( 1,      1.0)
+      ( 2,1.8839422)
+      ( 3,2.7052236)
+      ( 4,3.7126596)
+      ( 5,5.1308924)
+      ( 6,6.9534752)
+      ( 7,9.0763450)
+      ( 8,11.054274)
+      ( 9,13.302973)
+      (10,15.772256)
+      (11,18.957380)
+      (12,23.043945)
+      (13,29.863059)
+      (14,32.998250)
+      (15,35.804540)
+    };
+    \addlegendentry{key-hash load balancing}
+
+    \addplot[BenchMarkII] coordinates {
+      ( 1,       1.) 
+      ( 2,1.7966740) 
+      ( 3,2.4428325) 
+      ( 4,3.1840504) 
+      ( 5,4.1879517) 
+      ( 6,5.4304236) 
+      ( 7,6.4768521) 
+      ( 8,7.4251946) 
+      ( 9,8.4631732) 
+      (10,9.5662540) 
+      (11,10.669058) 
+      (12,11.775588) 
+      (13,12.749683) 
+      (14,13.792032) 
+      (15,14.653314) 
+    };
+    \addlegendentry{random load balancing}
+
+    \nextgroupplot[
+    CacheHitRatePlot,
+    width=165pt,
+    ytick distance = {-20},
+    xmin = 1, xmax = 15,
+    ymin = 0, ymax = 1.01,
+    try min ticks=4,
+    xlabel = {\#threads},
+    ytick={0.25,0.5,0.75,1},
+    ]
+
+    \addplot[BenchMarkI] coordinates {
+      ( 1,0.082136 )
+      ( 2,0.139952 )
+      ( 3,0.209754 )
+      ( 4,0.279643 )
+      ( 5,0.349690 )
+      ( 6,0.423494 )
+      ( 7,0.493077 )
+      ( 8,0.559302 )
+      ( 9,0.631110 )
+      (10,0.699140 )
+      (11,0.770082 )
+      (12,0.842288 )
+      (13,0.910825 )
+      (14,0.984385 )
+      (15,1.000000 )
+    };
+    % \addlegendentry{key-hashing}
+
+    \addplot[BenchMarkII] coordinates {
+      ( 1,0.069989) 
+      ( 2,0.069982) 
+      ( 3,0.081104) 
+      ( 4,0.079056) 
+      ( 5,0.069834) 
+      ( 6,0.069782) 
+      ( 7,0.074959) 
+      ( 8,0.085027) 
+      ( 9,0.075954) 
+      (10,0.072260) 
+      (11,0.075444) 
+      (12,0.075633) 
+      (13,0.075884) 
+      (14,0.079548) 
+      (15,0.079149) 
+    };
+    % \addlegendentry{random load balancing}
+
+  \end{groupplot}
+\end{tikzpicture}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../distributed_mrf.tex"
+%%% End:

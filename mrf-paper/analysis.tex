@@ -386,7 +386,7 @@ We refer to online variants of the above problems: online $k$-cut~\cite{Bar-NoyL
 
 % So how can locality-boosting load balancing and self-adjusting algorithms, when used together in a distributed system, produce superlinear scaling? First, we present a demonstration on a particular instantiation of the architecture, \emph{distributed self-adjusting list lookup}, and then we provide a formal claim characterizing superlinear growth in general distributed self-adjusting systems.
 
-% Consider a partitioning load-balancer (see Fig.~\ref{fig:locality-boosting-lb}) combined with a self-adjusting move-to-front list (see Fig.~\ref{fig:mtf-example}) implemented in the workers. Suppose that there are $m$ items to be stored in the list and $k$ workers, each maintaining an independent index into the list. To make things more complicated, we assume uniform request distribution on the entire input domain $m$ at the system's input, which is, recall, the worst case for any self-adjusting algorithm by being totally \emph{unpredictable}. Thus, for a single worker move-to-front reordering has no useful effect and the worst case access time is $m$, identical to that of a static linked list.
+% Consider a partitioning load balancer (see Fig.~\ref{fig:locality-boosting-lb}) combined with a self-adjusting move-to-front list (see Fig.~\ref{fig:mtf-example}) implemented in the workers. Suppose that there are $m$ items to be stored in the list and $k$ workers, each maintaining an independent index into the list. To make things more complicated, we assume uniform request distribution on the entire input domain $m$ at the system's input, which is, recall, the worst case for any self-adjusting algorithm by being totally \emph{unpredictable}. Thus, for a single worker move-to-front reordering has no useful effect and the worst case access time is $m$, identical to that of a static linked list.
 
 % Now suppose we move from 1 worker to $k$ parallel workers where $k \le m$. This results, within our architecture, that the load balancer effectively partitions the uniformly distributed input on $m$ items into $k$ uniformly distributed input streams for only $\sfrac{m}{k}$ different items (see Fig.~\ref{fig:locality-boosting-lb}). This means that the workers' input features a higher spatial locality than the system's input (which sports none).  Had we used a random or a round robin load balancer the workers would still see all the $m$ possible inputs, just with a sampled uniform distribution, and no locality. After a while, each MTF list in the workers will have its specific subset of $\sfrac{m}{k}$ items moved to the first $\sfrac{m}{k}$ positions (in an arbitrary order), reducing the worst-case lookup time from $m$ (1 worker) to $\sfrac{m}{k}$ ($k$ workers). This introduces $k\times$ speedup compared to the single-threaded case.
 
@@ -454,7 +454,7 @@ We refer to online variants of the above problems: online $k$-cut~\cite{Bar-NoyL
 % Superlinear scaling of the parallel part of the workload would occur if $S(k) = \frac1{s + \frac{1-s}{g(k)}}$ for some $g(k) > k$. Amdahl's law rules this out.
 
 
-% We examine \emph{distributed self-adjusting list lookup}. Our architecture consists of a locality-boosting partitioning load-balancer (see Fig.~\ref{fig:locality-boosting-lb}) combined with a self-adjusting move-to-front list (see Fig.~\ref{fig:mtf-example}) implemented in the workers.
+% We examine \emph{distributed self-adjusting list lookup}. Our architecture consists of a locality-boosting partitioning load balancer (see Fig.~\ref{fig:locality-boosting-lb}) combined with a self-adjusting move-to-front list (see Fig.~\ref{fig:mtf-example}) implemented in the workers.
 
 
 
@@ -729,7 +729,7 @@ We refer to online variants of the above problems: online $k$-cut~\cite{Bar-NoyL
 
 
 % Self-adjusting architectures seem to escape Amdahl's law, and we observe superlinear scaling in our experiments.
-% We observe empirical superlinear scaling for distributed caching systems~\cite{271208, 10.5555/1012889.1012894, dobb-2}. To learn more, we empirically examine an example, \emph{distributed self-adjusting list lookup}, along with a performance analysis as demonstration. Our architecture consists of a locality-boosting partitioning load-balancer (see Fig.~\ref{fig:locality-boosting-lb}) combined with a self-adjusting move-to-front list (see Fig.~\ref{fig:mtf-example}) implemented in the workers.
+% We observe empirical superlinear scaling for distributed caching systems~\cite{271208, 10.5555/1012889.1012894, dobb-2}. To learn more, we empirically examine an example, \emph{distributed self-adjusting list lookup}, along with a performance analysis as demonstration. Our architecture consists of a locality-boosting partitioning load balancer (see Fig.~\ref{fig:locality-boosting-lb}) combined with a self-adjusting move-to-front list (see Fig.~\ref{fig:mtf-example}) implemented in the workers.
 % Similarly to distributed caching, we find that the list lookup may scale its workload superlinearly with $k$ for some inputs.
 
 % This evidence suggests to state a hypothesis that the system may achieve superlinear scaling, e.g. quadratic:

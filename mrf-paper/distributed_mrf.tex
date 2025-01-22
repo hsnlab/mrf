@@ -7,7 +7,6 @@
 \usepackage{xfrac}
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
-% \usepackage{times}
 \usepackage{hyperref}
 % \usepackage{subfig}
 \usepackage{tikz}
@@ -105,42 +104,40 @@
 % \author{Jonas Köppeler, Maciej Pacut, Tamás Lévai, Vamsi Addanki, Stefan Schmid, Gábor Rétvári}
 
 \begin{abstract}
-  Conventional wisdom suggests that linear scaling of the worker pool in a distributed system can result in at most a linear performance improvement.  In this paper we show that distributed systems can be \emph{systematically} architected to achieve faster-than-linear (superlinear) scaling. Our insight is that dispatching jobs to parallel workers so that the locality of reference in the workers' input increases, and implementing the workers with a self-adjusting algorithm to take advantage of the higher locality, jointly yield superlinear scaling. We demonstrate the applicability of our methodology in extensive simulations: scaling textbook self-adjusting algorithms we obtain 100--3,300x speedup using only 48 CPU cores, up to 70x beyond linear scaling. Then, we present two operational case studies. Using our architectural blueprint to scale a Memcached+PostgreSQL storage system we attain 2.3x faster than linear scaling. Then we re-engineer the Linux packet classifier to self-adjust with load, obtaining 800x speedup on synthetic traces and 220x speedup on real firewall traces with 32 CPU cores, resulting 5--25x times performance improvement compared to the vanilla Linux kernel.
+  Conventional wisdom suggests that linear scaling of the worker pool in a distributed system can result in at most a linear performance improvement.  In this paper we show that distributed systems can be \emph{systematically} architected to achieve faster-than-linear (superlinear) scaling. Our insight is that dispatching jobs to parallel workers so that the locality of reference in the workers' input increases, and implementing the workers with a self-adjusting algorithm to take advantage of the higher locality, jointly yield superlinear scaling. We demonstrate the applicability of our methodology in extensive simulations: scaling textbook self-adjusting algorithms we obtain 100--3,300x speedup using only 48 CPU cores, up to 70x beyond linear scaling. Then, we present two operational case studies. Using our architectural blueprint to scale a Memcached+PostgreSQL storage system we attain 2.3x faster than linear scaling. Then we re-engineer the Linux packet classifier to self-adjust with load, obtaining 800x speedup on synthetic traces and 220x speedup on real firewall traces with 32 CPU cores, resulting 5--25x times raw performance improvement compared to the vanilla Linux kernel.
 \end{abstract}
 
 \maketitle
 
 % \tableofcontents
 
-% a unique combination of \emph{locality-boosting load balancing} to spread load among workers implemented using \emph{self-adjusting data structures}.
-  
 \input{intro.tex}
 
 \input{background.tex}
 
 \input{architecture.tex}
 
-\input{case-study-2.tex}
+\input{case-study-classifier.tex}
 
 \input{related.tex}
 
 \input{conclusions.tex}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \input{ack.tex}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % \input{ack.tex}
 
 \bibliographystyle{abbrv} 
 \begin{small}
 \bibliography{mrf}
 \end{small}
 
-% \appendix
-% \newpage
+% % \appendix
+% % \newpage
 
 \begin{appendices}
 \input{analysis.tex}
 
-\input{case-study-1.tex}
+\input{case-study-dist-caching.tex}
 \end{appendices}
 
 \end{document}

@@ -61,6 +61,17 @@
     xlabel=,
     xticklabels={},
   },
+  DistCacheGroupPlot/.style = {
+    group/group size = 2 by 1,
+    group/horizontal sep = 40pt,
+    xtick distance={5},
+    height=140pt,
+  },
+  CacheHitRatePlot/.style = {
+    RatePlot,
+    ylabel={Cache hit rate},
+    ytick distance={50},
+  },
   SelfAdjustingMark/.style = {
     mark = *,
     mark options = {

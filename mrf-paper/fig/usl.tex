@@ -1,7 +1,7 @@
 \begin{small}
   \begin{tikzpicture}[remember picture]
     \begin{axis}[
-      width=240pt,
+      width=250pt,
       height=160pt,
       xlabel={\#threads},
       ylabel={Speedup},
@@ -15,7 +15,7 @@
       legend style = {
         anchor = north west,
         at = {(rel axis cs:0.01,0.98)},
-        font=\scriptsize,
+        font=\tiny,
         % draw = none,
       },
       no markers
@@ -30,7 +30,7 @@
       \addplot[domain=1:25,black,solid]{1/(0.01 + (1-0.01)/x^2)};
       \addlegendentry{Superlinear scaling}
 
-      \coordinate (insetPosition) at (rel axis cs:.98,0.23);
+      \coordinate (insetPosition) at (rel axis cs:.99,0.22);
       % \addplot[domain=0:15,black,loosely dashed]{1/(0.4 + (1-0.4)/x)};
       % \addlegendentry{Amdahl's law ($\delta=0.4$)}
 
@@ -40,15 +40,15 @@
     \begin{axis}[
       at={(insetPosition)},
       anchor={outer south east},
-      width=105pt,
-      height=85pt,
+      width=75pt,
+      height=70pt,
       tiny,
       % xlabel={\#cores},
       % ylabel={Speedup},
       xmin=1,
       xmax=450,
       ymin=0,
-      ymax=110,
+      ymax=115,
       % ytick={1,2,3,4,5},
       no markers]
       \addplot[domain=1:500,black,densely dotted]{x};
