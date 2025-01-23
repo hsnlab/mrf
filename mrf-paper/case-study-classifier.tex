@@ -7,7 +7,7 @@ Yet, the re-engineered self-adjusting packet classifier we present below will pr
 To achieve superlinear scaling we need a self-adjusting algorithm in the first place (plus a locality-boosting load balancer). From the many potential use cases % for which a self-adjusting algorithm exists
 \cite{SleatorT85Splay, BentleyCL93, HesterH85, HesterH85, BentleySTW86, Avin0020, ParkM12} we eventually chose packet classification for the following reasons.  First, the default Linux firewall implementation, \nftables, uses a static doubly linked list to evaluate classifier rules, which makes it an appealing candidate for applying the move-to-front (MTF) heuristics (but see ramifications related to handling rule-dependencies below). % which will buy us the non-self-adjusting baseline for free.
 Second, underlying packet classification there is an infamously difficult theoretical problem \cite{10.1145/2619239.2626294,10.1006/jagm.1996.0063, PacutVAPRS2022, 10.1145/2619239.2626294, 10.1145/1851182.1851208, 10.1145/863955.863980, gupta2001algorithms}, % , 10.1145/3359989.3365431},
-and achieving superlinear speedup on such a hard problem promises massive performance gain. Third, the Linux kernel network stack offers several flexible software and hardware based load balancers for dispatching packets to parallel classifier instances running on different CPU cores \cite{rss-linux}, which we will reuse to implement the locality-boosting load balancer component. And fourth, packet classifiers are very difficult to cache \cite{1354643} (caches are the ``cheap'' way to obtain superlinear scaling), which calls for a true self-adjusting packet classifier. % algorithm that goes beyond caching. % \cite{10228937}.
+and achieving superlinear speedup on such a hard problem promises massive performance gain. Third, the Linux kernel network stack offers several flexible software and hardware based load balancers for dispatching packets to parallel classifier instances running on different CPU cores \cite{rss-linux}, which we will reuse to implement the locality-boosting load balancer component. And fourth, packet classifiers are very difficult to cache \cite{1354643} (recall, caches are the ``cheap'' way to obtain superlinear scaling), which calls for a true self-adjusting packet classifier. % algorithm that goes beyond caching. % \cite{10228937}.
 
 % \subsection{The Linux packet classifier}
 % \label{sec:sa-pack-class}
@@ -28,11 +28,11 @@ The \nftables kernel engine adds a virtual machine to the Linux kernel that uses
     \begin{tabular}{r|l|l|r|r|l}
       \textbf{Prio} & \textbf{Proto} & \textbf{Src IP} & \textbf{Dst IP} & \textbf{Dst Port} & \textbf{Action}\\
       \hline
-      1 & UDP & 192.168.178.33   & 23.0.0.45  & 53  & ACCEPT\\
-      2 & TCP & 10.10.10.0/24    & 23.0.0.45  & 443 & DROP\\
-      3 & UDP & 192.168.178.0/24 & 23.0.0.45  & 53  & DROP\\
-      4 & TCP & 10.10.10.10/32   & 23.0.0.45  & ANY & ACCEPT\\
-      5 & IP  & 192.168.0.0/16   & 23.0.0.0/8 & ANY & ACCEPT\\
+      1 & UDP & 192.168.178.33   & 23.0.0.45/32  & 53  & ACCEPT\\
+      2 & TCP & 10.10.10.0/24    & 23.0.0.45/32  & 443 & DROP\\
+      3 & UDP & 192.168.178.0/24 & 23.0.0.45/32  & 53  & DROP\\
+      4 & TCP & 10.10.10.10/32   & 23.0.0.45/32  & ANY & ACCEPT\\
+      5 & IP  & 192.168.0.0/16   & 23.0.0.0/8    & ANY & ACCEPT\\
     \end{tabular}
   \end{small}%
   \caption{Sample firewall rule set. Source ports do not matter.}
@@ -161,7 +161,7 @@ We conducted several experiments with the distributed self-adjusting packet clas
 The system-under-test (SUT) is a server equipped with a 32-core AMD EPYC 7502P@2.5 GHz CPU (64 cores with hyper-threading enabled), 128 GByte DDR4 main memory, 96 KB per-core L1 cache, 512 KB per-core L2 cache, and 128MB shared L3 cache. A server of similar configuration was used for traffic generation and measurement with DPDK\slash \texttt{moongen}~\cite{moongen-imc2015}, connected back-to-back to the SUT over Intel XL710 40GbE NICs. We used a standard Ubuntu 22.04.4 LTS OS running a patched v6.5 Linux kernel on the SUT, replacing the default \nftables packet classifier with our own self-adjusting implementation. The benchmarks use the Tipsy network testing automation and visualization tool \cite{8468219}. Hyper-threading was disabled, unless otherwise noted.
 
 The classifier rule sets come from two sources. A series of \emph{realistic rule sets} was generated with \texttt{ClassBench-ng} \cite{10.1109/ANCS.2017.33, 4237157}, which accurately model the characteristics of real access control lists and firewalls. ClassBench uses a seed file for describing the statistics of the generated 5-tuple rules, including address ranges, port distribution, and rule dependencies. % , which can be further tuned using various runtime parameters.
-For each rule set, a matching input packet sequence was generated using the standard Classbench tools \cite{10.1109/ANCS.2017.33,classbench-pcap}. We also used a series of \emph{synthetic rule sets} and matching packet traces for conducting controlled microbenchmarks. For each rule set, we generated a matching synthetic packet trace with uniform flow-size distribution, which, recall, represents the worst-case for self-adjustment.  In all cases the rules and packets using unroutable IP addresses were manually removed (otherwise, Linux would drop some packets, distorting the results). Unless otherwise noted, the benchmarks run with an RSS-based hardware load balancer using an IP 5-tuple hash.
+For each rule set a matching input packet sequence was generated using the standard Classbench tools \cite{10.1109/ANCS.2017.33,classbench-pcap}. We also used a series of \emph{synthetic rule sets} and matching packet traces for conducting controlled microbenchmarks. For each synthetic rule set we generated a matching packet trace with uniform flow-size distribution, which, recall, represents the worst-case for self-adjustment.  In all cases the rules and packets using unroutable IP addresses were manually removed (otherwise, Linux would drop some packets, distorting the results). Unless otherwise noted, the benchmarks run with an RSS-based hardware load balancer using an IP 5-tuple hash.
 
 \noindent
 \textbf{Macrobenchmarks.} %
@@ -174,7 +174,7 @@ The speedup factor alone, however, does not reveal the full picture, as evidence
 
 % \noindent
 % \textbf{Latency.} %
-The mean per-packet latency is shown in Fig.~\ref{fig:classbench-acl1-latency}. We observe that \emph{superlinear speedup transforms into massive latency reduction}, resulting $52\times$ smaller mean packet delay on 32 cores for the \texttt{acl1} seed using the self-adjusting algorithm. In contrast, the static \nftables classifier produces a mostly flat latency profile, stabilizing at about 13ms per packet delay.
+The mean per-packet latency is shown in Fig.~\ref{fig:classbench-acl1-latency}. We observe that \emph{superlinear speedup transforms into massive latency reduction}, resulting $52\times$ smaller mean packet delay on 32 cores for the \texttt{acl1} seed using the self-adjusting algorithm. In contrast, the static \nftables classifier produces a mostly flat latency profile, stabilizing at about 13ms per-packet delay.
 
 \noindent
 \textbf{Rule size.} %
