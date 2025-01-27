@@ -23,7 +23,7 @@ It is instructive to quantify superlinear speedup in this context using a simple
 \begin{align}\label{eq:dist-cache}
   T_c(k) = \begin{cases} s + \frac{1-s}{k}(k\delta + (1-k\delta)\rho) & \text{if } k\delta \le 1\\s + \frac{(1-s)}{k} & \text{otherwise}\end{cases} \enspace ,
 \end{align}
-where $\rho$ is the penalty for a cache miss, $\delta$ is the single-threaded cache hit rate, and $s$ denotes the fraction of execution time spent in the sequential part of the code.
+where $\delta$ is the single-threaded cache hit rate, $\rho$ is the penalty for a cache miss, and $s$ denotes the fraction of execution time spent in the sequential part of the code.
 
 The speedup $S_c(k)=\frac{T_c(1)}{T_c(k)}$ for the parameters $s=0.1$, $\delta=0.1$ and $\rho=10$ is depicted in Fig.~\ref{fig:dcache-analysis}. The lower envelope of the scaling profile is given by Amdahl's law for the system with random or round robin load-balancing. % ($\frac{T_c(1)}{s + \frac{1-s}{k}(\delta + (1-\delta)\rho)}$).
 As $k$ grows the scaling profile progresses over a superlinear curve to an elevated Amdahl's law profile, representative of a system serving \emph{all} requests from fast memory. % ($\frac{T_c(1)}{s + \frac{1-s}{k}}$).

@@ -19,7 +19,7 @@ A network firewall is a means to control incoming and outgoing network traffic b
 A classifier \emph{rule} is a pair of a filter, a user-defined regular expression defined on specific fields of the packet header or metadata, and an action that decides what to do with the packets that match the filter (accept, drop, log, etc.).  Rules are organized into linear chains ordered by rule priority. When a packet enters a chain, it is compared against the first rule. If there is a match, the corresponding action is executed and the lookup is over. Otherwise, subsequent rules are matched in priority order until the first match is found.
 
 % The Linux kernel contains several built-in packet classifiers.
-The \nftables kernel engine adds a virtual machine to the Linux kernel that uses a DSL for parsing and matching packet header fields \cite{nftables}. This makes \nftables agnostic to specific network protocols, in contrast to, e.g., \texttt{iptables}, which contains an embedded protocol parser. Currently, \nftables is the default packet classifier in most Linux distributions.
+The \nftables engine is a virtual machine that uses a Domain Specific Language for parsing and matching packet header fields \cite{nftables}. This makes \nftables agnostic to specific network protocols, in contrast to, e.g., \texttt{iptables}, which contains an embedded protocol parser. Currently, \nftables is the default packet classifier in most Linux distributions.
 
 \begin{figure}[t]
   \centering
@@ -158,7 +158,7 @@ We conducted several experiments with the distributed self-adjusting packet clas
 
 \noindent
 \textbf{Testbed.} %
-The system-under-test (SUT) is a server equipped with a 32-core AMD EPYC 7502P@2.5 GHz CPU (64 cores with hyper-threading enabled), 128 GByte DDR4 main memory, 96 KB per-core L1 cache, 512 KB per-core L2 cache, and 128MB shared L3 cache. A server of similar configuration was used for traffic generation and measurement with DPDK\slash \texttt{moongen}~\cite{moongen-imc2015}, connected back-to-back to the SUT over Intel XL710 40GbE NICs. We used a standard Ubuntu 22.04.4 LTS OS running a patched v6.5 Linux kernel on the SUT, replacing the default \nftables packet classifier with our own self-adjusting implementation. The benchmarks use the Tipsy network testing automation and visualization tool \cite{8468219}. Hyper-threading was disabled, unless otherwise noted.
+The system-under-test (SUT) is a server equipped with a 32-core AMD EPYC 7502P@2.5 GHz CPU (64 cores with hyper-threading enabled), 128 GByte DDR4 main memory, 96 KB per-core L1 cache, 512 KB per-core L2 cache, and 128MB shared L3 cache. A server of similar configuration was used for traffic generation and measurement with DPDK\slash \texttt{moongen}~\cite{moongen-imc2015}, connected back-to-back to the SUT over Intel XL710 40GbE NICs. We used a standard Ubuntu 22.04.4 LTS OS VM with NIC-passthrough, running a patched v6.5 Linux kernel on the SUT replacing the \nftables packet classifier with our own self-adjusting implementation. The benchmarks use the Tipsy network testing automation and visualization tool \cite{8468219}. Hyper-threading was disabled, unless otherwise noted.
 
 The classifier rule sets come from two sources. A series of \emph{realistic rule sets} was generated with \texttt{ClassBench-ng} \cite{10.1109/ANCS.2017.33, 4237157}, which accurately model the characteristics of real access control lists and firewalls. ClassBench uses a seed file for describing the statistics of the generated 5-tuple rules, including address ranges, port distribution, and rule dependencies. % , which can be further tuned using various runtime parameters.
 For each rule set a matching input packet sequence was generated using the standard Classbench tools \cite{10.1109/ANCS.2017.33,classbench-pcap}. We also used a series of \emph{synthetic rule sets} and matching packet traces for conducting controlled microbenchmarks. For each synthetic rule set we generated a matching packet trace with uniform flow-size distribution, which, recall, represents the worst-case for self-adjustment.  In all cases the rules and packets using unroutable IP addresses were manually removed (otherwise, Linux would drop some packets, distorting the results). Unless otherwise noted, the benchmarks run with an RSS-based hardware load balancer using an IP 5-tuple hash.
@@ -170,7 +170,7 @@ Fig.~\ref{fig:classbench-acl1}, Fig.~\ref{fig:classbench-ipc1} and Fig.~\ref{fig
 
 Our observations are as follows. First, \emph{superlinear scaling is indeed reproducible with our distributed self-adjusting packet classifier}, with maximum speedup on 32 cores ranging from $225\times$ (about $7\times$ faster than linear) for \texttt{acl1}, to $72\times$ (about $2.2\times$ of linear) with \texttt{ipc1} and $52\times$ for \texttt{fw1} ($1.6\times$ faster than linear). In contrast, \emph{the static \nftables classifier scales almost linearly}. A closer analysis shows a slow sublinear trend representative of an Amdahl's law profile for a very small sequential parameter ($s\sim 0.001$).
 
-The speedup factor alone, however, does not reveal the full picture, as evidenced by Fig.~\ref{fig:classbench-fw1}. The absolute packet rate of the self-adjusting classifier on the \texttt{fw1} seed is smaller than that of the static classifier, despite the superlinear speedup. In other words, a massive spurious speedup can be obtained by improving a slow baseline.  Note, however, that this occurs only for the \texttt{fw1} seed (later we reveal why); for the rest of the benchmarks the self-adjusting version is robustly faster even in terms of raw performance ($5.2\times$ for \texttt{acl1} and $1.4\times$ with \texttt{ipc1} on 32 cores). Nonetheless, with hyperthreading enabled we obtain $\sim\!1.5\times$ absolute packet rate improvement on 64 cores even for the \texttt{fw1} seed (not shown in the figure), indicating that, with the sufficient amount of parallel resources, distributed self-adjustment eventually surpasses static algorithms even in terms of raw performance. In other words, when scaling is superlinear even a very slow baseline becomes extremely fast ultimately.
+The speedup factor alone, however, does not reveal the full picture, as evidenced by Fig.~\ref{fig:classbench-fw1}. The absolute packet rate of the self-adjusting classifier on the \texttt{fw1} seed is smaller than that of the static classifier, despite the superlinear speedup. In other words, a massive spurious speedup can be obtained by improving a slow baseline.  Note, however, that this occurs only for the \texttt{fw1} seed (later we reveal why); for the rest of the benchmarks the self-adjusting version is robustly faster even in terms of raw performance ($5.2\times$ for \texttt{acl1} and $1.4\times$ with \texttt{ipc1} on 32 cores). Nonetheless, with hyperthreading enabled we obtain $\sim\!1.5\times$ absolute packet rate improvement on 64 cores even for the \texttt{fw1} seed (not shown in the figure), indicating that, with the sufficient amount of parallel resources, distributed self-adjustment eventually surpasses static algorithms even in terms of raw performance. In other words, when scaling is superlinear even a slow baseline becomes extremely fast ultimately.
 
 % \noindent
 % \textbf{Latency.} %
@@ -178,7 +178,7 @@ The mean per-packet latency is shown in Fig.~\ref{fig:classbench-acl1-latency}. 
 
 \noindent
 \textbf{Rule size.} %
-Fig.~\ref{fig:rule-size} shows the speedup obtained using the self-adjusting classifier on increasingly larger rule sets. The rules were generated from the following template: 
+Next we turn to controlled microbenchmarks over synthetic input, which we fine-tune to highlight the effect of some specific characteristic of the classifier workload on scaling. The main factor affecting speedup is workers' active rule set sizes, which determines the extent to which self-adjustment can arrange recently hit rules to the front of the rule list (see \S\ref{sec:sa-rss}). We used the following template to generate synthetic rule-sets of configurable size: 
 
 \noindent %
 \begin{small}
@@ -196,7 +196,7 @@ Fig.~\ref{fig:rule-size} shows the speedup obtained using the self-adjusting cla
 \noindent %
 The source and destination address are the same in each rule, and each action was set to accept. We obtained 3 rule sets this way, containing roughly $2$k, $5$k, and $10$k rules, respectively (the real size is a close prime to minimize periodicity in the scaling profiles). Note that rules are independent and each rule matches exactly one flow, which represents the optimistic case for the self-adjusting classifier (see later for the pessimistic settings). We generated a matching packet trace containing one flow per rule.
 
-The main takeaway is that \emph{superlinear speedup appears independently of the classifier size}, to the point that for 10k rules we see $>800\times$ speedup on 32 cores. Again, the raw performance plot casts a complete picture: the larger the rule set the greater the superlinear speedup but the smaller the absolute packet rate. Nevertheless, superlinear scaling robustly appears in terms of the raw performance as well.
+Fig.~\ref{fig:rule-size} shows the results. The takeaway is that \emph{superlinear speedup appears independently of the classifier size}, to the point that for 10k rules we see $>800\times$ speedup on 32 cores. Again, the raw performance plot completes the picture: the larger the rule set the greater the superlinear speedup but the smaller the absolute packet rate. Nevertheless, superlinear scaling robustly appears in terms of the raw performance as well.
 % Since our goal here is to observe superlinear scaling rather than to find the fastest possible packet classifier, for the rest of the evaluations we will stick to presenting only the speedup plots.
 
 \begin{figure*}[t]
@@ -231,9 +231,7 @@ The main takeaway is that \emph{superlinear speedup appears independently of the
 
 \noindent%
 \textbf{Rule dependencies.} %
-Next we turn to controlled microbenchmarks over synthetic input, which we fine-tune to highlight the effect of some specific characteristic of the classifier workload on scaling. The main factor affecting speedup is workers' active rule set sizes, which determines the extent to which self-adjustment can arrange recently hit rules to the front of the rule list (see \S\ref{sec:sa-rss}). Rule-dependencies have a crucial role here, since for every rule with nonzero dependencies not just the rule but all its dependencies will also become active, bloating the active rule sets.
-
-We created 3 synthetic rule sets with increasingly long dependency chains using the below template:
+Rule-dependencies have a crucial role in self-adjustment, since for every rule with nonzero dependencies not just the rule but all its dependencies will also become active, bloating the active rule sets. To measure the effects of rule dependencies we created 3 synthetic rule sets with increasingly long dependency chains using the below template:
 
 \noindent %
 \begin{small}
