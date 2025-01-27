@@ -1,6 +1,6 @@
 \section{Analysis}\label{sec:analytical-findings}
 
-Scaling in distributed systems refers to the improvement in performance achieved by adding more machines to a system, defined as the ratio of the completion time of the baseline system with a single machine to the completion time of the system with $k$ machines, $S(k) = T(1) / T(k)$.
+Scaling in distributed systems refers to the improvement in performance achieved by adding more machines to a system. It is defined as the ratio of the completion time of the baseline system with a single machine to the completion time of the system with $k$ machines, $S(k) = T(1) / T(k)$.
 
 % Superlinear scaling is defined as follows.
 %   \begin{displaymath}
@@ -38,8 +38,8 @@ Our analysis holds for a wide range of self-adjusting data structures (including
 \paragraph{Architecture.}
 
 Consider $k$ identical parallel machines $M_1$, $M_2$, $M_3, \ldots, M_k$, each having its own isolated memory and running an instance of a self-adjusting list $D$.
-The stream of requests $\sigma$ arriving at a load balancer is partitioned into $k$ streams $\sigma(M_1), \sigma(M_2), \ldots, \sigma(M_k)$ and dispatched to the machines.
-The load balancer dispatches the requests to machines based solely on the request itself, and not on the state of the system.
+The stream of requests~$\sigma$ arriving at a load balancer is partitioned into $k$ streams $\sigma(M_1), \sigma(M_2), \ldots, \sigma(M_k)$ and dispatched to the machines.
+The load balancer dispatches the requests to machines based solely on the request itself, ignoring the state of the system.
 The load balancer is a function $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ from the universe of all items $\mathcal{U}$ to the machines, and this function partitions the universe $\mathcal{U}$ into $k$ subsets $\mathcal{U}_1, \mathcal{U}_2, \ldots, \mathcal{U}_k$ (often referred to as affinity domains).
 
 \paragraph{Cost model.}
@@ -259,7 +259,7 @@ We dedicate the next two subsections to partitioning the speedup into these two 
 \subsection{Impossibility of scaling for self-adjusting distributed systems (a negative result)}
 
 
-We finalize by sketching a scaling impossibility law, an equivalent of Amdahl's law for self-adjusting distributed systems. We draw conclusions that for each stream $\sigma$ the scaling can be only initial (cannot continue indefinitely with $k$), hence the superlinear scaling observed in practice is only an ephemeral phenomenon.
+We conclude by outlining a scaling impossibility law, analogous to Amdahl's law for self-adjusting distributed systems. We conclude that for any stream $\sigma$, scaling is limited to the initial phase and cannot continue indefinitely with $k$. Therefore, the superlinear scaling observed in practice is only merely a transient phenomenon.
 
 
 \begin{theorem}
@@ -278,26 +278,28 @@ We leave the proof of to the full version of the paper.
 
 % This gives us a scaling law (an impossibility result similar to Amdahl's law) for self-adjusting distributed systems of our architecture.
 
-There are two consequences of the above theorem. 
+Two key consequences arise from the above theorem. 
 \begin{enumerate}
 	\item 
 \textbf{Superlinearity is an initial-only phenomenon}
 
-The maximum possible multiplicative $\ell(k)$ achievable is fixed for each input sequence $\sigma$. 
-This always happens when $k$ is large enough so the load balancer $f_k$ isolates all working sets, but for many inputs $\sigma$, the improvements can dry up even for smaller $k$ (the more local the sequences are, the more effective the load balancer can be).
-As a corollary, the system can still scale with the parameter $k$ due to additional resources, but the savings from load balancing do not increase indefinitely with $k$.
+For any input sequence $\sigma$, the maximum achievable multiplicative $\ell(k)$ is fixed.
+% The maximum possible multiplicative $\ell(k)$ achievable is fixed for each input sequence $\sigma$. 
+This occurs when $k$ is large enough so the load balancer $f_k$ isolates all working sets. However, for many inputs $\sigma$, the improvements can dry up even for smaller $k$ (the more local the sequences are, the more effective the load balancer can be).
+As a corollary, the system can scale with the parameter $k$ due to additional resources, but the savings from load balancing do not grow indefinitely with $k$.
 \begin{observation}
 	\label{obs:initial}
 	For each input sequence $\sigma$, there exists a constant $K$ such that for all $k > K$, for each load balancer $f_k$, the savings $\ell(k)$ are fixed do not increase with $k$.
-	Combined with the fact that $q \le k$, means that superlinear scaling cannot continue with $k$ indefinitely.
+	Combined with the fact that $q \le k$, this implies that superlinear scaling cannot continue indefinitely with $k$.
 \end{observation}
 
 
  \item \textbf{Tight analysis for LRU caches and MTF lists}
 
-For Move-to-Front lists and LRU caches, the cost function $\ell(k)$ is both upper and lower bounded as a function of the working set size. Hence, our analysis of scaling is tight for these algorithms.
+In case of Move-to-Front lists and LRU caches, the cost function $\ell(k)$ is both upper- and lower-bounded as a function of the working set size. Hence, the analysis of scaling is tight for these algorithms.
 
-In particular, the LRU algorithm for caching cannot scale superlinearly indefinitely. Hence, the observed phenomenon in the literature is only an initial phenomenon due to the combined effect of increased number of machines and the load balancer.
+In particular, the LRU algorithm for caching cannot scale superlinearly indefinitely. 
+Therefore, the scaling observed in the literature is only an initial effect caused by the combined influence of the increased number of machines and the load balancer.
 \end{enumerate}
 
 % \begin{comment}
