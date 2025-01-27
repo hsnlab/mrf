@@ -124,7 +124,7 @@ We note that this generalized setting introduced by Sleator and Tarjan~\cite{Sle
 
 
 \paragraph*{Load balancer isolates working sets.}
-Recall that the load balancer partitions the stream into $k$ streams $\sigma(M_1), \sigma(M_2), \ldots, \sigma(M_k)$ and dispatches them to the machines.
+Recall that the load balancer partitions the stream into $k$ streams $\sigma(M_1)$, $\sigma(M_2)$, $\ldots, \sigma(M_k)$ and dispatches them to the machines.
 These streams may have reduced working set sizes at the machines in comparison to the working set sizes of the original stream $\sigma$.
 Precisely, a load balancer $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ partitions the universe $\mathcal{U}$ into $k$ subsets $\mathcal{U}_1, \mathcal{U}_2, \ldots, \mathcal{U}_k$, and the working set for machine $i$ at the time $x = \sigma_t$ is requested is $W_t(x, t, \sigma(M_i)) = W_t(x, t, \sigma) \cap \mathcal{U}_i$.
 
