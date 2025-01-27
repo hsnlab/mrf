@@ -37,7 +37,7 @@ Our analysis holds for a wide range of self-adjusting data structures (including
 
 \paragraph{Architecture.}
 
-Consider $k$ identical parallel machines $M_1, M_2, M_3, \ldots, M_k$, each having its own isolated memory and running an instance of a self-adjusting list $D$.
+Consider $k$ identical parallel machines $M_1$, $M_2$, $M_3, \ldots, M_k$, each having its own isolated memory and running an instance of a self-adjusting list $D$.
 The stream of requests $\sigma$ arriving at a load balancer is partitioned into $k$ streams $\sigma(M_1), \sigma(M_2), \ldots, \sigma(M_k)$ and dispatched to the machines.
 The load balancer dispatches the requests to machines based solely on the request itself, and not on the state of the system.
 The load balancer is a function $f_k : \mathcal{U} \to \{1, 2, \ldots, k\}$ from the universe of all items $\mathcal{U}$ to the machines, and this function partitions the universe $\mathcal{U}$ into $k$ subsets $\mathcal{U}_1, \mathcal{U}_2, \ldots, \mathcal{U}_k$ (often referred to as affinity domains).
@@ -210,24 +210,17 @@ We dedicate the next two subsections to partitioning the speedup into these two 
 
 
 
-\subsection{Discussion}
+% \subsection{Discussion}
 
-% \paragraph*{Working sets and cost functions for self-adjusting data structures.}
-% For the case of lists, past research give us tools to measure the cost exactly. In particular, work of Albers relates the cost of any algorithm for list lookup to runs of input sequences.
-% In our distributed model, this cost is submodular TODO
+% \label{sec:app:disc}
+% \paragraph*{Deviating from Amdahl's law assumptions.}
+% Traditionally, scaling has been upper-bounded using Amdahl's law, which predicts that the overall performance improvement is limited by the fraction of the workload that cannot be parallelized.
+% Amdahl's law holds under the assumption that the problem size is fixed, the workload is divisible, the tasks are independent, and we use a baseline that computes the fixed size problem on a single machine. With these assumptions, no system can scale better than linearly.
+% We deviate from these assumptions, (1) the problem size at the machines can decrease, and (2) the workload is not perfectly divisible, and (3) our baseline is a single self-adjusting data structure running on a single machine that processes the entire stream $\sigma$.
+% In particular, our problem size is not fixed, but rather the total work decreases for $k$ machines in comparison to the work accomplished by the baseline.
+% % The problem size at a machine, $T(f(\sigma_t))$, depends on the internal state of the self-adjusting data structure $D$ at time $t$ and machine $M_f(\sigma_t)$.
 
-% Paging and list locality of reference.
-% Sleator generalized.
-
-\label{sec:app:disc}
-\paragraph*{Deviating from Amdahl's law assumptions.}
-Traditionally, scaling has been upper-bounded using Amdahl's law, which predicts that the overall performance improvement is limited by the fraction of the workload that cannot be parallelized.
-Amdahl's law holds under the assumption that the problem size is fixed, the workload is divisible, the tasks are independent, and we use a baseline that computes the fixed size problem on a single machine. With these assumptions, no system can scale better than linearly.
-We deviate from these assumptions, (1) the problem size at the machines can decrease, and (2) the workload is not perfectly divisible, and (3) our baseline is a single self-adjusting data structure running on a single machine that processes the entire stream $\sigma$.
-In particular, our problem size is not fixed, but rather the total work decreases for $k$ machines in comparison to the work accomplished by the baseline.
-% The problem size at a machine, $T(f(\sigma_t))$, depends on the internal state of the self-adjusting data structure $D$ at time $t$ and machine $M_f(\sigma_t)$.
-
-One may ask why our perspective is useful. In our eyes, for systems consisting of self-adjusting data structures, the most natural benchmark is a single self-adjusting data structure. This perspective explains the superlinear scaling observed in practice for caching.
+% One may ask why our perspective is useful. In our eyes, for systems consisting of self-adjusting data structures, the most natural benchmark is a single self-adjusting data structure. This perspective explains the superlinear scaling observed in practice for caching.
 
 
 
