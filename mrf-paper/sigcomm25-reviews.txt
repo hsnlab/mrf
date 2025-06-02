@@ -1,0 +1,120 @@
+SIGCOMM '25 Paper #901 Reviews and Comments
+===========================================================================
+Paper #901 More Bang for the Buck: Superlinear Scaling with Distributed
+Self-adjusting Systems
+
+
+Review #901A
+===========================================================================
+
+Overall merit
+-------------
+1. Reject
+
+Reviewer expertise
+------------------
+2. Some familiarity
+
+Does this paper significantly change the way we think about and understand
+networking?
+
+---------------------------------------------------------------------------
+1. No
+
+Paper summary
+-------------
+The paper claims to present a general architectural principle (locality-aware parallelisation and self-adjusting workers) to achieve superlinearity in distributed systems. Performance speedups in a firewall and memcached/Postgres are used to demonstrate the principle in action.
+
+Comments for authors
+--------------------
+Overall comments:
+
+This paper would be ground-breaking and very worthy of publication if it were, as claimed, a "comprehensive and universal methodology" to achieve superlinearity in distributed systems. That is, that the architectural principle for superlinear gains is to have locality-specific sharding/load balancing and self-adjusting workers. However, that is far from true. Citations 87 and 88 (from 2008) identify systems where superlinear gains come from workers sharing useful information with other workers (e.g., that some part of a search space was non-productive) which does not fit this paradigm. Such gains can also be obtained by worker who finds the result to a query  cancelling jobs on other workers. Finally, gains can also be obtained by workers getting access to disproportionately more resources (Fig 2 in [88]). Since the theory presented in this paper does not cover these cases, it is not the most general theory. Moreover, the paper does not mention or contrast its theory with the USL theory presented in [35], or the papers in this survey: Helmbold, David P., and Charles E. McDowell. "Modeling speedup (n) greater than n." IEEE Transactions on Parallel & Distributed Systems 1.02 (1990): 250-256. For these reasons, the paper merits rejection.
+
+Detailed comments
+
+1. The claim that networking applications are often "embarrassingly parallel with little or no dependency between thread"  is made with no evidence to back it up. I have little reason to believe this is broadly true: even in the case of a firewall as studied here, stateful firewalls need to keep track of time between actions to account for timed DDOS attacks, which can introduce coupling between threads.
+
+2. Amdahl's law is well known and doesn't need this level of elaboration.
+
+3. The primer on locality restates well known concepts from any UG architecture course and not needed in a research publication.
+
+4. The results do not show any confidence intervals.
+
+5. MRF is prior work but is presented here in great detail, again not needed.
+
+What, if anything, could convince you to accept this paper?
+-----------------------------------------------------------
+Nothing
+
+
+
+Review #901B
+===========================================================================
+
+Overall merit
+-------------
+2. Weak reject
+
+Reviewer expertise
+------------------
+3. Knowledgeable
+
+Does this paper significantly change the way we think about and understand
+networking?
+
+---------------------------------------------------------------------------
+1. No
+
+Paper summary
+-------------
+This paper's core message is that accounting for locality when balancing requests among cores or machines can improve scalability. The paper argues that while this result is known, there are not well established architectural principles for this. It provides a principle based on designing datastructures that can be partitioned, and doing locality aware load balancing. They apply this to the Linux firewall, and show benefits.
+
+Comments for authors
+--------------------
+To start on a positive note: the rule data structure introduce in Section 4.1 seems useful, and the technical content in section 4 is both immediately applicable and impactful. I hope you try and upstream it.
+
+Now to the negative problem: I think the architectural principles that the paper focuses on are better known that the paper claims. Locality based scheduling has been used in many contexts, including big data processing, parallel computing, etc. I went hunting for early references, and I was reminded that COOL by Chndara, Gupta and Hennessy from PPoPP'93 (https://dl.acm.org/doi/pdf/10.1145/173284.155358) focused on exactly this problem. Further, even the notion of designing parallelizable datastructures has been examined in the past, e.g., see Wang, Stamler and Parmer's EuroSys'16 paper (https://dl.acm.org/doi/pdf/10.1145/2901318.2901356). Worse still, frameworks such as Slicer (Adya et al OSDI'16 https://www.usenix.org/conference/osdi16/technical-sessions/presentation/adya) have been focused on the same problem.
+
+This is an issue because it is not clear what the paper's content until Section 4 contributes to the discussion. In my experience, the hard problems with applying these principles lies in (a) finding a way to effectively partion data structures, (b) dealing with load imbalance where some data is hot (e.g., hot rules in your setup), and (c) figuring out what to do with requests of different types. I don't think the architecture you suggest really addresses any of these issues.
+
+What, if anything, could convince you to accept this paper?
+-----------------------------------------------------------
+More of a focus on how to generalize the proposed architecture.
+
+
+
+Review #901C
+===========================================================================
+
+Overall merit
+-------------
+2. Weak reject
+
+Reviewer expertise
+------------------
+2. Some familiarity
+
+Does this paper significantly change the way we think about and understand
+networking?
+
+---------------------------------------------------------------------------
+1. No
+
+Paper summary
+-------------
+This paper claims to develop a system architecture for achieving superlinear speedup.  Essentially, the manuscript provides a reasonable tutorial on parallel computation, starting with Amdahl's law and demonstrating that if smaller, more concentrated subtasks are more efficient (e.g., due to better caching due to reduced working set sizes), an intelligent choice of load balancer combined with an implementation that leverages the resulting locality.  The key engineering contribution is a refactoring of the \texttt{nftables} packet classifier in the Linux kernel, achieving superlinear speedups with up to 32 cores.
+
+Comments for authors
+--------------------
+This a well-written manuscript that was easy to follow, and I would give it to students or fresh software developers as a nice tutorial on how to design effective parallel systems.   Similarly, the \texttt{nftables} redesign seems to be a real improvement, and I hope you plan to upstream it!
+
+That said, I struggle to find a novel research contribution, as amply cited in the paper, the basic underlying observations (and formalization) have been known for decades.  As a result, I found the prose a bit over-blown and pretentious, claiming a fundamental new insight when it is rather just a compendium of standard engineering principles. (While the paper claims to develop what may indeed be novel analysis in Appendix A, I did not read any of the appendices out of principle; should their contents be intended as a key contribution, they should be in the body of the paper so they can be appropriately peer reviewed.)
+
+Indeed, for a SIGCOMM audience--or a savvy systems reader in general--I found much of the first few pages, and especially Figures 1 and 2, a bit rudimentary.  Similarly, the example self-adjusting data structures like move-to-front lists and splay trees are textbook material.  On the contrary, the key algorithm you use in your \texttt{nftables} reimplementation was taken from [1], so while perhaps new to the reader, cannot be viewed as a contribution of this paper.
+
+Moving from the conceptual framing of the paper to the actual engineering, the performance boost is impressive, but I couldn't help but wonder how much of that stems from a poor initial design of \texttt{nftables}.  As you observe in the conclusion, there are many high-performance packet classifiers in the literature, and it would indeed be interesting to see if you could apply similar techniques to get commensurate scaling on those systems.
+
+What, if anything, could convince you to accept this paper?
+-----------------------------------------------------------
+Toning down the writing so that it wasn't so grandiose, and instead focus on the performance improvement they achieved in nftables, ideally with a comparison to alternative classifier designs.
