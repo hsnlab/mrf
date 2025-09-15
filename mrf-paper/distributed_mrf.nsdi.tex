@@ -17,6 +17,7 @@
 \usetikzlibrary{pgfplots.groupplots}
 \usepackage{pgfplotstable}
 \usepackage[subtle]{savetrees}
+\usepackage[title]{appendix}
 
 % axis style, ticks, etc
 \pgfplotsset{every axis/.append style={
@@ -30,6 +31,8 @@
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{xspace}
+\usepackage{soul}
+\usepackage[normalem]{ulem}
 
 \newcolumntype{s}{>{\hsize=.3\hsize\linewidth=\hsize}X}
 \newcolumntype{D}{>{\hsize=.3\hsize\linewidth=\hsize}X}
@@ -80,9 +83,7 @@
 \maketitle
 
 \begin{abstract}
-  Conventional wisdom suggests that doubling the number of workers in a distributed system can result in at most 2x performance improvement, but most often less if the system does not provide perfect parallelism.  This common wisdom is codified by Amdahl's famous scaling law, asserting sublinear scaling and diminishing returns for parallelization. Curiously, faster-than-linear (superlinear) scaling has also been observed in several real systems, but most reports were dismissed as use-case specific artifacts, elusive interplays between memory and CPU, or mere measurement errors.
-
-  In this paper, we argue that superlinear scaling is not just an engineering curiosity, in that distributed systems can be systematically architected to achieve it. Our insight is that dispatching jobs to parallel workers so that the locality of reference in the per-worker input streams increases, and using self-adjusting algorithms so that workers can take advantage of the higher locality to dynamically improve their own performance, together yield superlinear scaling. Using various load balancing policies and self-adjusting algorithms from the literature, we report 100--3300x speedup when scaling distributed list lookup and tree search workloads to 48 CPU cores, up to 70x beyond what is predicted by Amdahl's law. By implementing an earlier self-adjusting packet classifier algorithm in the Linux kernel and combining it with a hash-based load balancer, we obtain 800x speedup for synthetic and 220x speedup for realistic firewall traces on 32 cores, resulting 5--25x times raw performance improvement compared to the default Linux packet classifier.
+  Conventional wisdom suggests that linear scaling of the worker pool in a distributed system can result in at most a linear performance improvement. In this paper, we present an optimization strategy for distributed systems that achieves faster-than-linear (superlinear) scaling. Our insight is that dispatching jobs to parallel workers in a way that increases the locality of reference in their inputs, and implementing the workers with a self-adjusting algorithm to exploit this higher locality, together yield superlinear scaling. We demonstrate the potential use-cases for our optimization technique in extensive simulations: scaling textbook self-adjusting algorithms we obtain 100--3,300x speedup using only 48 CPU cores, up to 70x beyond linear scaling. Then we present two operational case studies. Using our optimization strategy to scale a Memcached+PostgreSQL storage system we attain 2.3x faster than linear scaling. Then we re-engineer the Linux packet classifier to self-adjust with load, obtaining 800x speedup on synthetic traces and 220x speedup on real firewall traces with 32 CPU cores, resulting 5--25x times raw performance improvements compared to the vanilla Linux kernel.
 \end{abstract}
 
 % \tableofcontents
@@ -95,7 +96,7 @@
 
 \input{architecture.tex}
 
-\input{case-study.tex}
+\input{case-study-classifier.tex}
 
 \input{related.tex}
 
@@ -109,6 +110,10 @@
 \bibliography{mrf}
 \end{small}
 
-\input{appendix.tex}
+\begin{appendices}
+\input{analysis.tex}
+
+\input{case-study-dist-caching.tex}
+\end{appendices}
 
 \end{document}
