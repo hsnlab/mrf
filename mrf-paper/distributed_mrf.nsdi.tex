@@ -75,7 +75,8 @@
 
 %%%%%%%%%%%% THIS IS WHERE WE PUT IN THE TITLE AND AUTHORS %%%%%%%%%%%%
 
-\title{Beyond Amdahl's Law: Achieving Superlinear Scaling with\\Distributed Self-adjusting Systems}
+\title{More Bang for the Buck: 
+Superlinear Scaling with Distributed Self-adjusting Systems}
 
 \author{Paper \#619, 12 + 7 pages}
 % \author{Jonas Köppeler, Maciej Pacut, Tamás Lévai, Vamsi Addanki, Stefan Schmid, Gábor Rétvári}
@@ -83,7 +84,7 @@
 \maketitle
 
 \begin{abstract}
-  Conventional wisdom suggests that linear scaling of the worker pool in a distributed system can result in at most a linear performance improvement. In this paper, we present an optimization strategy for distributed systems that achieves faster-than-linear (superlinear) scaling. Our insight is that dispatching jobs to parallel workers in a way that increases the locality of reference in their inputs, and implementing the workers with a self-adjusting algorithm to exploit this higher locality, together yield superlinear scaling. We demonstrate the potential use-cases for our optimization technique in extensive simulations: scaling textbook self-adjusting algorithms we obtain 100--3,300x speedup using only 48 CPU cores, up to 70x beyond linear scaling. Then we present two operational case studies. Using our optimization strategy to scale a Memcached+PostgreSQL storage system we attain 2.3x faster than linear scaling. Then we re-engineer the Linux packet classifier to self-adjust with load, obtaining 800x speedup on synthetic traces and 220x speedup on real firewall traces with 32 CPU cores, resulting 5--25x times raw performance improvements compared to the vanilla Linux kernel.
+  In this paper we show an optimization technique that allows certain distributed systems to attain faster-than-linear (superlinear) performance improvement with only a linear scaling of the worker pool. Our insight is that (1) dispatching jobs to parallel workers so that the locality of reference in the workers' input increases (2) and implementing the workers with a self-adjusting algorithm to take advantage of the higher locality can yield superlinear scaling in many practical applications. First we demonstrate our technique in simulations: scaling textbook self-adjusting algorithms we obtain 100--3,300x speedup using only 48 CPU cores, up to 70x beyond linear scaling. Then, we present operational case studies. As a major contribution, by a systematic application of our optimization technique we re-engineer the default Linux packet classifier to attain 5--25x times raw performance improvement compared to the vanilla Linux kernel. We demonstrate 800x speedup on synthetic traces and 220x speedup on real firewall traces with 32 CPU cores.
 \end{abstract}
 
 % \tableofcontents
@@ -97,6 +98,8 @@
 \input{architecture.tex}
 
 \input{case-study-classifier.tex}
+
+\input{discussion.tex}
 
 \input{related.tex}
 
