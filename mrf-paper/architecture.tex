@@ -2,7 +2,7 @@
 \section{Distributed self-adjusting systems}
 \label{sec:architecture}
 
-We now present a \sout{general} distributed systems architecture, which, as we show theoretically and empirically later, produces faster-than-linear scaling in several problem domains. Our main observation is that, whenever genuinely observed, superlinear scaling assumes two critical components: a policy to dispatch jobs to workers in a way to increase the locality of reference in workers' input streams, plus an algorithm that can adaptively exploit the structure in the input to process it more efficiently. Our architecture is purely a software technique in that it does not require the addition of new cache space to a system. Nonetheless, it contains distributed caching as a special case and hence automatically takes advantage of additional fast memory, if available.
+We now present a distributed systems architecture, which, as we show theoretically and empirically later, produces faster-than-linear scaling in several problem domains. Our main observation is that, whenever genuinely observed, superlinear scaling assumes two critical components: a policy to dispatch jobs to workers in a way to increase the locality of reference in workers' input streams, plus an algorithm that can adaptively exploit the structure in the input to process it more efficiently. Our architecture is purely a software technique in that it does not require the addition of new cache space to a system. Nonetheless, it contains distributed caching as a special case and hence automatically takes advantage of additional fast memory, if available.
 
 \subsection{Locality-boosting load balancing}
 \label{sec:lb-lb}
