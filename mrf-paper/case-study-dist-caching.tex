@@ -35,9 +35,9 @@ In our case study Memcached is gradually scaled from a single replica to 15 repl
 
 Fig.~\ref{fig:dist-cache-speedup} shows the results for PostgreSQL pre-filled with 1,000,000 key-value pairs of 16 byte keys and 48 byte values, with a configurable number of PostgreSQL threads and Memcached replicas with 4 MB of cache each. As expected, superlinear scaling emerges with key-hashing, yielding $35\times$ speedup with $15$ Memcached replicas, $2.3\times$ higher than linear scaling. In contrast, random request routing exhibits only linear scaling. The reason is the improving cache hit rate as Memcached is scaled: with 14 replicas we reach close to 100\% cache hit rate and speedup falls back into the linear range, as predicted by the analysis.
 
-We note that superlinear scaling in this context is extremely sensitive to certain benchmark parameters, like the number of Memcached replicas, PostgreSQL threads, and client threads. This is because for faster-than-linear scaling to appear Memcached replicas must be both CPU-bounded (so that adding more replicas will improve throughput) \emph{and} memory-bounded (so that improving cache hit rate will cause speedup) at the same time. Earlier reports indicate that this occurs surprisingly commonly in practice \cite{dobb-1, dobb-2, 7733347, 80148, 556383, scalability-analyzed}.
+We note that superlinear scaling in this context is extremely sensitive to certain benchmark parameters, like the number of Memcached replicas, PostgreSQL threads, and client threads. This is because for faster-than-linear scaling to appear Memcached replicas must be both CPU-bound (so that adding more replicas will improve throughput) \emph{and} memory-bounded (so that improving cache hit rate will cause speedup) at the same time. Earlier reports indicate that this occurs surprisingly commonly in practice \cite{dobb-1, dobb-2, 7733347, 80148, 556383, scalability-analyzed}.
 
 %%% Local Variables:
 %%% mode: latex
-%%% TeX-master: "distributed_mrf"
+%%% TeX-master: "distributed_mrf.nsdi"
 %%% End:

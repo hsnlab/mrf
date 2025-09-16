@@ -1,7 +1,8 @@
 % !TEX ROOT = ./distributed_mrf.tex
 \section{Superlinear scaling in the Linux kernel}\label{sec:dist-classifier}
 
-Next we demonstrate our methodology by assembling \emph{existing} techniques into a distributed self-adjusting scheme to understand when, and to what extent, superlinear scaling emerges. Here we present a case study for systematically applying the distributed self-adjusting systems architecture to a common networking problem: software packet classification \cite{gupta2001algorithms}. Later in Appendix~\ref{sec:dist-caching} we also apply our methodology to a popular distributed data storage setup using multiple Memcached servers as a fast cache to access a PostgreSQL database. In both cases we consider the experiment successful if we can robustly reproduce faster-than-linear growth on some realistic workloads. Recall, it is a stated \emph{nongoal} in this paper to conceive novel algorithms, let alone produce the fastest implementations possible with existing technology. % (that award undeniably goes to DPDK \texttt{rte\_acl} \cite{rte-acl})
+Next we demonstrate our methodology by assembling \emph{existing} techniques into a distributed self-adjusting scheme to understand when, and to what extent, superlinear scaling emerges. Here we present a case study for systematically applying the distributed self-adjusting systems architecture to a common networking problem: software packet classification \cite{gupta2001algorithms}. Later in Appendix~\ref{sec:dist-caching} we also apply our methodology to a popular distributed data storage setup using multiple Memcached servers as a fast cache to access a PostgreSQL database. In both cases we consider the experiment successful if we can robustly reproduce faster-than-linear growth on some realistic workloads. Recall, it is a stated \emph{nongoal} in this paper to conceive novel algorithms, let alone produce the fastest implementations possible with existing technology. Rather, our experiments serve only as a demonstration of our optimization strategy applied to real operational systems.
+% (that award undeniably goes to DPDK \texttt{rte\_acl} \cite{rte-acl})
 Yet, the re-engineered self-adjusting packet classifier we present below will prove several times faster than the default Linux kernel implementation on a wide range of workloads.
 
 To achieve superlinear scaling we need a self-adjusting algorithm in the first place (plus a locality-boosting load balancer). From the many potential use cases % for which a self-adjusting algorithm exists
@@ -266,5 +267,5 @@ It seems that longer rule dependencies and growing flow diversity have negative 
 
 %%% Local Variables:
 %%% mode: latex
-%%% TeX-master: "distributed_mrf"
+%%% TeX-master: "distributed_mrf.nsdi"
 %%% End:
