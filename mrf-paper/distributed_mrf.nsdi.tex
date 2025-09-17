@@ -87,6 +87,9 @@ Superlinear Scaling with Distributed Self-adjusting Systems}
   Extracting maximum performance from a limited pool of parallel compute resources remains a central challenge.  In this paper we show an optimization technique that allows certain distributed systems to attain faster-than-linear (superlinear) performance improvement with only a linear scaling of the worker pool. Our insight is that (1) dispatching jobs to parallel workers so that the locality of reference in the workers' input increases (2) and implementing the workers with a self-adjusting algorithm to take advantage of the higher locality can yield superlinear scaling in many practical applications. First we demonstrate our technique in simulations: scaling textbook self-adjusting algorithms we obtain 100--3,300x speedup using only 48 CPU cores, up to 70x beyond linear scaling. Then, we present operational case studies. As a major contribution, by a systematic application of our technique we re-engineer the default Linux packet classifier to attain 5--25x times raw performance improvement compared to the vanilla Linux kernel. We demonstrate 800x speedup on synthetic traces and 220x speedup on real firewall traces with 32 CPU cores.
 \end{abstract}
 
+
+% We further apply our methodology to demonstrate a 2.3x faster than linear scaling on a Memcached/PostgreSQL storage system. 
+
 % \tableofcontents
 
 % a unique combination of \emph{locality-boosting load balancing} to spread load among workers implemented using \emph{self-adjusting data structures}.
